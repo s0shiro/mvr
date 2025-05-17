@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/sidebar'
 
 import { GalleryVerticalEnd } from 'lucide-vue-next'
+import { RouterLink } from 'vue-router'
 
 const props = defineProps({
   side: { type: String, required: false },
@@ -34,8 +35,8 @@ const data = {
           url: '/overview',
         },
         {
-          title: 'Project Structure',
-          url: '#',
+          title: 'User',
+          url: '/users',
         },
       ],
     },
@@ -49,7 +50,7 @@ const data = {
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" as-child>
-            <a href="#">
+            <RouterLink to="#">
               <div
                 class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
               >
@@ -59,7 +60,7 @@ const data = {
                 <span class="font-medium">Documentation</span>
                 <span class="">v1.0.0</span>
               </div>
-            </a>
+            </RouterLink>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
@@ -69,14 +70,14 @@ const data = {
         <SidebarMenu>
           <SidebarMenuItem v-for="item in data.navMain" :key="item.title">
             <SidebarMenuButton as-child>
-              <a :href="item.url" class="font-medium">
+              <RouterLink :to="item.url" class="font-medium">
                 {{ item.title }}
-              </a>
+              </RouterLink>
             </SidebarMenuButton>
             <SidebarMenuSub v-if="item.items.length">
               <SidebarMenuSubItem v-for="childItem in item.items" :key="childItem.title">
                 <SidebarMenuSubButton as-child :is-active="childItem.isActive">
-                  <a :href="childItem.url">{{ childItem.title }}</a>
+                  <RouterLink :to="childItem.url">{{ childItem.title }}</RouterLink>
                 </SidebarMenuSubButton>
               </SidebarMenuSubItem>
             </SidebarMenuSub>
