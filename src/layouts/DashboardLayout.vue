@@ -38,7 +38,7 @@ const isLoading = false // You might want to control this with your actual loadi
               <BreadcrumbList class="flex-wrap items-center">
                 <BreadcrumbItem class="shrink-0">
                   <RouterLink
-                    :to="{ name: 'dashboard' }"
+                    :to="{ name: 'home' }"
                     class="transition-colors hover:text-foreground"
                   >
                     Dashboard
