@@ -32,7 +32,7 @@
       </div>
       <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
         <div>
-          <label for="search" class="mb-1 block text-sm font-medium">Search</label>
+          <Label for="search" class="mb-1">Search</Label>
           <Input
             id="search"
             v-model="filterForm.search"
@@ -41,7 +41,7 @@
           />
         </div>
         <div>
-          <label for="brand" class="mb-1 block text-sm font-medium">Brand</label>
+          <Label for="brand" class="mb-1">Brand</Label>
           <Input
             id="brand"
             v-model="filterForm.brand"
@@ -50,41 +50,66 @@
           />
         </div>
         <div>
-          <label for="type" class="mb-1 block text-sm font-medium">Type</label>
-          <div class="relative">
-            <select
-              id="type"
-              v-model="filterForm.type"
-              class="border-input focus-visible:ring-ring/50 aria-invalid:border-destructive flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40"
-              @change="handleFilterChange"
-            >
-              <option value="">All types</option>
-              <option value="car">Car</option>
-              <option value="motorcycle">Motorcycle</option>
-            </select>
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-              <ChevronDown class="h-4 w-4 opacity-50" />
-            </div>
-          </div>
+          <Label class="mb-1">Type</Label>
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <Button variant="outline" class="w-full justify-between font-normal">
+                {{ getActiveLabel(vehicleTypes, filterForm.type) }}
+                <ChevronDown class="h-4 w-4 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent class="w-full min-w-[8rem]">
+              <DropdownMenuLabel>Vehicle Types</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                v-for="type in vehicleTypes"
+                :key="type.value"
+                @click="
+                  () => {
+                    filterForm.type = type.value
+                    handleFilterChange()
+                  }
+                "
+              >
+                <Check
+                  class="mr-2 h-4 w-4"
+                  :class="cn(filterForm.type === type.value ? 'opacity-100' : 'opacity-0')"
+                />
+                {{ type.label }}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <div>
-          <label for="status" class="mb-1 block text-sm font-medium">Status</label>
-          <div class="relative">
-            <select
-              id="status"
-              v-model="filterForm.status"
-              class="border-input focus-visible:ring-ring/50 aria-invalid:border-destructive flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs transition-[color,box-shadow] outline-none focus-visible:border-ring focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40"
-              @change="handleFilterChange"
-            >
-              <option value="">All statuses</option>
-              <option value="available">Available</option>
-              <option value="maintenance">Maintenance</option>
-              <option value="rented">Rented</option>
-            </select>
-            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-              <ChevronDown class="h-4 w-4 opacity-50" />
-            </div>
-          </div>
+          <Label class="mb-1">Status</Label>
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <Button variant="outline" class="w-full justify-between font-normal">
+                {{ getActiveLabel(statusTypes, filterForm.status) }}
+                <ChevronDown class="h-4 w-4 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent class="w-full min-w-[8rem]">
+              <DropdownMenuLabel>Status</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                v-for="status in statusTypes"
+                :key="status.value"
+                @click="
+                  () => {
+                    filterForm.status = status.value
+                    handleFilterChange()
+                  }
+                "
+              >
+                <Check
+                  class="mr-2 h-4 w-4"
+                  :class="cn(filterForm.status === status.value ? 'opacity-100' : 'opacity-0')"
+                />
+                {{ status.label }}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </div>
@@ -133,14 +158,25 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue'
-import { Loader2, AlertCircle, ChevronDown, X } from 'lucide-vue-next'
+import { Loader2, AlertCircle, ChevronDown, X, Check } from 'lucide-vue-next'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
 import VehicleCard from '@/components/features/vehicles/VehicleCard.vue'
 import AddVehicleDialog from '@/components/features/vehicles/AddVehicleDialog.vue'
 import { useVehicles } from '@/services/vehicle-service'
 import { useIntersectionObserver } from '@vueuse/core'
 import { useDebounce } from '@/stores/useDebounce'
+import { cn } from '@/lib/utils'
 
 const debounceStore = useDebounce()
 
@@ -244,4 +280,22 @@ useIntersectionObserver(loadMoreRef, async ([{ isIntersecting }]) => {
     await fetchNextPage()
   }
 })
+
+const vehicleTypes = [
+  { label: 'All types', value: '' },
+  { label: 'Car', value: 'car' },
+  { label: 'Motorcycle', value: 'motorcycle' },
+]
+
+const statusTypes = [
+  { label: 'All statuses', value: '' },
+  { label: 'Available', value: 'available' },
+  { label: 'Maintenance', value: 'maintenance' },
+  { label: 'Rented', value: 'rented' },
+]
+
+const getActiveLabel = (items, value) => {
+  const item = items.find((item) => item.value === value)
+  return item?.label || items[0].label
+}
 </script>
