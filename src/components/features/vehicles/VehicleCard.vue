@@ -2,6 +2,19 @@
   <div
     class="vehicle-card rounded-xl border bg-card text-card-foreground shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden"
   >
+    <!-- Vehicle Image -->
+    <div class="relative w-full aspect-video bg-muted">
+      <img
+        v-if="vehicle.primary_image_url"
+        :src="vehicle.primary_image_url"
+        :alt="vehicle.name"
+        class="w-full h-full object-cover"
+      />
+      <div v-else class="w-full h-full flex items-center justify-center">
+        <ImageIcon class="w-8 h-8 text-muted-foreground/50" />
+      </div>
+    </div>
+
     <div class="p-6">
       <div class="flex justify-between items-center min-h-[84px]">
         <div>
@@ -50,7 +63,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Badge } from '@/components/ui/badge'
-import { Users, Tag, DollarSign } from 'lucide-vue-next'
+import { Users, Tag, DollarSign, ImageIcon } from 'lucide-vue-next'
 import { formatCurrency as _formatCurrency, getStatusVariant } from '@/lib/utils'
 
 const props = defineProps({

@@ -1,7 +1,7 @@
 <template>
-  <Dialog>
+  <Dialog v-model:open="isOpen">
     <DialogTrigger as-child>
-      <Button variant="default">Add Vehicle</Button>
+      <Button variant="default" @click="isOpen = true">Add Vehicle</Button>
     </DialogTrigger>
     <DialogContent class="sm:max-w-[600px]">
       <DialogHeader class="px-6 pt-6">
@@ -175,6 +175,57 @@
               {{ addErrors.description }}
             </p>
           </div>
+
+          <!-- Image Upload Section -->
+          <div class="flex flex-col gap-2 w-full">
+            <Label>Vehicle Images</Label>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <!-- Image Preview -->
+              <div
+                v-for="(preview, index) in imagePreviews"
+                :key="index"
+                class="relative aspect-square rounded-lg border-2 border-border overflow-hidden"
+              >
+                <img :src="preview" alt="Preview" class="w-full h-full object-cover" />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  class="absolute top-2 right-2 h-6 w-6"
+                  @click="removeImage(index)"
+                >
+                  <XIcon class="h-4 w-4" />
+                </Button>
+              </div>
+
+              <!-- Upload Button -->
+              <div
+                v-if="imagePreviews.length < 5"
+                class="aspect-square rounded-lg border-2 border-dashed border-border hover:border-primary cursor-pointer flex items-center justify-center"
+                @click="triggerFileInput"
+              >
+                <div class="flex flex-col items-center gap-2">
+                  <UploadIcon class="h-8 w-8 text-muted-foreground" />
+                  <span class="text-sm text-muted-foreground">Add Image</span>
+                </div>
+              </div>
+            </div>
+            <input
+              ref="fileInput"
+              type="file"
+              accept="image/*"
+              multiple
+              class="hidden"
+              @change="handleImageChange"
+            />
+            <p class="text-sm text-muted-foreground">
+              Upload up to 5 images. First image will be set as primary.
+            </p>
+            <p v-if="addErrors.images" class="text-destructive text-xs mt-1">
+              {{ addErrors.images }}
+            </p>
+          </div>
+
           <DialogFooter class="mt-4">
             <Button type="submit" :disabled="addIsLoading">{{
               addIsLoading ? 'Adding...' : 'Add Vehicle'
@@ -209,8 +260,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
-import { Check, ChevronDown } from 'lucide-vue-next'
-import { useCreateVehicle } from '@/services/vehicle-service'
+import { Check, ChevronDown, XIcon, UploadIcon } from 'lucide-vue-next'
+import { useCreateVehicle, useUploadVehicleImages } from '@/services/vehicle-service'
 import { toast } from 'vue-sonner'
 import { cn } from '@/lib/utils'
 
@@ -232,6 +283,7 @@ const getActiveLabel = (items, value) => {
   return item?.label || items[0].label
 }
 
+const isOpen = ref(false)
 const addForm = ref({
   name: '',
   type: '',
@@ -247,9 +299,44 @@ const addForm = ref({
 const addErrors = ref({})
 const maxYear = new Date().getFullYear() + 1
 
+const fileInput = ref(null)
+const selectedFiles = ref([])
+const imagePreviews = ref([])
+
 const { mutateAsync: createVehicle, isPending: addIsLoading } = useCreateVehicle()
+const { mutateAsync: uploadImages } = useUploadVehicleImages()
 
 const emit = defineEmits(['vehicleAdded'])
+
+function triggerFileInput() {
+  fileInput.value.click()
+}
+
+function handleImageChange(event) {
+  const files = Array.from(event.target.files)
+  const remainingSlots = 5 - selectedFiles.value.length
+  const newFiles = files.slice(0, remainingSlots)
+
+  // Add new files
+  selectedFiles.value = [...selectedFiles.value, ...newFiles]
+
+  // Create previews for new files
+  newFiles.forEach((file) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      imagePreviews.value.push(e.target.result)
+    }
+    reader.readAsDataURL(file)
+  })
+
+  // Reset input
+  event.target.value = ''
+}
+
+function removeImage(index) {
+  selectedFiles.value.splice(index, 1)
+  imagePreviews.value.splice(index, 1)
+}
 
 async function handleAddVehicle() {
   addErrors.value = {}
@@ -261,8 +348,20 @@ async function handleAddVehicle() {
       capacity: addForm.value.capacity ? Number(addForm.value.capacity) : '',
       rental_rate: addForm.value.rental_rate ? Number(addForm.value.rental_rate) : '',
     }
+
+    // First create the vehicle
     const response = await createVehicle(payload)
-    // Reset form
+    const vehicleData = response.data
+
+    // Then upload images if any
+    if (selectedFiles.value.length > 0) {
+      await uploadImages({
+        vehicleId: vehicleData.id,
+        images: selectedFiles.value,
+      })
+    }
+
+    // Reset form and images
     addForm.value = {
       name: '',
       type: '',
@@ -275,10 +374,20 @@ async function handleAddVehicle() {
       status: '',
       description: '',
     }
-    toast(response?.message || 'Vehicle added successfully', {
-      description: `${response.data.name} has been added to the system.`,
-    })
+    selectedFiles.value = []
+    imagePreviews.value = []
+
+    // Close the dialog first
+    isOpen.value = false
     emit('vehicleAdded')
+
+    // Show toast after a small delay to ensure dialog is closed
+    setTimeout(() => {
+      toast.success('Vehicle Added', {
+        description: `${vehicleData.name} has been added to the system.`,
+        duration: 5000,
+      })
+    }, 300)
   } catch (error) {
     if (error.response && error.response.status === 422) {
       addErrors.value = error.response.data.errors || {}

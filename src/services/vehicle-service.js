@@ -8,6 +8,8 @@ export const vehicleKeys = {
   list: (filters) => [...vehicleKeys.lists(), { filters }],
   details: () => [...vehicleKeys.all, 'detail'],
   detail: (id) => [...vehicleKeys.details(), id],
+  images: () => [...vehicleKeys.all, 'images'],
+  image: (vehicleId, imageId) => [...vehicleKeys.images(), vehicleId, imageId],
 }
 
 export function useVehicles(filters = {}) {
@@ -33,15 +35,86 @@ export function useVehicles(filters = {}) {
 }
 
 export function useCreateVehicle() {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (vehicleData) => {
-      const response = await axiosInstance.post('/api/vehicles', vehicleData);
-      return response.data;
+      const response = await axiosInstance.post('/api/vehicles', vehicleData)
+      return response.data
     },
-    onSuccess: () => {
-      // Invalidate vehicles list to refetch
-      queryClient.invalidateQueries({ queryKey: vehicleKeys.lists() });
+  })
+}
+
+export function useUploadVehicleImages() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ vehicleId, images }) => {
+      // Convert image files to base64
+      const base64Images = await Promise.all(
+        images.map((file) => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onload = (e) => resolve(e.target.result)
+            reader.onerror = (e) => reject(e)
+            reader.readAsDataURL(file)
+          })
+        }),
+      )
+
+      const response = await axiosInstance.post(`/api/vehicles/${vehicleId}/images`, {
+        images: base64Images,
+      })
+      return response.data
     },
-  });
+    onSuccess: (_, { vehicleId }) => {
+      // Invalidate both vehicle details and list to refetch with new images
+      queryClient.invalidateQueries({ queryKey: vehicleKeys.detail(vehicleId) })
+      queryClient.invalidateQueries({ queryKey: vehicleKeys.lists() })
+    },
+  })
+}
+
+export function useDeleteVehicleImage() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ vehicleId, imageId }) => {
+      const response = await axiosInstance.delete(`/api/vehicles/${vehicleId}/images/${imageId}`)
+      return response.data
+    },
+    onSuccess: (_, { vehicleId }) => {
+      queryClient.invalidateQueries({ queryKey: vehicleKeys.detail(vehicleId) })
+      queryClient.invalidateQueries({ queryKey: vehicleKeys.lists() })
+    },
+  })
+}
+
+export function useSetPrimaryImage() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ vehicleId, imageId }) => {
+      const response = await axiosInstance.put(
+        `/api/vehicles/${vehicleId}/images/${imageId}/primary`,
+      )
+      return response.data
+    },
+    onSuccess: (_, { vehicleId }) => {
+      queryClient.invalidateQueries({ queryKey: vehicleKeys.detail(vehicleId) })
+      queryClient.invalidateQueries({ queryKey: vehicleKeys.lists() })
+    },
+  })
+}
+
+export function useReorderVehicleImages() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ vehicleId, imageIds }) => {
+      const response = await axiosInstance.put(`/api/vehicles/${vehicleId}/images/reorder`, {
+        image_ids: imageIds,
+      })
+      return response.data
+    },
+    onSuccess: (_, { vehicleId }) => {
+      queryClient.invalidateQueries({ queryKey: vehicleKeys.detail(vehicleId) })
+      queryClient.invalidateQueries({ queryKey: vehicleKeys.lists() })
+    },
+  })
 }
