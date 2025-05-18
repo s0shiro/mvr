@@ -30,6 +30,12 @@ const router = createRouter({
       view: () => import('../views/Vehicles.vue'),
       meta: { title: 'Vehicles', requiresAuth: true },
     }),
+    createDashboardRoute({
+      path: '/vehicles/:id',
+      name: 'vehicle-details',
+      view: () => import('../views/VehicleDetails.vue'),
+      meta: { title: 'Vehicle Details', requiresAuth: true },
+    }),
     {
       path: '/login',
       name: 'login',

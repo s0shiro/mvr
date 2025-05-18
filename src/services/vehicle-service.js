@@ -1,4 +1,4 @@
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import axiosInstance from '@/lib/axiosInstance'
 
 // Query keys for better cache management
@@ -31,6 +31,17 @@ export function useVehicles(filters = {}) {
     },
     getNextPageParam: (lastPage) => lastPage.meta?.nextCursor,
     initialPageParam: 0,
+  })
+}
+
+export function useVehicleDetails(vehicleId) {
+  return useQuery({
+    queryKey: vehicleKeys.detail(vehicleId),
+    queryFn: async () => {
+      const response = await axiosInstance.get(`/api/vehicles/${vehicleId}`)
+      return response.data
+    },
+    enabled: !!vehicleId,
   })
 }
 

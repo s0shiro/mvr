@@ -33,28 +33,15 @@
 
       <div class="my-4 border-t border-border"></div>
 
-      <div class="mt-4 space-y-3 bg-muted rounded-lg p-4">
-        <div class="flex items-center gap-3">
-          <span class="bg-accent rounded-full p-2"
-            ><Users class="h-5 w-5 text-muted-foreground"
-          /></span>
-          <span class="font-medium text-card-foreground">{{ vehicle.capacity }} passengers</span>
-        </div>
-        <div class="flex items-center gap-3">
-          <span class="bg-accent rounded-full p-2"
-            ><Tag class="h-5 w-5 text-muted-foreground"
-          /></span>
-          <span class="font-mono text-card-foreground">{{ vehicle.plate_number }}</span>
-        </div>
-        <div class="flex items-center gap-3">
-          <span class="bg-accent rounded-full p-2"
-            ><DollarSign class="h-5 w-5 text-muted-foreground"
-          /></span>
-          <span class="font-semibold text-primary"
-            >{{ formatCurrency(vehicle.rental_rate) }}
-            <span class="text-xs text-muted-foreground font-normal">/ day</span></span
-          >
-        </div>
+      <p class="text-sm text-muted-foreground mb-4 line-clamp-2">
+        {{ vehicle.description || 'No description available' }}
+      </p>
+
+      <div class="mt-4 flex justify-end">
+        <Button variant="outline" class="w-full" @click="navigateToDetails">
+          <Info class="w-4 h-4 mr-2" />
+          View Details
+        </Button>
       </div>
     </div>
   </div>
@@ -62,19 +49,24 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { Badge } from '@/components/ui/badge'
-import { Users, Tag, DollarSign, ImageIcon } from 'lucide-vue-next'
-import { formatCurrency as _formatCurrency, getStatusVariant } from '@/lib/utils'
+import { Button } from '@/components/ui/button'
+import { Info, ImageIcon } from 'lucide-vue-next'
+import { getStatusVariant } from '@/lib/utils'
 
+const router = useRouter()
 const props = defineProps({
   vehicle: {
     type: Object,
     required: true,
   },
 })
+
 const vehicle = props.vehicle
-
-const formatCurrency = _formatCurrency
-
 const badgeVariant = computed(() => getStatusVariant(vehicle.status))
+
+const navigateToDetails = () => {
+  router.push({ name: 'vehicle-details', params: { id: vehicle.id } })
+}
 </script>
