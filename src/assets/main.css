@@ -11,6 +11,8 @@ body {
 }
 
 @theme inline {
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -47,9 +49,19 @@ body {
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-status-available: var(--status-available);
+  --color-status-available-foreground: var(--status-available-foreground);
+  --color-status-rented: var(--status-rented);
+  --color-status-rented-foreground: var(--status-rented-foreground);
+  --color-status-maintenance: var(--status-maintenance);
+  --color-status-maintenance-foreground: var(--status-maintenance-foreground);
 }
 
 :root {
+  --warning: oklch(0.84 0.16 84);
+  --warning-foreground: oklch(0.28 0.07 46);
   --background: oklch(1 0 0);
   --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
@@ -83,9 +95,19 @@ body {
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.705 0.015 286.067);
+  --warning: oklch(0.84 0.16 84);
+  --warning-foreground: oklch(0.28 0.07 46);
+  --status-available: oklch(0.461 0.255 142.87); /* vibrant green */
+  --status-available-foreground: oklch(0.98 0.005 142.87);
+  --status-rented: oklch(0.55 0.15 230.32); /* blue */
+  --status-rented-foreground: oklch(0.98 0.005 230.32);
+  --status-maintenance: oklch(0.84 0.16 84); /* amber */
+  --status-maintenance-foreground: oklch(0.28 0.07 84);
 }
 
 .dark {
+  --warning: oklch(0.41 0.11 46);
+  --warning-foreground: oklch(0.99 0.02 95);
   --background: oklch(0.141 0.005 285.823);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.141 0.005 285.823);
@@ -118,6 +140,14 @@ body {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(0.274 0.006 286.033);
   --sidebar-ring: oklch(0.442 0.017 285.786);
+  --warning: oklch(0.41 0.11 46);
+  --warning-foreground: oklch(0.99 0.02 95);
+  --status-available: oklch(0.461 0.255 142.87);
+  --status-available-foreground: oklch(0.98 0.005 142.87);
+  --status-rented: oklch(0.55 0.15 230.32);
+  --status-rented-foreground: oklch(0.98 0.005 230.32);
+  --status-maintenance: oklch(0.41 0.11 84);
+  --status-maintenance-foreground: oklch(0.99 0.02 84);
 }
 
 @layer base {

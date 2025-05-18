@@ -14,3 +14,16 @@ export function formatCurrency(value, currency = 'USD', locale = 'en-US') {
     maximumFractionDigits: 2,
   }).format(value)
 }
+
+export function getStatusVariant(status) {
+  switch (status) {
+    case 'available':
+      return 'available'
+    case 'maintenance':
+      return 'maintenance'
+    case 'rented':
+      return 'rented'
+    default:
+      return 'outline'
+  }
+}

@@ -12,43 +12,65 @@
         <form id="add-vehicle-form" @submit.prevent="handleAddVehicle" class="flex flex-col gap-6">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="flex flex-col gap-2">
-              <label for="name" class="block text-sm font-medium mb-1">Name</label>
+              <Label for="name">Name</Label>
               <Input id="name" v-model="addForm.name" placeholder="Vehicle name" class="w-full" />
               <p v-if="addErrors.name" class="text-destructive text-xs mt-1">
                 {{ addErrors.name }}
               </p>
             </div>
             <div class="flex flex-col gap-2">
-              <label for="type" class="block text-sm font-medium mb-1">Type</label>
-              <select
-                id="type"
-                v-model="addForm.type"
-                class="w-full border-input h-9 rounded-md border bg-background px-3 py-1 text-sm"
-              >
-                <option value="">Select type</option>
-                <option value="car">Car</option>
-                <option value="motorcycle">Motorcycle</option>
-              </select>
+              <Label>Type</Label>
+              <DropdownMenu>
+                <DropdownMenuTrigger as-child>
+                  <Button
+                    variant="outline"
+                    :class="
+                      cn(
+                        'w-full justify-between font-normal',
+                        !addForm.type && 'text-muted-foreground',
+                      )
+                    "
+                  >
+                    {{ getActiveLabel(vehicleTypes, addForm.type) }}
+                    <ChevronDown class="h-4 w-4 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent class="w-full min-w-[8rem]">
+                  <DropdownMenuLabel>Vehicle Types</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    v-for="type in vehicleTypes.filter((t) => t.value !== '')"
+                    :key="type.value"
+                    @click="() => (addForm.type = type.value)"
+                  >
+                    <Check
+                      class="mr-2 h-4 w-4"
+                      :class="cn(addForm.type === type.value ? 'opacity-100' : 'opacity-0')"
+                    />
+                    {{ type.label }}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <p v-if="addErrors.type" class="text-destructive text-xs mt-1">
                 {{ addErrors.type }}
               </p>
             </div>
             <div class="flex flex-col gap-2">
-              <label for="brand" class="block text-sm font-medium mb-1">Brand</label>
+              <Label for="brand">Brand</Label>
               <Input id="brand" v-model="addForm.brand" placeholder="Brand" class="w-full" />
               <p v-if="addErrors.brand" class="text-destructive text-xs mt-1">
                 {{ addErrors.brand }}
               </p>
             </div>
             <div class="flex flex-col gap-2">
-              <label for="model" class="block text-sm font-medium mb-1">Model</label>
+              <Label for="model">Model</Label>
               <Input id="model" v-model="addForm.model" placeholder="Model" class="w-full" />
               <p v-if="addErrors.model" class="text-destructive text-xs mt-1">
                 {{ addErrors.model }}
               </p>
             </div>
             <div class="flex flex-col gap-2">
-              <label for="year" class="block text-sm font-medium mb-1">Year</label>
+              <Label for="year">Year</Label>
               <Input
                 id="year"
                 v-model="addForm.year"
@@ -63,7 +85,7 @@
               </p>
             </div>
             <div class="flex flex-col gap-2">
-              <label for="plate_number" class="block text-sm font-medium mb-1">Plate Number</label>
+              <Label for="plate_number">Plate Number</Label>
               <Input
                 id="plate_number"
                 v-model="addForm.plate_number"
@@ -75,7 +97,7 @@
               </p>
             </div>
             <div class="flex flex-col gap-2">
-              <label for="capacity" class="block text-sm font-medium mb-1">Capacity</label>
+              <Label for="capacity">Capacity</Label>
               <Input
                 id="capacity"
                 v-model="addForm.capacity"
@@ -89,7 +111,7 @@
               </p>
             </div>
             <div class="flex flex-col gap-2">
-              <label for="rental_rate" class="block text-sm font-medium mb-1">Rental Rate</label>
+              <Label for="rental_rate">Rental Rate</Label>
               <Input
                 id="rental_rate"
                 v-model="addForm.rental_rate"
@@ -105,23 +127,44 @@
             </div>
           </div>
           <div class="flex flex-col gap-2 w-full">
-            <label for="status" class="block text-sm font-medium mb-1">Status</label>
-            <select
-              id="status"
-              v-model="addForm.status"
-              class="w-full border-input h-9 rounded-md border bg-background px-3 py-1 text-sm"
-            >
-              <option value="">Select status</option>
-              <option value="available">Available</option>
-              <option value="maintenance">Maintenance</option>
-              <option value="rented">Rented</option>
-            </select>
+            <Label>Status</Label>
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button
+                  variant="outline"
+                  :class="
+                    cn(
+                      'w-full justify-between font-normal',
+                      !addForm.status && 'text-muted-foreground',
+                    )
+                  "
+                >
+                  {{ getActiveLabel(statusTypes, addForm.status) }}
+                  <ChevronDown class="h-4 w-4 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent class="w-full min-w-[8rem]">
+                <DropdownMenuLabel>Status</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  v-for="status in statusTypes.filter((s) => s.value !== '')"
+                  :key="status.value"
+                  @click="() => (addForm.status = status.value)"
+                >
+                  <Check
+                    class="mr-2 h-4 w-4"
+                    :class="cn(addForm.status === status.value ? 'opacity-100' : 'opacity-0')"
+                  />
+                  {{ status.label }}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <p v-if="addErrors.status" class="text-destructive text-xs mt-1">
               {{ addErrors.status }}
             </p>
           </div>
           <div class="flex flex-col gap-2 w-full">
-            <label for="description" class="block text-sm font-medium mb-1">Description</label>
+            <Label for="description">Description</Label>
             <Input
               id="description"
               v-model="addForm.description"
@@ -147,6 +190,7 @@
 import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Dialog,
@@ -157,8 +201,36 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
+import { Check, ChevronDown } from 'lucide-vue-next'
 import { useCreateVehicle } from '@/services/vehicle-service'
 import { toast } from 'vue-sonner'
+import { cn } from '@/lib/utils'
+
+const vehicleTypes = [
+  { label: 'Select type', value: '' },
+  { label: 'Car', value: 'car' },
+  { label: 'Motorcycle', value: 'motorcycle' },
+]
+
+const statusTypes = [
+  { label: 'Select status', value: '' },
+  { label: 'Available', value: 'available' },
+  { label: 'Maintenance', value: 'maintenance' },
+  { label: 'Rented', value: 'rented' },
+]
+
+const getActiveLabel = (items, value) => {
+  const item = items.find((item) => item.value === value)
+  return item?.label || items[0].label
+}
 
 const addForm = ref({
   name: '',
