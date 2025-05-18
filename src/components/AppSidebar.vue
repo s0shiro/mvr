@@ -38,6 +38,10 @@ const data = {
           title: 'User',
           url: '/users',
         },
+        {
+          title: 'Vehicles',
+          url: '/vehicles',
+        },
       ],
     },
   ],
