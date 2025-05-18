@@ -38,7 +38,7 @@
       </p>
 
       <div class="mt-4 flex justify-end">
-        <Button variant="outline" class="w-full" @click="navigateToDetails">
+        <Button variant="outline" class="w-full cursor-pointer" @click="navigateToDetails">
           <Info class="w-4 h-4 mr-2" />
           View Details
         </Button>

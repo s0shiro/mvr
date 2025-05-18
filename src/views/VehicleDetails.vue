@@ -98,8 +98,10 @@
       </div>
 
       <!-- Edit Button -->
-      <div class="flex justify-end mb-4">
-        <Button @click="openEditModal" variant="default" class="px-4 py-2"> Edit Vehicle </Button>
+      <div v-if="userAuth.isAdmin()" class="flex justify-end mb-4">
+        <Button @click="openEditModal" variant="default" class="px-4 py-2 cursor-pointer">
+          Edit Vehicle
+        </Button>
       </div>
 
       <!-- Description & Specs -->
@@ -179,6 +181,7 @@ import { Button } from '@/components/ui/button'
 import { getStatusVariant } from '@/lib/utils'
 import VehicleUpdateForm from '@/components/features/vehicles/VehicleUpdateForm.vue'
 import { useVehicleDialogStore } from '@/stores/vehicleDialogStore'
+import { useUserAuth } from '@/services/useUserAuth'
 
 const route = useRoute()
 const vehicleId = route.params.id
@@ -216,4 +219,6 @@ function handleUpdated(updatedVehicle) {
 onMounted(() => {
   dialogStore.closeEdit()
 })
+
+const userAuth = useUserAuth()
 </script>
