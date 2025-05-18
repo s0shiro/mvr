@@ -27,3 +27,8 @@ export function getStatusVariant(status) {
       return 'outline'
   }
 }
+
+export function getActiveLabel(items, value) {
+  const item = items.find((item) => item.value === value)
+  return item?.label || items[0].label
+}

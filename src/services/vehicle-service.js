@@ -129,3 +129,19 @@ export function useReorderVehicleImages() {
     },
   })
 }
+
+export function useUpdateVehicle() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ vehicleId, vehicleData }) => {
+      const response = await axiosInstance.put(`/api/vehicles/${vehicleId}`, vehicleData)
+      return response.data
+    },
+    mutationKey: ['update-vehicle'], // Add mutationKey to avoid devtools warning
+    onSuccess: (data, variables) => {
+      // Invalidate both vehicle details and list to refetch with updated info
+      queryClient.invalidateQueries({ queryKey: vehicleKeys.detail(String(variables.vehicleId)) })
+      queryClient.invalidateQueries({ queryKey: vehicleKeys.lists() })
+    },
+  })
+}

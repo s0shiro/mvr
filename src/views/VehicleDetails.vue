@@ -97,6 +97,11 @@
         </div>
       </div>
 
+      <!-- Edit Button -->
+      <div class="flex justify-end mb-4">
+        <Button @click="openEditModal" variant="default" class="px-4 py-2"> Edit Vehicle </Button>
+      </div>
+
       <!-- Description & Specs -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <Card class="bg-card border border-border">
@@ -151,17 +156,29 @@
           </CardContent>
         </Card>
       </div>
+
+      <!-- Edit Vehicle Modal -->
+      <VehicleUpdateForm
+        v-if="dialogStore.editOpen && dialogStore.editVehicle"
+        :key="dialogStore.editVehicle.id + '-' + (dialogStore.editOpen ? 'open' : 'closed')"
+        :vehicle="dialogStore.editVehicle"
+        @close="closeEditModal"
+        @updated="handleUpdated"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useVehicleDetails } from '@/services/vehicle-service'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { getStatusVariant } from '@/lib/utils'
+import VehicleUpdateForm from '@/components/features/vehicles/VehicleUpdateForm.vue'
+import { useVehicleDialogStore } from '@/stores/vehicleDialogStore'
 
 const route = useRoute()
 const vehicleId = route.params.id
@@ -180,5 +197,23 @@ const mainImage = computed(() => {
     return vehicle.value.images[0].image_url || vehicle.value.images[0].url
   }
   return vehicle.value?.primary_image_url || null
+})
+
+// Edit vehicle modal
+const dialogStore = useVehicleDialogStore()
+
+function openEditModal() {
+  dialogStore.openEdit(vehicle.value)
+}
+function closeEditModal() {
+  dialogStore.closeEdit()
+}
+function handleUpdated(updatedVehicle) {
+  // Optionally show a toast or update local state
+}
+
+// Close edit dialog on component mount
+onMounted(() => {
+  dialogStore.closeEdit()
 })
 </script>

@@ -6,7 +6,12 @@
         <p class="text-muted-foreground">Browse our available vehicles</p>
       </div>
       <!-- Add Vehicle Button (admin only, but for demo always visible) -->
-      <AddVehicleDialog @vehicle-added="refetch" />
+      <AddVehicleDialog
+        :open="dialogStore.addOpen"
+        @vehicle-added="refetch"
+        @close="dialogStore.closeAdd"
+      />
+      <Button variant="default" @click="dialogStore.openAdd()">Add Vehicle</Button>
     </div>
 
     <!-- Filter form -->
@@ -177,8 +182,10 @@ import { useVehicles } from '@/services/vehicle-service'
 import { useIntersectionObserver } from '@vueuse/core'
 import { useDebounce } from '@/stores/useDebounce'
 import { cn } from '@/lib/utils'
+import { useVehicleDialogStore } from '@/stores/vehicleDialogStore'
 
 const debounceStore = useDebounce()
+const dialogStore = useVehicleDialogStore()
 
 // Filter form state
 const filterForm = ref({
