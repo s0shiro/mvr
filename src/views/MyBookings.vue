@@ -88,25 +88,41 @@
 
               <div class="flex gap-2 mb-4">
                 <template v-if="booking.status === 'pending'">
-                  <template v-if="shouldShowDepositButton(booking)">
-                    <Button variant="outline" @click="openPaymentDialog(booking.id, 'deposit')">
-                      <ShieldCheck class="w-4 h-4 mr-2" />
-                      Pay Security Deposit
-                    </Button>
-                  </template>
-                  <template v-else-if="shouldShowRentalButton(booking)">
-                    <Button variant="outline" @click="openPaymentDialog(booking.id, 'rental')">
-                      <CreditCard class="w-4 h-4 mr-2" />
-                      Pay Rental Fee
-                    </Button>
-                  </template>
+                  <Button
+                    v-if="shouldShowDepositButton(booking)"
+                    variant="outline"
+                    @click="openPaymentDialog(booking.id, 'deposit')"
+                  >
+                    <ShieldCheck class="w-4 h-4 mr-2" />
+                    Pay Security Deposit
+                  </Button>
+
+                  <Button
+                    v-if="shouldShowRentalButton(booking)"
+                    variant="outline"
+                    @click="openPaymentDialog(booking.id, 'rental')"
+                  >
+                    <CreditCard class="w-4 h-4 mr-2" />
+                    Pay Rental Fee
+                  </Button>
+
                   <Button
                     variant="destructive"
                     :loading="cancelLoading[booking.id]"
                     @click="handleCancelBooking(booking)"
+                    v-if="shouldShowCancelButton(booking)"
                   >
                     <Ban class="w-4 h-4 mr-2" />
                     Cancel Booking
+                  </Button>
+
+                  <Button
+                    v-if="shouldShowEditButton(booking)"
+                    variant="outline"
+                    @click="openEditDialog(booking)"
+                  >
+                    <Edit2 class="w-4 h-4 mr-2" />
+                    Edit Booking
                   </Button>
                 </template>
               </div>
@@ -181,6 +197,13 @@
             }
           "
         />
+        <EditBookingDialog
+          v-if="editDialogOpen"
+          :booking="editBooking"
+          :open="editDialogOpen"
+          @update:open="editDialogOpen = $event"
+          @updated="() => refetch()"
+        />
       </div>
     </div>
   </div>
@@ -194,6 +217,7 @@ import { Button } from '@/components/ui/button'
 import { getStatusVariant } from '@/lib/utils'
 import { computed, ref } from 'vue'
 import PaymentDialog from '@/components/features/bookings/PaymentDialog.vue'
+import EditBookingDialog from '@/components/features/bookings/EditBookingDialog.vue'
 import { useCancelBooking } from '@/services/booking-service'
 import { toast } from 'vue-sonner'
 import {
@@ -206,6 +230,7 @@ import {
   ShieldCheck,
   Ban,
   RotateCcw,
+  Edit2,
 } from 'lucide-vue-next'
 
 function formatDate(dateStr) {
@@ -213,7 +238,7 @@ function formatDate(dateStr) {
   return d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
 }
 
-const { data, error, isLoading } = useMyBookings()
+const { data, error, isLoading, refetch } = useMyBookings()
 const bookings = computed(() => data.value || [])
 
 // Dialog state per booking and type
@@ -232,6 +257,35 @@ function closePaymentDialog() {
   paymentDialogOpen.value = false
   paymentDialogBookingId.value = null
   paymentDialogType.value = 'deposit'
+}
+
+// Edit dialog state
+const editDialogOpen = ref(false)
+const editBooking = ref(null)
+
+function openEditDialog(booking) {
+  editBooking.value = booking
+  editDialogOpen.value = true
+}
+
+function shouldShowEditButton(booking) {
+  // Only allow editing if booking is pending and more than 24h away
+  if (!booking || booking.status !== 'pending') return false
+  const now = new Date()
+  const start = new Date(booking.start_date)
+  const timeUntilStart = start.getTime() - now.getTime()
+  console.log('Time until start:', timeUntilStart / (60 * 60 * 1000), 'hours')
+  return timeUntilStart > 24 * 60 * 60 * 1000
+}
+
+function shouldShowCancelButton(booking) {
+  // Allow cancellation only if the booking is pending and hasn't started yet
+  if (!booking || booking.status !== 'pending') return false
+  const now = new Date()
+  const start = new Date(booking.start_date)
+  const timeUntilStart = start.getTime() - now.getTime()
+  console.log('Cancel button - Time until start:', timeUntilStart / (60 * 60 * 1000), 'hours')
+  return timeUntilStart > 0 // Can cancel as long as the booking hasn't started yet
 }
 
 // Helper functions to check payment status
