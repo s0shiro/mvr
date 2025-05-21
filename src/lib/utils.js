@@ -23,6 +23,14 @@ export function getStatusVariant(status) {
       return 'maintenance'
     case 'rented':
       return 'rented'
+    case 'cancelled':
+      return 'destructive'
+    case 'pending':
+      return 'maintenance'
+    case 'approved':
+      return 'available'
+    case 'rejected':
+      return 'destructive'
     default:
       return 'outline'
   }

@@ -85,14 +85,24 @@
             <span class="text-yellow-400 text-xl">★ ★ ★ ★ ☆</span>
             <span class="text-muted-foreground text-sm">(Coming soon)</span>
           </div>
-          <!-- Book Now Button Placeholder -->
+          <!-- Book Now Button -->
           <div class="mt-4">
             <button
-              class="w-full py-3 rounded-lg bg-primary text-primary-foreground font-bold text-lg shadow hover:bg-primary/90 transition-all border border-primary/30 opacity-80 hover:opacity-100"
-              disabled
+              v-if="vehicle.status !== 'maintenance'"
+              class="w-full py-3 rounded-lg bg-primary text-primary-foreground font-bold text-lg shadow hover:bg-primary/90 transition-all border border-primary/30 opacity-80 hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-50"
+              @click.prevent="handleBookNow"
+              :disabled="booking?.status === 'pending' || booking?.status === 'paid'"
             >
-              Book Now (Coming soon)
+              Book Now
             </button>
+            <div v-else class="text-center">
+              <div class="w-full py-3 rounded-lg bg-muted text-muted-foreground font-bold text-lg border border-border">
+                Under Maintenance
+              </div>
+              <p class="text-sm text-muted-foreground mt-2">
+                This vehicle is currently unavailable for booking.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -167,13 +177,23 @@
         @close="closeEditModal"
         @updated="handleUpdated"
       />
+
+      <!-- Booking Dialog -->
+      <BookingDialog
+        v-if="showBookingDialog"
+        :vehicleId="vehicleId"
+        :open="showBookingDialog"
+        @update:open="(val) => (showBookingDialog = val)"
+        :onClose="() => (showBookingDialog = false)"
+        @booked="handleBooked"
+      />
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useVehicleDetails } from '@/services/vehicle-service'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -182,8 +202,10 @@ import { getStatusVariant } from '@/lib/utils'
 import VehicleUpdateForm from '@/components/features/vehicles/VehicleUpdateForm.vue'
 import { useVehicleDialogStore } from '@/stores/vehicleDialogStore'
 import { useUserAuth } from '@/services/useUserAuth'
+import BookingDialog from '@/components/features/bookings/BookingDialog.vue'
 
 const route = useRoute()
+const router = useRouter()
 const vehicleId = route.params.id
 const { data, error, isLoading } = useVehicleDetails(vehicleId)
 
@@ -221,4 +243,22 @@ onMounted(() => {
 })
 
 const userAuth = useUserAuth()
+
+const showBookingDialog = ref(false)
+
+function handleBookNow() {
+  showBookingDialog.value = true
+}
+
+function handleBooked(newBooking) {
+  showBookingDialog.value = false
+  // Show toast and redirect to My Bookings
+  import('vue-sonner').then(({ toast }) => {
+    toast.success('Booking successful!', {
+      description: 'You can now manage your booking in My Bookings.',
+      duration: 4000,
+    })
+  })
+  router.push({ name: 'my-bookings' })
+}
 </script>

@@ -38,6 +38,17 @@ const data = {
           title: 'User',
           url: '/users',
         },
+      ],
+    },
+
+    {
+      title: 'Booking',
+      url: '',
+      items: [
+        {
+          title: 'My Bookings',
+          url: '/my-bookings',
+        },
         {
           title: 'Vehicles',
           url: '/vehicles',
