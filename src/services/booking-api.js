@@ -2,10 +2,19 @@ import axios from 'axios'
 
 export const bookingApi = {
   async createBooking(data) {
-    return axios.post('/api/bookings', data)
+    return axios.post('/api/bookings', {
+      ...data,
+      driver_requested: data.driver_requested || false,
+    })
   },
   async getBookingSummary(data) {
-    return axios.post('/api/bookings/summary', data)
+    return axios.post('/api/bookings/summary', {
+      ...data,
+      driver_requested: data.driver_requested || false,
+      pickup_type: data.pickup_type || 'pickup',
+      delivery_location: data.delivery_location,
+      delivery_details: data.delivery_details,
+    })
   },
   async updateBooking(id, data) {
     return axios.put(`/api/bookings/${id}`, data)

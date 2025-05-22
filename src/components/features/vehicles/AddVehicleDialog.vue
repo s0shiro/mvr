@@ -108,18 +108,33 @@
               </p>
             </div>
             <div class="flex flex-col gap-2">
-              <Label for="rental_rate">Rental Rate</Label>
+              <Label for="rental_rate">Rental Rate (Without Driver)</Label>
               <Input
                 id="rental_rate"
                 v-model="addForm.rental_rate"
                 type="number"
                 min="0"
                 step="0.01"
-                placeholder="Rental rate"
+                placeholder="Daily rate without driver"
                 class="w-full"
               />
               <p v-if="addErrors.rental_rate" class="text-destructive text-xs mt-1">
                 {{ addErrors.rental_rate }}
+              </p>
+            </div>
+            <div class="flex flex-col gap-2">
+              <Label for="rental_rate_with_driver">Rental Rate (With Driver)</Label>
+              <Input
+                id="rental_rate_with_driver"
+                v-model="addForm.rental_rate_with_driver"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Daily rate with driver"
+                class="w-full"
+              />
+              <p v-if="addErrors.rental_rate_with_driver" class="text-destructive text-xs mt-1">
+                {{ addErrors.rental_rate_with_driver }}
               </p>
             </div>
           </div>
@@ -285,6 +300,7 @@ const addForm = ref({
   plate_number: '',
   capacity: '',
   rental_rate: '',
+  rental_rate_with_driver: '',
   status: '',
   description: '',
 })
@@ -340,6 +356,9 @@ async function handleAddVehicle() {
       year: addForm.value.year ? Number(addForm.value.year) : '',
       capacity: addForm.value.capacity ? Number(addForm.value.capacity) : '',
       rental_rate: addForm.value.rental_rate ? Number(addForm.value.rental_rate) : '',
+      rental_rate_with_driver: addForm.value.rental_rate_with_driver
+        ? Number(addForm.value.rental_rate_with_driver)
+        : '',
     }
 
     // First create the vehicle
@@ -364,6 +383,7 @@ async function handleAddVehicle() {
       plate_number: '',
       capacity: '',
       rental_rate: '',
+      rental_rate_with_driver: '',
       status: '',
       description: '',
     }

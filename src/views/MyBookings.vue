@@ -50,6 +50,19 @@
                     <span class="font-semibold text-sm text-muted-foreground">Total Price:</span>
                     <span class="font-medium text-primary">₱{{ booking.total_price }}</span>
                   </div>
+                  <div v-if="booking.pickup_type === 'delivery'" class="flex items-center gap-2">
+                    <Truck class="w-4 h-4 text-muted-foreground" />
+                    <span class="font-semibold text-sm text-muted-foreground">Delivery:</span>
+                    <span class="font-medium">{{ booking.delivery_location }}</span>
+                    <span class="text-sm text-muted-foreground">(₱{{ booking.delivery_fee }})</span>
+                  </div>
+                  <div
+                    v-if="booking.pickup_type === 'delivery'"
+                    class="text-sm text-muted-foreground mt-1 ml-6"
+                  >
+                    <span class="font-medium">Delivery Details:</span>
+                    <p class="mt-1">{{ booking.delivery_details }}</p>
+                  </div>
                   <div v-if="booking.payment" class="flex items-center gap-2">
                     <CreditCard class="w-4 h-4 text-muted-foreground" />
                     <span class="font-semibold text-sm text-muted-foreground">Payment Method:</span>
@@ -166,14 +179,14 @@
                           <span>{{ new Date(payment.created_at).toLocaleString() }}</span>
                         </div>
                         <div v-if="payment.proof_image" class="mt-3">
-                          <span class="text-sm text-muted-foreground block mb-2"
-                            >Payment Proof</span
+                          <Button
+                            variant="outline"
+                            class="w-full"
+                            @click="openPaymentProofDialog(payment)"
                           >
-                          <img
-                            :src="payment.proof_image"
-                            alt="Proof"
-                            class="w-full h-32 object-cover rounded-lg border"
-                          />
+                            <ImageIcon class="w-4 h-4 mr-2" />
+                            View Payment Proof
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -204,6 +217,12 @@
           @update:open="editDialogOpen = $event"
           @updated="() => refetch()"
         />
+        <PaymentProofDialog
+          v-if="selectedPaymentProof"
+          v-model:open="paymentProofDialogOpen"
+          :image-url="selectedPaymentProof?.proof_image"
+          :payment-date="selectedPaymentProof?.created_at"
+        />
       </div>
     </div>
   </div>
@@ -218,6 +237,7 @@ import { getStatusVariant } from '@/lib/utils'
 import { computed, ref } from 'vue'
 import PaymentDialog from '@/components/features/bookings/PaymentDialog.vue'
 import EditBookingDialog from '@/components/features/bookings/EditBookingDialog.vue'
+import PaymentProofDialog from '@/components/features/bookings/PaymentProofDialog.vue'
 import { useCancelBooking } from '@/services/booking-service'
 import { toast } from 'vue-sonner'
 import {
@@ -231,6 +251,8 @@ import {
   Ban,
   RotateCcw,
   Edit2,
+  Image as ImageIcon,
+  Truck,
 } from 'lucide-vue-next'
 
 function formatDate(dateStr) {
@@ -245,6 +267,10 @@ const bookings = computed(() => data.value || [])
 const paymentDialogBookingId = ref(null)
 const paymentDialogType = ref('deposit')
 const paymentDialogOpen = ref(false)
+
+// Payment proof dialog state
+const paymentProofDialogOpen = ref(false)
+const selectedPaymentProof = ref(null)
 
 function openPaymentDialog(bookingId, type = 'deposit') {
   paymentDialogBookingId.value = bookingId
@@ -313,6 +339,12 @@ function shouldShowRentalButton(booking) {
 
 const cancelBooking = useCancelBooking()
 const cancelLoading = ref({})
+
+function openPaymentProofDialog(payment) {
+  selectedPaymentProof.value = payment
+  paymentProofDialogOpen.value = true
+}
+
 async function handleCancelBooking(booking) {
   cancelLoading.value[booking.id] = true
   try {

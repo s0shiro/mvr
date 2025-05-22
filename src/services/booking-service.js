@@ -2,11 +2,21 @@ import { useMutation, useQuery } from '@tanstack/vue-query'
 import axiosInstance from '@/lib/axiosInstance'
 
 export function useBookingSummary() {
-  return async ({ vehicle_id, start_date, end_date }) => {
+  return async ({
+    vehicle_id,
+    start_date,
+    end_date,
+    driver_requested,
+    pickup_type,
+    delivery_location,
+  }) => {
     const res = await axiosInstance.post('/api/bookings/summary', {
       vehicle_id,
       start_date,
       end_date,
+      driver_requested,
+      pickup_type,
+      delivery_location,
     })
     return res.data
   }
@@ -14,12 +24,25 @@ export function useBookingSummary() {
 
 export function useCreateBooking() {
   return useMutation({
-    mutationFn: async ({ vehicle_id, start_date, end_date, notes }) => {
+    mutationFn: async ({
+      vehicle_id,
+      start_date,
+      end_date,
+      notes,
+      driver_requested,
+      pickup_type,
+      delivery_location,
+      delivery_details,
+    }) => {
       const res = await axiosInstance.post('/api/bookings', {
         vehicle_id,
         start_date,
         end_date,
         notes,
+        driver_requested,
+        pickup_type,
+        delivery_location,
+        delivery_details,
       })
       return res.data
     },

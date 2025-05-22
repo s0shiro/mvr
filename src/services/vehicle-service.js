@@ -49,7 +49,15 @@ export function useCreateVehicle() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (vehicleData) => {
-      const response = await axiosInstance.post('/api/vehicles', vehicleData)
+      // Ensure numeric values
+      const payload = {
+        ...vehicleData,
+        rental_rate: Number(vehicleData.rental_rate),
+        rental_rate_with_driver: Number(vehicleData.rental_rate_with_driver),
+        year: Number(vehicleData.year),
+        capacity: Number(vehicleData.capacity),
+      }
+      const response = await axiosInstance.post('/api/vehicles', payload)
       return response.data
     },
   })
@@ -134,10 +142,18 @@ export function useUpdateVehicle() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ vehicleId, vehicleData }) => {
-      const response = await axiosInstance.put(`/api/vehicles/${vehicleId}`, vehicleData)
+      // Ensure numeric values
+      const payload = {
+        ...vehicleData,
+        rental_rate: Number(vehicleData.rental_rate),
+        rental_rate_with_driver: Number(vehicleData.rental_rate_with_driver),
+        year: Number(vehicleData.year),
+        capacity: Number(vehicleData.capacity),
+      }
+      const response = await axiosInstance.put(`/api/vehicles/${vehicleId}`, payload)
       return response.data
     },
-    mutationKey: ['update-vehicle'], // Add mutationKey to avoid devtools warning
+    mutationKey: ['update-vehicle'],
     onSuccess: (data, variables) => {
       // Invalidate both vehicle details and list to refetch with updated info
       queryClient.invalidateQueries({ queryKey: vehicleKeys.detail(String(variables.vehicleId)) })

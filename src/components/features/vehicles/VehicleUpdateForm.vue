@@ -98,18 +98,33 @@
               </p>
             </div>
             <div class="flex flex-col gap-2">
-              <Label for="rental_rate">Rental Rate</Label>
+              <Label for="rental_rate">Rental Rate (Without Driver)</Label>
               <Input
+                class="w-full"
                 id="rental_rate"
                 v-model="form.rental_rate"
                 type="number"
                 min="0"
                 step="0.01"
-                placeholder="Rental rate"
-                class="w-full"
+                placeholder="Daily rate without driver"
               />
               <p v-if="errors.rental_rate" class="text-destructive text-xs mt-1">
                 {{ errors.rental_rate }}
+              </p>
+            </div>
+            <div class="flex flex-col gap-2">
+              <Label for="rental_rate_with_driver">Rental Rate (With Driver)</Label>
+              <Input
+                class="w-full"
+                id="rental_rate_with_driver"
+                v-model="form.rental_rate_with_driver"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Daily rate with driver"
+              />
+              <p v-if="errors.rental_rate_with_driver" class="text-destructive text-xs mt-1">
+                {{ errors.rental_rate_with_driver }}
               </p>
             </div>
           </div>
