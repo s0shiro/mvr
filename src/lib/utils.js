@@ -31,6 +31,10 @@ export function getStatusVariant(status) {
       return 'available'
     case 'rejected':
       return 'destructive'
+    case 'confirmed':
+      return 'available'
+    case 'for_release':
+      return 'maintenance'
     default:
       return 'outline'
   }

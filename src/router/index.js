@@ -48,6 +48,16 @@ const router = createRouter({
       component: () => import('../views/Login.vue'),
       meta: { requiresGuest: true },
     },
+    createDashboardRoute({
+      path: '/admin/bookings',
+      name: 'admin-bookings',
+      view: () => import('../views/admin/Bookings.vue'),
+      meta: {
+        title: 'Manage Bookings',
+        requiresAuth: true,
+        requiredRoles: ['admin'],
+      },
+    }),
   ],
 })
 

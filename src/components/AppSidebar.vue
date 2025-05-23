@@ -12,7 +12,8 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from '@/components/ui/sidebar'
-
+import { useAuthStore } from '@/stores/authStore'
+import { computed } from 'vue'
 import { GalleryVerticalEnd } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 
@@ -22,6 +23,8 @@ const props = defineProps({
   collapsible: { type: String, required: false },
   class: { type: null, required: false },
 })
+
+const authStore = useAuthStore()
 
 // This is sample data.
 const data = {
@@ -40,7 +43,6 @@ const data = {
         },
       ],
     },
-
     {
       title: 'Booking',
       url: '',
@@ -55,8 +57,26 @@ const data = {
         },
       ],
     },
+    {
+      title: 'Administration',
+      url: '',
+      items: [
+        {
+          title: 'Manage Bookings',
+          url: '/admin/bookings',
+        },
+      ],
+      roleRequired: 'admin', // Add this to control visibility based on role
+    },
   ],
 }
+
+// Filter navigation items based on role requirements
+const filteredNavMain = computed(() => {
+  return data.navMain.filter((item) => {
+    return !item.roleRequired || authStore.hasRole(item.roleRequired)
+  })
+})
 </script>
 
 <template>
@@ -83,7 +103,7 @@ const data = {
     <SidebarContent>
       <SidebarGroup>
         <SidebarMenu>
-          <SidebarMenuItem v-for="item in data.navMain" :key="item.title">
+          <SidebarMenuItem v-for="item in filteredNavMain" :key="item.title">
             <SidebarMenuButton as-child>
               <RouterLink :to="item.url" class="font-medium">
                 {{ item.title }}

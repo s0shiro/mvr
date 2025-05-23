@@ -100,7 +100,7 @@
               </div>
 
               <div class="flex gap-2 mb-4">
-                <template v-if="booking.status === 'pending'">
+                <template v-if="booking.status === 'pending' || booking.status === 'confirmed'">
                   <Button
                     v-if="shouldShowDepositButton(booking)"
                     variant="outline"
