@@ -58,6 +58,16 @@ const router = createRouter({
         requiredRoles: ['admin'],
       },
     }),
+    createDashboardRoute({
+      path: '/admin/vehicle-releases',
+      name: 'admin-vehicle-releases',
+      view: () => import('../views/admin/VehicleReleases.vue'),
+      meta: {
+        title: 'Vehicle Releases',
+        requiresAuth: true,
+        requiredRoles: ['admin'],
+      },
+    }),
   ],
 })
 

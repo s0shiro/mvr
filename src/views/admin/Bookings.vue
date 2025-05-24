@@ -1,5 +1,5 @@
 <template>
-  <div class="container mx-auto py-6 space-y-6">
+  <div class="space-y-6">
     <div class="flex justify-between items-center">
       <h1 class="text-2xl font-bold">Manage Bookings</h1>
     </div>

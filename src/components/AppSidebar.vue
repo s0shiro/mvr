@@ -26,7 +26,6 @@ const props = defineProps({
 
 const authStore = useAuthStore()
 
-// This is sample data.
 const data = {
   navMain: [
     {
@@ -38,8 +37,8 @@ const data = {
           url: '/overview',
         },
         {
-          title: 'User',
-          url: '/users',
+          title: 'Vehicles',
+          url: '/vehicles',
         },
       ],
     },
@@ -51,22 +50,27 @@ const data = {
           title: 'My Bookings',
           url: '/my-bookings',
         },
-        {
-          title: 'Vehicles',
-          url: '/vehicles',
-        },
       ],
+      roleRequired: 'customer',
     },
     {
       title: 'Administration',
       url: '',
       items: [
         {
+          title: 'Users',
+          url: '/users',
+        },
+        {
           title: 'Manage Bookings',
           url: '/admin/bookings',
         },
+        {
+          title: 'Vehicle Releases',
+          url: '/admin/vehicle-releases',
+        },
       ],
-      roleRequired: 'admin', // Add this to control visibility based on role
+      roleRequired: 'admin',
     },
   ],
 }

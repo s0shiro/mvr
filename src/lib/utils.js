@@ -35,6 +35,10 @@ export function getStatusVariant(status) {
       return 'available'
     case 'for_release':
       return 'maintenance'
+    case 'released':
+      return 'available'
+    case 'in_use':
+      return 'rented'
     default:
       return 'outline'
   }
