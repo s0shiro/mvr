@@ -68,6 +68,26 @@ const router = createRouter({
         requiredRoles: ['admin'],
       },
     }),
+    createDashboardRoute({
+      path: '/admin/vehicle-returns',
+      name: 'admin-vehicle-returns',
+      view: () => import('../views/admin/VehicleReturns.vue'),
+      meta: {
+        title: 'Vehicle Returns',
+        requiresAuth: true,
+        requiredRoles: ['admin'],
+      },
+    }),
+    createDashboardRoute({
+      path: '/admin/completed-bookings',
+      name: 'admin-completed-bookings',
+      view: () => import('../views/admin/CompletedBookings.vue'),
+      meta: {
+        title: 'Completed Bookings',
+        requiresAuth: true,
+        requiredRoles: ['admin'],
+      },
+    }),
   ],
 })
 

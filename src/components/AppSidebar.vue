@@ -69,6 +69,14 @@ const data = {
           title: 'Vehicle Releases',
           url: '/admin/vehicle-releases',
         },
+        {
+          title: 'Vehicle Returns',
+          url: '/admin/vehicle-returns',
+        },
+        {
+          title: 'Completed Bookings',
+          url: '/admin/completed-bookings',
+        },
       ],
       roleRequired: 'admin',
     },
