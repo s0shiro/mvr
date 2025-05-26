@@ -138,6 +138,14 @@
                     Edit Booking
                   </Button>
                 </template>
+                <Button
+                  v-if="booking.status === 'confirmed' || booking.status === 'active'"
+                  variant="outline"
+                  @click="openContractDialog(booking)"
+                >
+                  <Car class="w-4 h-4 mr-2" />
+                  View Contract
+                </Button>
               </div>
 
               <div
@@ -223,6 +231,13 @@
           :image-url="selectedPaymentProof?.proof_image"
           :payment-date="selectedPaymentProof?.created_at"
         />
+        <div v-if="contractDialogOpen">
+          <div class="modal-overlay" @click="closeContractDialog"></div>
+          <div class="modal-content">
+            <button class="modal-close" @click="closeContractDialog">&times;</button>
+            <ContractPrint :booking="selectedBooking" />
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -238,6 +253,7 @@ import { computed, ref } from 'vue'
 import PaymentDialog from '@/components/features/bookings/PaymentDialog.vue'
 import EditBookingDialog from '@/components/features/bookings/EditBookingDialog.vue'
 import PaymentProofDialog from '@/components/features/bookings/PaymentProofDialog.vue'
+import ContractPrint from '@/components/features/ContractPrint.vue'
 import { useCancelBooking } from '@/services/booking-service'
 import { toast } from 'vue-sonner'
 import {
@@ -272,6 +288,10 @@ const paymentDialogOpen = ref(false)
 const paymentProofDialogOpen = ref(false)
 const selectedPaymentProof = ref(null)
 
+// Contract dialog state
+const contractDialogOpen = ref(false)
+const selectedBooking = ref(null)
+
 function openPaymentDialog(bookingId, type = 'deposit') {
   paymentDialogBookingId.value = bookingId
   paymentDialogType.value = type
@@ -283,6 +303,15 @@ function closePaymentDialog() {
   paymentDialogOpen.value = false
   paymentDialogBookingId.value = null
   paymentDialogType.value = 'deposit'
+}
+
+function openContractDialog(booking) {
+  selectedBooking.value = booking
+  contractDialogOpen.value = true
+}
+
+function closeContractDialog() {
+  contractDialogOpen.value = false
 }
 
 // Edit dialog state
@@ -359,3 +388,41 @@ async function handleCancelBooking(booking) {
   }
 }
 </script>
+
+<style scoped>
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+}
+.modal-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  z-index: 1001;
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.18);
+}
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #888;
+  cursor: pointer;
+  z-index: 1002;
+}
+</style>
