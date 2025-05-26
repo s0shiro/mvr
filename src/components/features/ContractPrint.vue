@@ -101,33 +101,37 @@
             </div>
           </li>
 
-          <table style="width: 100%; margin-top: 2em; margin-left: 3em; border-collapse: collapse">
-            <thead>
-              <tr>
-                <th style="text-align: left; text-decoration: underline; font-weight: bold">
-                  PAYMENT DATE
-                </th>
-                <th style="text-align: left; text-decoration: underline; font-weight: bold">
-                  PERIOD COVERED
-                </th>
-                <th style="text-align: left; text-decoration: underline; font-weight: bold">
-                  AMOUNT DUE
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{{ leaseStart }}</td>
-                <td>Security Deposit</td>
-                <td>PHP {{ securityDeposit }}</td>
-              </tr>
-              <tr>
-                <td>{{ leaseStart }}</td>
-                <td>Rental Amount</td>
-                <td>PHP {{ rentalAmount }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <li style="list-style: none; padding: 0; margin: 0">
+            <table
+              style="width: 100%; margin-top: 2em; margin-left: 3em; border-collapse: collapse"
+            >
+              <thead>
+                <tr>
+                  <th style="text-align: left; text-decoration: underline; font-weight: bold">
+                    PAYMENT DATE
+                  </th>
+                  <th style="text-align: left; text-decoration: underline; font-weight: bold">
+                    PERIOD COVERED
+                  </th>
+                  <th style="text-align: left; text-decoration: underline; font-weight: bold">
+                    AMOUNT DUE
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{{ leaseStart }}</td>
+                  <td>Security Deposit</td>
+                  <td>PHP {{ securityDeposit }}</td>
+                </tr>
+                <tr>
+                  <td>{{ leaseStart }}</td>
+                  <td>Rental Amount</td>
+                  <td>PHP {{ rentalAmount }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </li>
 
           <li>
             <div class="clause-item mt-1em">
@@ -268,40 +272,44 @@
           </div>
           <h3 style="text-align: left; margin-bottom: 1em">VEHICLE STUB No. {{ contractNo }}</h3>
           <table style="width: 100%; border-collapse: collapse; border: 1px solid black">
-            <tr>
-              <td style="border: 1px solid black; padding: 8px; width: 40%">VEHICLE RENTED</td>
-              <td style="border: 1px solid black; padding: 8px">{{ vehicleDetails }}</td>
-            </tr>
-            <tr>
-              <td style="border: 1px solid black; padding: 8px">START DATE AND TIME OF RENTAL</td>
-              <td style="border: 1px solid black; padding: 8px">{{ leaseStart }}</td>
-            </tr>
-            <tr>
-              <td style="border: 1px solid black; padding: 8px">END DATE AND TIME OF RENTAL</td>
-              <td style="border: 1px solid black; padding: 8px"></td>
-            </tr>
-            <tr>
-              <td style="border: 1px solid black; padding: 8px">
-                VEHICLE MUST BE RETURNED BY: (DATE/TIME)
-              </td>
-              <td style="border: 1px solid black; padding: 8px"></td>
-            </tr>
-            <tr>
-              <td style="border: 1px solid black; padding: 8px">VEHICLE RETURNED ON (DATE/TIME)</td>
-              <td style="border: 1px solid black; padding: 8px"></td>
-            </tr>
-            <tr>
-              <td style="border: 1px solid black; padding: 8px">
-                VEHICLE RETURNED BY: (NAME AND SIGNATURE)
-              </td>
-              <td style="border: 1px solid black; padding: 8px"></td>
-            </tr>
-            <tr>
-              <td style="border: 1px solid black; padding: 8px">
-                VEHICLE RECEIVED BY: (NAME AND SIGNATURE)
-              </td>
-              <td style="border: 1px solid black; padding: 8px"></td>
-            </tr>
+            <tbody>
+              <tr>
+                <td style="border: 1px solid black; padding: 8px; width: 40%">VEHICLE RENTED</td>
+                <td style="border: 1px solid black; padding: 8px">{{ vehicleDetails }}</td>
+              </tr>
+              <tr>
+                <td style="border: 1px solid black; padding: 8px">START DATE AND TIME OF RENTAL</td>
+                <td style="border: 1px solid black; padding: 8px">{{ leaseStart }}</td>
+              </tr>
+              <tr>
+                <td style="border: 1px solid black; padding: 8px">END DATE AND TIME OF RENTAL</td>
+                <td style="border: 1px solid black; padding: 8px"></td>
+              </tr>
+              <tr>
+                <td style="border: 1px solid black; padding: 8px">
+                  VEHICLE MUST BE RETURNED BY: (DATE/TIME)
+                </td>
+                <td style="border: 1px solid black; padding: 8px"></td>
+              </tr>
+              <tr>
+                <td style="border: 1px solid black; padding: 8px">
+                  VEHICLE RETURNED ON (DATE/TIME)
+                </td>
+                <td style="border: 1px solid black; padding: 8px"></td>
+              </tr>
+              <tr>
+                <td style="border: 1px solid black; padding: 8px">
+                  VEHICLE RETURNED BY: (NAME AND SIGNATURE)
+                </td>
+                <td style="border: 1px solid black; padding: 8px"></td>
+              </tr>
+              <tr>
+                <td style="border: 1px solid black; padding: 8px">
+                  VEHICLE RECEIVED BY: (NAME AND SIGNATURE)
+                </td>
+                <td style="border: 1px solid black; padding: 8px"></td>
+              </tr>
+            </tbody>
           </table>
           <p style="text-align: center; margin-top: 1em; font-style: italic">
             Please take a screenshot of this stub.
