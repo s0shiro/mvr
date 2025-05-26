@@ -79,6 +79,12 @@
               <span>•</span>
               <span class="font-semibold text-primary">₱{{ vehicle.rental_rate }}/day</span>
             </div>
+            <!-- Move Edit Button here -->
+            <div v-if="userAuth.isAdmin()" class="flex justify-end mt-4">
+              <Button @click="openEditModal" variant="default" class="px-4 py-2 cursor-pointer">
+                Edit Vehicle
+              </Button>
+            </div>
           </div>
           <!-- Placeholder for Ratings -->
           <div class="flex items-center gap-2 mt-2">
@@ -96,7 +102,9 @@
               Book Now
             </button>
             <div v-else class="text-center">
-              <div class="w-full py-3 rounded-lg bg-muted text-muted-foreground font-bold text-lg border border-border">
+              <div
+                class="w-full py-3 rounded-lg bg-muted text-muted-foreground font-bold text-lg border border-border"
+              >
                 Under Maintenance
               </div>
               <p class="text-sm text-muted-foreground mt-2">
@@ -105,13 +113,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Edit Button -->
-      <div v-if="userAuth.isAdmin()" class="flex justify-end mb-4">
-        <Button @click="openEditModal" variant="default" class="px-4 py-2 cursor-pointer">
-          Edit Vehicle
-        </Button>
       </div>
 
       <!-- Description & Specs -->
@@ -168,6 +169,26 @@
           </CardContent>
         </Card>
       </div>
+
+      <!-- Terms & Conditions -->
+      <Card class="bg-card border border-border">
+        <CardHeader>
+          <CardTitle>Terms & Conditions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ul class="list-disc pl-6 text-muted-foreground space-y-2">
+            <li>
+              Deposit is
+              <span class="font-semibold text-primary"
+                >₱{{ vehicle.deposit?.toLocaleString() || '10,000' }}</span
+              >
+              to be returned to Renter when vehicle is returned undamaged and with full tank
+            </li>
+            <li>Photo of 2 valid government IDs is required</li>
+            <li>Renter will sign contract</li>
+          </ul>
+        </CardContent>
+      </Card>
 
       <!-- Edit Vehicle Modal -->
       <VehicleUpdateForm

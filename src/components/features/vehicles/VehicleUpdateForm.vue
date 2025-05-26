@@ -127,6 +127,21 @@
                 {{ errors.rental_rate_with_driver }}
               </p>
             </div>
+            <div class="flex flex-col gap-2">
+              <Label for="deposit">Deposit</Label>
+              <Input
+                id="deposit"
+                v-model="form.deposit"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Deposit amount"
+                class="w-full"
+              />
+              <p v-if="errors.deposit" class="text-destructive text-xs mt-1">
+                {{ errors.deposit }}
+              </p>
+            </div>
           </div>
           <div class="flex flex-col gap-2 w-full">
             <Label>Status</Label>
@@ -365,6 +380,7 @@ async function onSubmit() {
     year: form.value.year ? Number(form.value.year) : '',
     capacity: form.value.capacity ? Number(form.value.capacity) : '',
     rental_rate: form.value.rental_rate ? Number(form.value.rental_rate) : '',
+    deposit: form.value.deposit ? Number(form.value.deposit) : '',
   }
   isImagePending.value = true
   try {

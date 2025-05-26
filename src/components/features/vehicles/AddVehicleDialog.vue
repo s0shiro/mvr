@@ -137,6 +137,21 @@
                 {{ addErrors.rental_rate_with_driver }}
               </p>
             </div>
+            <div class="flex flex-col gap-2">
+              <Label for="deposit">Deposit</Label>
+              <Input
+                id="deposit"
+                v-model="addForm.deposit"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="Deposit amount"
+                class="w-full"
+              />
+              <p v-if="addErrors.deposit" class="text-destructive text-xs mt-1">
+                {{ addErrors.deposit }}
+              </p>
+            </div>
           </div>
           <div class="flex flex-col gap-2 w-full">
             <Label>Status</Label>
@@ -303,6 +318,7 @@ const addForm = ref({
   rental_rate_with_driver: '',
   status: '',
   description: '',
+  deposit: '',
 })
 const addErrors = ref({})
 const maxYear = new Date().getFullYear() + 1
@@ -359,6 +375,7 @@ async function handleAddVehicle() {
       rental_rate_with_driver: addForm.value.rental_rate_with_driver
         ? Number(addForm.value.rental_rate_with_driver)
         : '',
+      deposit: addForm.value.deposit ? Number(addForm.value.deposit) : '',
     }
 
     // First create the vehicle
@@ -386,6 +403,7 @@ async function handleAddVehicle() {
       rental_rate_with_driver: '',
       status: '',
       description: '',
+      deposit: '',
     }
     selectedFiles.value = []
     imagePreviews.value = []
