@@ -82,16 +82,42 @@
                 </Button>
               </div>
             </div>
+            <!-- Valid IDs -->
+            <div v-if="booking.valid_ids" class="mt-4">
+              <h4 class="font-medium mb-2">Valid IDs</h4>
+              <div class="flex gap-4">
+                <div v-if="booking.valid_ids.id1" class="flex flex-col items-center">
+                  <img
+                    :src="'data:image/*;base64,' + booking.valid_ids.id1"
+                    alt="Valid ID 1"
+                    class="w-32 h-20 object-cover border rounded mb-1 cursor-pointer hover:opacity-80 transition"
+                    @click="viewValidId(booking.valid_ids.id1, 'ID 1', booking.created_at)"
+                  />
+                  <span class="text-xs text-muted-foreground">ID 1</span>
+                </div>
+                <div v-if="booking.valid_ids.id2" class="flex flex-col items-center">
+                  <img
+                    :src="'data:image/*;base64,' + booking.valid_ids.id2"
+                    alt="Valid ID 2"
+                    class="w-32 h-20 object-cover border rounded mb-1 cursor-pointer hover:opacity-80 transition"
+                    @click="viewValidId(booking.valid_ids.id2, 'ID 2', booking.created_at)"
+                  />
+                  <span class="text-xs text-muted-foreground">ID 2</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </Card>
     </div>
 
     <PaymentProofDialog
-      v-if="selectedPaymentProof"
+      v-if="paymentProofDialogOpen && selectedDialogImage"
       v-model:open="paymentProofDialogOpen"
-      :image-url="selectedPaymentProof?.proof_image"
-      :payment-date="selectedPaymentProof?.created_at"
+      :image-url="selectedDialogImage.imageUrl"
+      :payment-date="selectedDialogImage.date"
+      :title="selectedDialogImage.title"
+      :description="selectedDialogImage.description"
     />
   </div>
 </template>
@@ -114,7 +140,7 @@ const selectedPayment = ref(null)
 const confirmingPayment = ref(null)
 const rejectingPayment = ref(null)
 const paymentProofDialogOpen = ref(false)
-const selectedPaymentProof = ref(null)
+const selectedDialogImage = ref(null)
 
 const confirmPayment = useConfirmPayment()
 const rejectPayment = useRejectPayment()
@@ -178,7 +204,22 @@ async function handleRejectPayment(paymentId) {
 }
 
 function viewProof(payment) {
-  selectedPaymentProof.value = payment
+  selectedDialogImage.value = {
+    imageUrl: payment.proof_image,
+    date: payment.created_at,
+    title: 'Payment Proof',
+    description: `Payment proof image submitted ${formatDate(payment.created_at)}`,
+  }
+  paymentProofDialogOpen.value = true
+}
+
+function viewValidId(image, label, date) {
+  selectedDialogImage.value = {
+    imageUrl: 'data:image/*;base64,' + image,
+    date: date,
+    title: `${label} (Valid ID)`,
+    description: `Uploaded ${formatDate(date)} as ${label}`,
+  }
   paymentProofDialogOpen.value = true
 }
 </script>

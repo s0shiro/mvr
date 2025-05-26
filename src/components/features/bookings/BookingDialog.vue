@@ -116,6 +116,50 @@
           </div>
         </div>
         <div v-if="error" class="text-red-500">{{ error }}</div>
+        <hr class="my-2 border-muted-foreground/30" />
+        <div class="flex flex-col gap-2">
+          <Label>Upload 2 Valid IDs <span class="text-red-500">*</span></Label>
+          <div class="grid grid-cols-2 gap-4">
+            <div
+              v-for="(preview, idx) in [0, 1]"
+              :key="idx"
+              class="relative aspect-video rounded-lg border-2 border-border overflow-hidden flex items-center justify-center"
+            >
+              <img
+                v-if="idPreviews[idx]"
+                :src="idPreviews[idx]"
+                :alt="`ID ${idx + 1} Preview`"
+                class="w-full h-full object-cover"
+              />
+              <Button
+                v-if="idPreviews[idx]"
+                type="button"
+                variant="destructive"
+                size="icon"
+                class="absolute top-2 right-2 h-6 w-6"
+                @click="removeIdImage(idx)"
+              >
+                <XIcon class="h-4 w-4" />
+              </Button>
+              <div
+                v-if="!idPreviews[idx]"
+                class="flex flex-col items-center justify-center w-full h-full cursor-pointer"
+                @click="() => triggerIdFileInput(idx)"
+              >
+                <UploadIcon class="h-8 w-8 text-muted-foreground" />
+                <span class="text-xs text-muted-foreground">Add ID {{ idx + 1 }}</span>
+              </div>
+              <input
+                :ref="(el) => (idFileInputs[idx] = el)"
+                type="file"
+                accept="image/*"
+                class="hidden"
+                @change="(e) => handleIdImageChange(e, idx)"
+              />
+            </div>
+          </div>
+          <div v-if="idUploadError" class="text-red-500 text-xs">{{ idUploadError }}</div>
+        </div>
         <DialogFooter class="mt-4">
           <Button type="button" variant="secondary" @click="onClose">Cancel</Button>
           <Button type="submit" :disabled="!summary?.available || loading">Book Now</Button>
@@ -155,6 +199,7 @@ import { Calendar as CalendarIcon } from 'lucide-vue-next'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { DateFormatter, getLocalTimeZone } from '@internationalized/date'
+import { XIcon, UploadIcon } from 'lucide-vue-next'
 
 const df = new DateFormatter('en-US', { dateStyle: 'long' })
 const startDate = ref(null)
@@ -250,10 +295,55 @@ watch([endDate, () => form.value.end_time], ([date, time]) => {
   }
 })
 
+const idFileInputs = [null, null]
+const idFiles = ref([null, null])
+const idPreviews = ref([null, null])
+const idUploadError = ref('')
+
+function triggerIdFileInput(idx) {
+  if (idFileInputs[idx]) idFileInputs[idx].click()
+}
+
+function handleIdImageChange(event, idx) {
+  const file = event.target.files[0]
+  if (!file) return
+  if (!file.type.startsWith('image/')) {
+    idUploadError.value = 'Only image files are allowed.'
+    idFiles.value[idx] = null
+    idPreviews.value[idx] = null
+    return
+  }
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    idPreviews.value[idx] = e.target.result
+    idFiles.value[idx] = file
+    idUploadError.value = ''
+  }
+  reader.readAsDataURL(file)
+}
+
+function removeIdImage(idx) {
+  idFiles.value[idx] = null
+  idPreviews.value[idx] = null
+}
+
 async function onSubmit() {
   loading.value = true
   try {
-    // Only send delivery fields if delivery is selected
+    if (!idFiles.value[0] || !idFiles.value[1]) {
+      idUploadError.value = 'Please upload exactly two valid ID images.'
+      loading.value = false
+      return
+    }
+    // Convert images to base64
+    const toBase64 = (file) =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = (e) => resolve(e.target.result.split(',')[1])
+        reader.onerror = reject
+        reader.readAsDataURL(file)
+      })
+    const [id1, id2] = await Promise.all([toBase64(idFiles.value[0]), toBase64(idFiles.value[1])])
     const payload = {
       vehicle_id: props.vehicleId,
       start_date: form.value.start_date,
@@ -261,6 +351,7 @@ async function onSubmit() {
       notes: form.value.notes,
       driver_requested: form.value.driver_requested,
       pickup_type: form.value.pickup_type,
+      valid_ids: { id1, id2 },
     }
     if (form.value.pickup_type === 'delivery') {
       payload.delivery_location = form.value.delivery_location

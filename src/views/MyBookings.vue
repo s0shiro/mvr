@@ -48,7 +48,16 @@
                   <div class="flex items-center gap-2">
                     <Receipt class="w-4 h-4 text-muted-foreground" />
                     <span class="font-semibold text-sm text-muted-foreground">Total Price:</span>
-                    <span class="font-medium text-primary">₱{{ booking.total_price }}</span>
+                    <span class="font-medium text-primary"
+                      >₱{{ Number(booking.total_price).toLocaleString() }}</span
+                    >
+                    <ShieldCheck class="w-4 h-4 text-muted-foreground" />
+                    <span class="font-semibold text-sm text-muted-foreground">
+                      Security Deposit:</span
+                    >
+                    <span class="font-medium text-primary"
+                      >₱{{ Number(booking.vehicle.deposit).toLocaleString() }}</span
+                    >
                   </div>
                   <div v-if="booking.pickup_type === 'delivery'" class="flex items-center gap-2">
                     <Truck class="w-4 h-4 text-muted-foreground" />

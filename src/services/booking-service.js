@@ -24,25 +24,9 @@ export function useBookingSummary() {
 
 export function useCreateBooking() {
   return useMutation({
-    mutationFn: async ({
-      vehicle_id,
-      start_date,
-      end_date,
-      notes,
-      driver_requested,
-      pickup_type,
-      delivery_location,
-      delivery_details,
-    }) => {
-      const res = await axiosInstance.post('/api/bookings', {
-        vehicle_id,
-        start_date,
-        end_date,
-        notes,
-        driver_requested,
-        pickup_type,
-        delivery_location,
-        delivery_details,
+    mutationFn: async (data) => {
+      const res = await axiosInstance.post('/api/bookings', data, {
+        headers: { 'Content-Type': 'application/json' },
       })
       return res.data
     },
