@@ -13,9 +13,26 @@ import {
 import AppSidebar from '@/components/AppSidebar.vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { ref } from 'vue'
+import { useAuthStore } from '@/stores/authStore'
+import { LogOut } from 'lucide-vue-next'
+import { storeToRefs } from 'pinia'
+import LogoutConfirmDialog from '@/components/features/LogoutConfirmDialog.vue'
 
 const route = useRoute()
 const isLoading = false // You might want to control this with your actual loading state
+
+const authStore = useAuthStore()
+const { loading } = storeToRefs(authStore)
+
+const showLogoutDialog = ref(false)
+
+const handleLogout = () => {
+  showLogoutDialog.value = true
+}
+const confirmLogout = async () => {
+  showLogoutDialog.value = false
+  await authStore.logout()
+}
 </script>
 
 <template>
@@ -55,7 +72,17 @@ const isLoading = false // You might want to control this with your actual loadi
           </div>
 
           <div class="flex items-center gap-2 shrink-0 ml-4">
-            <!-- Removed NotificationPopover and Dev Settings Button -->
+            <!-- Logout Button -->
+            <Button
+              variant="ghost"
+              size="icon"
+              :disabled="loading"
+              @click="handleLogout"
+              title="Logout"
+            >
+              <LogOut class="w-5 h-5" />
+              <span class="sr-only">Logout</span>
+            </Button>
           </div>
         </div>
       </header>
@@ -73,6 +100,13 @@ const isLoading = false // You might want to control this with your actual loadi
           <RouterView />
         </div>
       </div>
+
+      <LogoutConfirmDialog
+        :open="showLogoutDialog"
+        :loading="loading"
+        @update:open="showLogoutDialog = $event"
+        @confirm="confirmLogout"
+      />
     </SidebarInset>
   </SidebarProvider>
 </template>

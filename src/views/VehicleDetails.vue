@@ -74,10 +74,25 @@
               <span>•</span>
               <span>Plate: {{ vehicle.plate_number }}</span>
             </div>
-            <div class="flex items-center gap-2 text-base text-muted-foreground mb-2">
-              <span>Capacity: {{ vehicle.capacity }} person(s)</span>
-              <span>•</span>
-              <span class="font-semibold text-primary">₱{{ vehicle.rental_rate }}/day</span>
+            <div class="flex flex-col gap-2 text-base text-muted-foreground mb-2">
+              <div class="flex items-center gap-2">
+                <span>Capacity: {{ vehicle.capacity }} person(s)</span>
+                <span>•</span>
+                <span class="font-semibold text-primary">Php {{ vehicle.rental_rate }}/day</span>
+              </div>
+              <template v-if="vehicle.rental_rate_with_driver">
+                <div class="flex items-center gap-2 pl-1">
+                  <span
+                    class="inline-block w-4 h-4 bg-primary/10 rounded-full flex items-center justify-center mr-1"
+                  >
+                    <User2 class="w-3 h-3 text-primary" />
+                  </span>
+                  <span class="font-semibold text-primary"
+                    >Php {{ vehicle.rental_rate_with_driver }}/day</span
+                  >
+                  <span class="text-xs text-muted-foreground">(with driver)</span>
+                </div>
+              </template>
             </div>
             <!-- Move Edit Button here -->
             <div v-if="userAuth.isAdmin()" class="flex justify-end mt-4">
@@ -112,7 +127,7 @@
             <button
               v-if="vehicle.status !== 'maintenance'"
               class="w-full py-3 rounded-lg bg-primary text-primary-foreground font-bold text-lg shadow hover:bg-primary/90 transition-all border border-primary/30 opacity-80 hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-50"
-              @click.prevent="handleBookNow"
+              @click.prevent="router.push({ path: `/book/${vehicleId}` })"
               :disabled="booking?.status === 'pending' || booking?.status === 'paid'"
             >
               Book Now
@@ -148,38 +163,77 @@
             <CardTitle>Specifications</CardTitle>
           </CardHeader>
           <CardContent>
-            <dl class="grid grid-cols-2 gap-4">
-              <div>
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+              <div class="flex items-center gap-2">
+                <span><User2 class="w-4 h-4 text-primary" /></span>
                 <dt class="font-medium">Brand</dt>
-                <dd class="text-muted-foreground">{{ vehicle.brand }}</dd>
+                <dd class="text-muted-foreground ml-1">{{ vehicle.brand }}</dd>
               </div>
-              <div>
+              <div class="flex items-center gap-2">
+                <span><Badge class="w-4 h-4 text-primary">M</Badge></span>
                 <dt class="font-medium">Model</dt>
-                <dd class="text-muted-foreground">{{ vehicle.model }}</dd>
+                <dd class="text-muted-foreground ml-1">{{ vehicle.model }}</dd>
               </div>
-              <div>
+              <div class="flex items-center gap-2">
+                <span><Badge class="w-4 h-4 text-primary">Y</Badge></span>
                 <dt class="font-medium">Year</dt>
-                <dd class="text-muted-foreground">{{ vehicle.year }}</dd>
+                <dd class="text-muted-foreground ml-1">{{ vehicle.year }}</dd>
               </div>
-              <div>
+              <div class="flex items-center gap-2">
+                <span><Badge class="w-4 h-4 text-primary">S</Badge></span>
                 <dt class="font-medium">Status</dt>
-                <dd class="text-muted-foreground">{{ vehicle.status }}</dd>
+                <dd class="text-muted-foreground ml-1">{{ vehicle.status }}</dd>
               </div>
-              <div>
+              <div class="flex items-center gap-2">
+                <span><Badge class="w-4 h-4 text-primary">T</Badge></span>
                 <dt class="font-medium">Type</dt>
-                <dd class="text-muted-foreground">{{ vehicle.type }}</dd>
+                <dd class="text-muted-foreground ml-1">{{ vehicle.type }}</dd>
               </div>
-              <div>
+              <div class="flex items-center gap-2">
+                <span><Badge class="w-4 h-4 text-primary">P</Badge></span>
                 <dt class="font-medium">Plate Number</dt>
-                <dd class="text-muted-foreground">{{ vehicle.plate_number }}</dd>
+                <dd class="text-muted-foreground ml-1">{{ vehicle.plate_number }}</dd>
               </div>
-              <div>
+              <div class="flex items-center gap-2">
+                <span><User2 class="w-4 h-4 text-primary" /></span>
                 <dt class="font-medium">Capacity</dt>
-                <dd class="text-muted-foreground">{{ vehicle.capacity }} person(s)</dd>
+                <dd class="text-muted-foreground ml-1">{{ vehicle.capacity }} person(s)</dd>
               </div>
-              <div>
-                <dt class="font-medium">Rental Rate</dt>
-                <dd class="text-muted-foreground">₱{{ vehicle.rental_rate }}/day</dd>
+              <div class="flex items-start gap-2">
+                <span><User2 class="w-4 h-4 text-primary mt-1" /></span>
+                <div class="flex flex-col">
+                  <dt class="font-medium">Rental Rate</dt>
+                  <dd class="text-muted-foreground ml-1">
+                    <div class="flex flex-col gap-1">
+                      <div class="flex items-center gap-2">
+                        <span class="font-semibold text-primary"
+                          >Php
+                          {{
+                            Number(vehicle.rental_rate).toLocaleString(undefined, {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })
+                          }}</span
+                        >
+                        <span class="text-xs text-muted-foreground">per day</span>
+                      </div>
+                      <template v-if="vehicle.rental_rate_with_driver">
+                        <div class="flex items-center gap-2">
+                          <span class="font-semibold text-primary"
+                            >Php
+                            {{
+                              Number(vehicle.rental_rate_with_driver).toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })
+                            }}</span
+                          >
+                          <span class="text-xs text-muted-foreground">(w/driver)</span>
+                        </div>
+                      </template>
+                    </div>
+                  </dd>
+                </div>
               </div>
             </dl>
           </CardContent>
@@ -287,16 +341,6 @@
         @close="closeEditModal"
         @updated="handleUpdated"
       />
-
-      <!-- Booking Dialog -->
-      <BookingDialog
-        v-if="showBookingDialog"
-        :vehicleId="vehicleId"
-        :open="showBookingDialog"
-        @update:open="(val) => (showBookingDialog = val)"
-        :onClose="() => (showBookingDialog = false)"
-        @booked="handleBooked"
-      />
     </div>
   </div>
 </template>
@@ -312,9 +356,8 @@ import { getStatusVariant } from '@/lib/utils'
 import VehicleUpdateForm from '@/components/features/vehicles/VehicleUpdateForm.vue'
 import { useVehicleDialogStore } from '@/stores/vehicleDialogStore'
 import { useUserAuth } from '@/services/useUserAuth'
-import BookingDialog from '@/components/features/bookings/BookingDialog.vue'
 import { useVehicleFeedbackQuery } from '@/services/feedback-api'
-import { Star } from 'lucide-vue-next'
+import { Star, User2 } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
@@ -355,24 +398,6 @@ onMounted(() => {
 })
 
 const userAuth = useUserAuth()
-
-const showBookingDialog = ref(false)
-
-function handleBookNow() {
-  showBookingDialog.value = true
-}
-
-function handleBooked(newBooking) {
-  showBookingDialog.value = false
-  // Show toast and redirect to My Bookings
-  import('vue-sonner').then(({ toast }) => {
-    toast.success('Booking successful!', {
-      description: 'You can now manage your booking in My Bookings.',
-      duration: 4000,
-    })
-  })
-  router.push({ name: 'my-bookings' })
-}
 
 const { data: feedbackData, isLoading: feedbackLoading } = useVehicleFeedbackQuery(vehicleId)
 const feedbackList = computed(() => (Array.isArray(feedbackData.value) ? feedbackData.value : []))
