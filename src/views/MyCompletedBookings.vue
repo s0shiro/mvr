@@ -1,12 +1,10 @@
 <template>
-  <Card class="max-w-4xl mx-auto mt-8 shadow-lg">
-    <CardHeader>
-      <CardTitle class="text-2xl font-bold flex items-center gap-2">
-        <CheckCircle2 class="text-green-500" />
-        Completed Bookings
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
+  <div class="">
+    <div class="text-2xl font-bold flex items-center gap-2 mb-4">
+      <CheckCircle2 class="text-green-500" />
+      Completed Bookings
+    </div>
+    <div>
       <div
         v-if="isLoading"
         class="flex items-center gap-2 text-muted-foreground py-8 justify-center"
@@ -27,16 +25,16 @@
       <div v-else class="grid gap-6">
         <div v-for="booking in completedBookings" :key="booking.id">
           <Card class="border border-primary/20 shadow-sm hover:shadow-lg transition">
-            <CardHeader class="flex flex-row items-center gap-4">
+            <div class="flex flex-row items-center gap-4 p-4 pb-0">
               <div
                 class="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full bg-green-100 dark:bg-green-900"
               >
                 <CheckCircle2 class="w-7 h-7 text-green-600 dark:text-green-300" />
               </div>
               <div>
-                <CardTitle class="text-lg font-semibold">{{
-                  booking.vehicle?.name || 'N/A'
-                }}</CardTitle>
+                <div class="text-lg font-semibold">
+                  {{ booking.vehicle?.name || 'N/A' }}
+                </div>
                 <div class="text-xs text-muted-foreground mt-1">Booking #{{ booking.id }}</div>
               </div>
               <div class="ml-auto flex flex-col items-end">
@@ -50,8 +48,8 @@
                   >₱{{ booking.total_price?.toLocaleString() }}</span
                 >
               </div>
-            </CardHeader>
-            <CardContent class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm p-4 pt-2">
               <div>
                 <span class="font-medium">Start Date:</span>
                 <span class="ml-1">{{ formatDate(booking.start_date) }}</span>
@@ -60,7 +58,7 @@
                 <span class="font-medium">End Date:</span>
                 <span class="ml-1">{{ formatDate(booking.end_date) }}</span>
               </div>
-            </CardContent>
+            </div>
             <!-- Feedback Section -->
             <div class="p-4 border-t mt-2">
               <FeedbackSection :booking-id="booking.id" />
@@ -68,14 +66,14 @@
           </Card>
         </div>
       </div>
-    </CardContent>
-  </Card>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
 import { useMyCompletedBookingsQuery } from '@/services/completed-bookings-api'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Loader2, CheckCircle2, XCircle } from 'lucide-vue-next'
 import FeedbackSection from '@/components/features/feedback/FeedbackSection.vue'
 

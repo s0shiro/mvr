@@ -21,45 +21,52 @@
     </div>
     <div v-else>
       <div v-if="!formOpen">
-        <button class="btn btn-sm btn-primary" @click="formOpen = true">Leave Feedback</button>
+        <Button size="sm" @click="formOpen = true">Leave Feedback</Button>
       </div>
-      <form v-else @submit.prevent="handleSubmit" class="space-y-2">
-        <div class="flex items-center gap-2">
+      <div v-else class="rounded-lg border bg-card p-4 shadow-md max-w-md">
+        <div class="flex items-center gap-2 mb-2">
           <span class="font-medium">Rate your experience:</span>
-          <button
-            v-for="n in 5"
-            :key="n"
-            type="button"
-            @click="form.rating = n"
-            :aria-label="`Rate ${n}`"
-          >
-            <Star
-              :class="n <= form.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'"
-              class="w-6 h-6 transition-colors"
-            />
-          </button>
+          <div class="flex items-center">
+            <Button
+              v-for="n in 5"
+              :key="n"
+              type="button"
+              variant="ghost"
+              size="icon"
+              class="p-0"
+              :aria-label="`Rate ${n}`"
+              @click="form.rating = n"
+            >
+              <Star
+                :class="n <= form.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'"
+                class="w-7 h-7 transition-colors"
+              />
+            </Button>
+          </div>
         </div>
-        <textarea
+        <Textarea
           v-model="form.comment"
-          rows="2"
-          class="w-full rounded border px-2 py-1 bg-background text-foreground"
+          rows="3"
+          class="w-full mt-2"
           placeholder="Leave a comment (optional)"
-        ></textarea>
-        <div class="flex items-center gap-2">
-          <button
-            class="btn btn-primary btn-sm"
+        />
+        <div class="flex items-center gap-2 mt-3">
+          <Button
+            type="button"
             :disabled="submitMutation.isLoading || form.rating === 0"
+            @click="handleSubmit"
+            size="sm"
           >
             <Loader2
               v-if="submitMutation.isLoading"
               class="animate-spin w-4 h-4 inline-block mr-1"
             />
             Submit Feedback
-          </button>
+          </Button>
           <span v-if="errorMsg" class="text-destructive text-xs">{{ errorMsg }}</span>
           <span v-if="successMsg" class="text-green-600 text-xs">Thank you for your feedback!</span>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 </template>
@@ -68,6 +75,8 @@
 import { ref, computed } from 'vue'
 import { useBookingFeedbackQuery, useSubmitFeedbackMutation } from '@/services/feedback-api'
 import { Loader2, Star } from 'lucide-vue-next'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 
 const props = defineProps({ bookingId: { type: [String, Number], required: true } })
 const formOpen = ref(false)
