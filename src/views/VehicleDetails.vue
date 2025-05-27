@@ -86,10 +86,26 @@
               </Button>
             </div>
           </div>
-          <!-- Placeholder for Ratings -->
-          <div class="flex items-center gap-2 mt-2">
-            <span class="text-yellow-400 text-xl">★ ★ ★ ★ ☆</span>
-            <span class="text-muted-foreground text-sm">(Coming soon)</span>
+          <!-- Ratings -->
+          <div class="flex flex-col gap-2 mt-2">
+            <div class="flex items-center gap-2">
+              <span class="flex items-center">
+                <Star
+                  v-for="n in 5"
+                  :key="n"
+                  :class="
+                    n <= Math.round(averageRating)
+                      ? 'text-yellow-400'
+                      : 'text-gray-300 dark:text-gray-600'
+                  "
+                  class="w-5 h-5"
+                />
+              </span>
+              <span class="text-lg font-semibold">{{ averageRating }}</span>
+              <span class="text-muted-foreground text-sm"
+                >({{ feedbackList.length }} review{{ feedbackList.length === 1 ? '' : 's' }})</span
+              >
+            </div>
           </div>
           <!-- Book Now Button -->
           <div class="mt-4">
@@ -190,6 +206,79 @@
         </CardContent>
       </Card>
 
+      <!-- Reviews & Feedback Section -->
+      <section class="mt-10">
+        <Card class="bg-card border border-border">
+          <CardHeader>
+            <CardTitle class="flex items-center gap-2 text-xl">
+              <Star class="text-yellow-400 w-6 h-6" />
+              Customer Reviews
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div class="flex items-center gap-2 mb-4">
+              <span class="flex items-center">
+                <Star
+                  v-for="n in 5"
+                  :key="n"
+                  :class="
+                    n <= Math.round(averageRating)
+                      ? 'text-yellow-400'
+                      : 'text-gray-300 dark:text-gray-600'
+                  "
+                  class="w-5 h-5"
+                />
+              </span>
+              <span class="text-lg font-semibold">{{ averageRating }}</span>
+              <span class="text-muted-foreground text-sm"
+                >({{ feedbackList.length }} review{{ feedbackList.length === 1 ? '' : 's' }})</span
+              >
+            </div>
+            <div
+              v-if="feedbackLoading"
+              class="text-muted-foreground text-sm flex items-center gap-2"
+            >
+              <span class="animate-spin w-4 h-4 border-b-2 border-primary rounded-full"></span>
+              Loading feedback...
+            </div>
+            <div v-else-if="feedbackList.length === 0" class="text-muted-foreground text-sm">
+              No feedback yet for this vehicle.
+            </div>
+            <div v-else class="space-y-3 mt-2">
+              <div
+                v-for="fb in feedbackList"
+                :key="fb.id"
+                class="bg-muted rounded-lg p-3 border border-border"
+              >
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="flex items-center">
+                    <Star
+                      v-for="n in 5"
+                      :key="n"
+                      :class="
+                        n <= fb.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'
+                      "
+                      class="w-4 h-4"
+                    />
+                  </span>
+                  <span class="text-xs text-muted-foreground ml-2">{{
+                    new Date(fb.created_at).toLocaleDateString('en-PH', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                    })
+                  }}</span>
+                </div>
+                <div class="text-base text-foreground">
+                  {{ fb.comment || 'No comment provided.' }}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+      <!-- End Reviews & Feedback Section -->
+
       <!-- Edit Vehicle Modal -->
       <VehicleUpdateForm
         v-if="dialogStore.editOpen && dialogStore.editVehicle"
@@ -213,7 +302,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useVehicleDetails } from '@/services/vehicle-service'
 import { Badge } from '@/components/ui/badge'
@@ -224,6 +313,8 @@ import VehicleUpdateForm from '@/components/features/vehicles/VehicleUpdateForm.
 import { useVehicleDialogStore } from '@/stores/vehicleDialogStore'
 import { useUserAuth } from '@/services/useUserAuth'
 import BookingDialog from '@/components/features/bookings/BookingDialog.vue'
+import { useVehicleFeedbackQuery } from '@/services/feedback-api'
+import { Star } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
@@ -282,4 +373,12 @@ function handleBooked(newBooking) {
   })
   router.push({ name: 'my-bookings' })
 }
+
+const { data: feedbackData, isLoading: feedbackLoading } = useVehicleFeedbackQuery(vehicleId)
+const feedbackList = computed(() => (Array.isArray(feedbackData.value) ? feedbackData.value : []))
+const averageRating = computed(() => {
+  if (!feedbackList.value.length) return 0
+  const sum = feedbackList.value.reduce((acc, f) => acc + (f.rating || 0), 0)
+  return (sum / feedbackList.value.length).toFixed(1)
+})
 </script>

@@ -50,6 +50,10 @@ const data = {
           title: 'My Bookings',
           url: '/my-bookings',
         },
+        {
+          title: 'Completed Bookings',
+          url: '/my-completed-bookings',
+        },
       ],
       roleRequired: 'customer',
     },
