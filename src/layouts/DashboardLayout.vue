@@ -17,6 +17,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { LogOut } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
 import LogoutConfirmDialog from '@/components/features/LogoutConfirmDialog.vue'
+import NotificationPopover from '@/components/features/NotificationPopover.vue'
 
 const route = useRoute()
 const isLoading = false // You might want to control this with your actual loading state
@@ -72,6 +73,9 @@ const confirmLogout = async () => {
           </div>
 
           <div class="flex items-center gap-2 shrink-0 ml-4">
+            <!-- Notifications -->
+            <NotificationPopover />
+
             <!-- Logout Button -->
             <Button
               variant="ghost"
