@@ -3,6 +3,9 @@
 import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
 import { RouterLink } from 'vue-router'
+import { useThemeStore } from '@/stores/themeStore'
+import { Sun, Moon } from 'lucide-vue-next'
+import { useAuthStore } from '@/stores/authStore'
 
 const faq = [
   {
@@ -54,6 +57,14 @@ const navItems = [
   { label: 'FAQ', href: '#faq' },
   { label: 'Contact', href: '#contact' },
 ]
+
+const themeStore = useThemeStore()
+themeStore.initTheme && themeStore.initTheme()
+function toggleTheme() {
+  themeStore.toggleTheme()
+}
+
+const authStore = useAuthStore()
 </script>
 
 <template>
@@ -81,13 +92,26 @@ const navItems = [
             </a>
           </div>
 
-          <!-- Contact Us Button -->
+          <!-- Theme Toggle and Login/Dashboard Button -->
           <div class="flex items-center">
             <Button
-              class="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6 py-2"
+              variant="ghost"
+              size="icon"
+              class="ml-2 mr-2"
+              @click="toggleTheme"
+              title="Toggle dark/light mode"
             >
-              Contact Us
+              <Sun v-if="themeStore.theme === 'light'" class="w-5 h-5" />
+              <Moon v-else class="w-5 h-5" />
+              <span class="sr-only">Toggle Theme</span>
             </Button>
+            <RouterLink :to="authStore.isAuthenticated ? { name: 'overview' } : { name: 'login' }">
+              <Button
+                class="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-6 py-2"
+              >
+                {{ authStore.isAuthenticated ? 'Dashboard' : 'Login' }}
+              </Button>
+            </RouterLink>
           </div>
         </div>
       </div>
@@ -107,10 +131,10 @@ const navItems = [
           transparency, and real-time insights.
         </p>
         <div class="flex justify-center gap-4 mb-8">
-          <RouterLink to="/login">
+          <RouterLink :to="authStore.isAuthenticated ? { name: 'overview' } : '/login'">
             <Button
               class="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-full font-semibold shadow-lg"
-              >Get Started</Button
+              >{{ authStore.isAuthenticated ? 'Dashboard' : 'Get Started' }}</Button
             >
           </RouterLink>
           <Button

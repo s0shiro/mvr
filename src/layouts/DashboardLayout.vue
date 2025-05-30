@@ -14,16 +14,20 @@ import AppSidebar from '@/components/AppSidebar.vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
-import { LogOut } from 'lucide-vue-next'
+import { LogOut, Sun, Moon } from 'lucide-vue-next'
 import { storeToRefs } from 'pinia'
 import LogoutConfirmDialog from '@/components/features/LogoutConfirmDialog.vue'
 import NotificationPopover from '@/components/features/NotificationPopover.vue'
+import { useThemeStore } from '@/stores/themeStore'
 
 const route = useRoute()
 const isLoading = false // You might want to control this with your actual loading state
 
 const authStore = useAuthStore()
 const { loading } = storeToRefs(authStore)
+
+const themeStore = useThemeStore()
+themeStore.initTheme && themeStore.initTheme()
 
 const showLogoutDialog = ref(false)
 
@@ -33,6 +37,10 @@ const handleLogout = () => {
 const confirmLogout = async () => {
   showLogoutDialog.value = false
   await authStore.logout()
+}
+
+function toggleTheme() {
+  themeStore.toggleTheme()
 }
 </script>
 
@@ -73,6 +81,18 @@ const confirmLogout = async () => {
           </div>
 
           <div class="flex items-center gap-2 shrink-0 ml-4">
+            <!-- Theme Toggle -->
+            <Button
+              variant="ghost"
+              size="icon"
+              class="relative"
+              @click="toggleTheme"
+              title="Toggle dark/light mode"
+            >
+              <Sun v-if="themeStore.theme === 'light'" class="w-5 h-5" />
+              <Moon v-else class="w-5 h-5" />
+              <span class="sr-only">Toggle Theme</span>
+            </Button>
             <!-- Notifications -->
             <NotificationPopover />
 
