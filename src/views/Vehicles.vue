@@ -123,8 +123,8 @@
       </div>
     </div>
 
-    <div v-if="isLoading && !hasNextPage" class="mt-8 flex justify-center">
-      <Loader2 class="h-8 w-8 animate-spin" />
+    <div v-if="isLoading" class="mt-8">
+      <Loading text="Loading vehicles..." />
     </div>
 
     <div v-else-if="error" class="mt-8">
@@ -185,6 +185,7 @@ import AddVehicleDialog from '@/components/features/vehicles/AddVehicleDialog.vu
 import { useVehicles } from '@/services/vehicle-service'
 import { useIntersectionObserver } from '@vueuse/core'
 import { useDebounce } from '@/stores/useDebounce'
+import Loading from '@/components/features/Loading.vue'
 import { cn } from '@/lib/utils'
 import { useVehicleDialogStore } from '@/stores/vehicleDialogStore'
 import { useUserAuth } from '@/services/useUserAuth'
