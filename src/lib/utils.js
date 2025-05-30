@@ -1,5 +1,6 @@
 import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+import { today, getLocalTimeZone } from '@internationalized/date'
 
 export function cn(...inputs) {
   return twMerge(clsx(inputs))
@@ -49,4 +50,9 @@ export function getStatusVariant(status) {
 export function getActiveLabel(items, value) {
   const item = items.find((item) => item.value === value)
   return item?.label || items[0].label
+}
+
+export function isDateDisabled(date) {
+  const now = today(getLocalTimeZone())
+  return date.compare(now) <= 0
 }

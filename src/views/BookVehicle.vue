@@ -39,7 +39,7 @@
               </Button>
             </PopoverTrigger>
             <PopoverContent class="w-auto p-0">
-              <Calendar v-model="startDate" initial-focus />
+              <Calendar v-model="startDate" initial-focus :is-date-disabled="isDateDisabled" />
             </PopoverContent>
           </Popover>
           <Input type="time" v-model="form.start_time" id="start_time" class="rounded-lg" />
@@ -56,7 +56,7 @@
               </Button>
             </PopoverTrigger>
             <PopoverContent class="w-auto p-0">
-              <Calendar v-model="endDate" initial-focus />
+              <Calendar v-model="endDate" initial-focus :is-date-disabled="isDateDisabled" />
             </PopoverContent>
           </Popover>
           <Input type="time" v-model="form.end_time" id="end_time" class="rounded-lg" />
@@ -267,7 +267,8 @@ import {
 } from 'lucide-vue-next'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { DateFormatter, getLocalTimeZone } from '@internationalized/date'
+import { DateFormatter, getLocalTimeZone, today } from '@internationalized/date'
+import { isDateDisabled } from '@/lib/utils'
 
 const df = new DateFormatter('en-US', { dateStyle: 'long' })
 const startDate = ref(null)
