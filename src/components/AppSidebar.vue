@@ -101,15 +101,15 @@ const filteredNavMain = computed(() => {
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton size="lg" as-child>
-            <RouterLink to="#">
+            <RouterLink to="/">
               <div
-                class="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground"
+                class="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground"
               >
-                <GalleryVerticalEnd class="size-4" />
+                <img src="@/assets/mvr-logo.png" alt="MVR Logo" class="size-8" />
               </div>
               <div class="flex flex-col gap-0.5 leading-none">
-                <span class="font-medium">Documentation</span>
-                <span class="">v1.0.0</span>
+                <span class="font-medium">Worth a Ride</span>
+                <span class=""></span>
               </div>
             </RouterLink>
           </SidebarMenuButton>

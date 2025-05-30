@@ -8,8 +8,17 @@
     </div>
     <div v-else-if="error" class="text-center text-red-600">{{ error.message }}</div>
     <div v-else>
-      <div v-if="!bookings.length" class="text-center text-muted-foreground py-12">
-        You have no bookings yet.
+      <div
+        v-if="!bookings.length"
+        class="text-center text-muted-foreground py-12 flex flex-col items-center gap-4"
+      >
+        <span>You have no bookings yet.</span>
+        <Button as-child variant="default" size="lg" class="mt-2 px-6 py-3 text-base font-semibold">
+          <RouterLink to="/vehicles" class="flex items-center justify-center gap-2">
+            <Car class="w-5 h-5" />
+            Add Booking
+          </RouterLink>
+        </Button>
       </div>
       <div v-else class="space-y-6">
         <Card v-for="booking in bookings" :key="booking.id" class="border border-border bg-card">
@@ -279,6 +288,7 @@ import {
   Image as ImageIcon,
   Truck,
 } from 'lucide-vue-next'
+import { RouterLink } from 'vue-router'
 
 function formatDate(dateStr) {
   const d = new Date(dateStr)
