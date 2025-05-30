@@ -3,8 +3,8 @@
     <div class="flex justify-between items-center mb-4">
       <h1 class="text-2xl font-bold">Vehicle Returns</h1>
     </div>
-    <div v-if="isLoading" class="flex justify-center items-center h-40">
-      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+    <div v-if="isLoading" class="h-[calc(100vh-10rem)] flex items-center justify-center">
+      <Loading text="Loading bookings..." />
     </div>
     <div v-else-if="error" class="text-center text-red-600">{{ error }}</div>
     <div v-else>
@@ -82,6 +82,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import VehicleReturnDialog from '@/components/features/vehicle-return/VehicleReturnDialog.vue'
+import Loading from '@/components/features/Loading.vue'
 import { getStatusVariant } from '@/lib/utils'
 
 function formatDate(dateStr) {

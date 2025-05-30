@@ -4,8 +4,8 @@
       <h1 class="text-3xl font-bold tracking-tight text-foreground">Manage Bookings</h1>
     </div>
 
-    <div v-if="isLoading" class="flex justify-center items-center h-40">
-      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+    <div v-if="isLoading" class="h-[calc(100vh-10rem)] flex items-center justify-center">
+      <Loading text="Loading bookings..." />
     </div>
     <div v-else-if="error" class="text-center text-destructive text-lg font-medium">
       {{ error }}
@@ -245,6 +245,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import Loading from '@/components/features/Loading.vue'
 import PaymentProofDialog from '@/components/features/bookings/PaymentProofDialog.vue'
 import ConfirmPaymentDialog from '@/components/features/ConfirmPaymentDialog.vue'
 import RejectPaymentDialog from '@/components/features/RejectPaymentDialog.vue'
