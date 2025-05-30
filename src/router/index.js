@@ -63,7 +63,7 @@ const router = createRouter({
     {
       path: '/verify',
       name: 'verify',
-      component: () => import('../features/VerifyCode.vue'),
+      component: () => import('../components/features/VerifyCode.vue'),
       meta: { requiresAuth: true },
     },
     createDashboardRoute({
