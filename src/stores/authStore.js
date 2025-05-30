@@ -18,6 +18,14 @@ export const useAuthStore = defineStore('auth', {
     isLoggingIn: (state) => state.loggingIn,
     authError: (state) => state.error,
     role: (state) => state.userRole,
+    isVerified: (state) => {
+      if (!state.user) return false
+      if (typeof state.user.email_verified !== 'undefined') {
+        return state.user.email_verified === true
+      }
+      // Fallback: check email_verified_at (non-null means verified)
+      return Boolean(state.user.email_verified_at)
+    },
   },
 
   actions: {
@@ -100,7 +108,7 @@ export const useAuthStore = defineStore('auth', {
         if (response.data.status === 'success') {
           this.user = response.data.user
           this.updateUserRolesAndPermissions(response.data.user)
-          this.router.push({ name: 'dashboard' })
+          // Do not redirect here, let the Register view handle verification
           return { success: true, data: response.data }
         }
         throw new Error(response.data.message || 'Registration failed')

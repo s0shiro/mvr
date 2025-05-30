@@ -54,6 +54,18 @@ const router = createRouter({
       component: () => import('../views/Login.vue'),
       meta: { requiresGuest: true },
     },
+    {
+      path: '/register',
+      name: 'register',
+      component: () => import('../views/Register.vue'),
+      meta: { requiresGuest: true, public: true }, // Add public meta
+    },
+    {
+      path: '/verify',
+      name: 'verify',
+      component: () => import('../features/VerifyCode.vue'),
+      meta: { requiresAuth: true },
+    },
     createDashboardRoute({
       path: '/admin/bookings',
       name: 'admin-bookings',
@@ -103,71 +115,46 @@ const router = createRouter({
   ],
 })
 
-async function checkAuthAndRoles(authStore, to) {
-  if (!authStore.isAuthenticated) {
-    await authStore.checkAuth()
-  }
-
-  if (to.meta.requiredRoles && !authStore.role) {
-    const response = await authApi.getCurrentUser()
-    if (response.data) {
-      authStore.updateUserRolesAndPermissions(response.data)
-    }
-  }
-
-  if (to.meta.requiredRoles) {
-    return to.meta.requiredRoles.some((role) => authStore.hasRole(role))
-  }
-
-  return true
-}
-
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
-  try {
-    // Allow everyone to access /home
-    if (to.path === '/home') {
-      return next()
-    }
-
-    // Check auth status if not already checked
-    if (!authStore.isAuthenticated) {
+  // Ensure auth status is checked once
+  if (authStore.user === null && !authStore.loading) {
+    try {
       await authStore.checkAuth()
+    } catch (e) {
+      // Ignore errors, treat as guest
     }
+  }
 
-    // Prevent authenticated users from accessing guest routes
-    if (to.meta.requiresGuest) {
-      if (authStore.isAuthenticated) {
-        console.log('Authenticated user redirected from guest route')
-        return next({ name: 'overview' })
-      }
-      return next()
-    }
+  // Always allow landing page
+  if (to.name === 'home') return next()
 
-    // Handle protected routes
-    if (to.meta.requiresAuth) {
-      if (!authStore.isAuthenticated) {
-        console.log('Unauthenticated user redirected to login')
-        return next({ name: 'login' })
-      }
-
-      const hasAccess = await checkAuthAndRoles(authStore, to)
-      if (!hasAccess) {
-        // Optionally show a toast here
-        console.log('Access denied: insufficient privileges')
-        return next({ name: 'overview' })
-      }
-    }
-
-    return next()
-  } catch (err) {
-    console.error('Navigation guard error:', err)
-    if (to.meta.requiresAuth) {
-      return next({ name: 'login' })
-    }
+  // Guest-only routes
+  if (to.meta.requiresGuest) {
+    if (authStore.isAuthenticated) return next({ name: 'overview' })
     return next()
   }
+
+  // If user is authenticated but not verified, force to verification page
+  if (authStore.isAuthenticated && !authStore.isVerified && to.name !== 'verify') {
+    return next({ name: 'verify' })
+  }
+
+  // If user is verified and tries to access verify page, redirect to overview
+  if (authStore.isAuthenticated && authStore.isVerified && to.name === 'verify') {
+    return next({ name: 'overview' })
+  }
+
+  // Protected routes
+  if (to.meta.requiresAuth) {
+    if (!authStore.isAuthenticated) {
+      authStore.clearUserData()
+      return next({ name: 'login' })
+    }
+  }
+
+  return next()
 })
 
 export default router

@@ -20,4 +20,12 @@ export const authApi = {
   refreshToken: () => {
     return axiosInstance.post('/api/refresh')
   },
+
+  verifyCode(data) {
+    return axiosInstance.post('/api/verify-code', data)
+  },
+
+  resendVerificationCode(data) {
+    return axiosInstance.post('/api/resend-verification-code', data)
+  },
 }

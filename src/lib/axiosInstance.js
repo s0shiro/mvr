@@ -34,8 +34,15 @@ axiosInstance.interceptors.response.use(
         await axiosInstance.post('/api/refresh')
         return axiosInstance(originalRequest)
       } catch (refreshError) {
-        // If refresh fails and we're not on a guest route, redirect to login
-        if (!router.currentRoute.value.meta.requiresGuest) {
+        // If refresh fails and we're not on a guest or public route, redirect to login
+        const route = router.currentRoute.value
+        const isGuestRoute = route.meta && route.meta.requiresGuest
+        const isPublicRoute =
+          route.name === 'home' ||
+          route.path === '/' ||
+          route.name === 'register' ||
+          route.name === 'verify'
+        if (!isGuestRoute && !isPublicRoute) {
           router.push({ name: 'login' })
         }
         return Promise.reject(refreshError)
