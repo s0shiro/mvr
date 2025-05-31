@@ -112,6 +112,12 @@ const router = createRouter({
       view: () => import('../views/BookVehicle.vue'),
       meta: { title: 'Book Vehicle', requiresAuth: true },
     }),
+    createDashboardRoute({
+      path: '/vehicles/add',
+      name: 'add-vehicle',
+      view: () => import('../views/AddVehicle.vue'),
+      meta: { title: 'Add Vehicle', requiresAuth: true, requiredRoles: ['admin'] },
+    }),
   ],
 })
 
