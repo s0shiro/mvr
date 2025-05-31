@@ -12,9 +12,9 @@
           @vehicle-added="refetch"
           @close="dialogStore.closeAdd"
         />
-        <Button class="cursor-pointer" variant="default" @click="dialogStore.openAdd()"
-          >Add Vehicle</Button
-        >
+        <RouterLink :to="{ name: 'add-vehicle' }">
+          <Button class="cursor-pointer" variant="default">Add Vehicle</Button>
+        </RouterLink>
       </template>
     </div>
 
@@ -181,7 +181,6 @@ import {
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu'
 import VehicleCard from '@/components/features/vehicles/VehicleCard.vue'
-import AddVehicleDialog from '@/components/features/vehicles/AddVehicleDialog.vue'
 import { useVehicles } from '@/services/vehicle-service'
 import { useIntersectionObserver } from '@vueuse/core'
 import { useDebounce } from '@/stores/useDebounce'

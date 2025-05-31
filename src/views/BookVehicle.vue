@@ -139,36 +139,12 @@
         </div>
       </div>
       <!-- Price Summary -->
-      <div v-if="summary" class="space-y-4 bg-muted/60 rounded-xl p-6 border border-border">
-        <div class="flex items-center gap-3">
-          <DollarSign class="h-5 w-5 text-green-600 dark:text-green-400" />
-          <span class="font-bold text-lg text-green-700 dark:text-green-300">Daily Rate:</span>
-          <span class="text-green-700 dark:text-green-300 font-semibold text-lg"
-            >Php {{ summary.rental_rate }}</span
-          >
-          <span class="text-sm text-muted-foreground italic">
-            ({{ summary.with_driver ? 'With' : 'Without' }} Driver)
-          </span>
-        </div>
-        <div
-          v-if="form.pickup_type === 'delivery' && form.delivery_location"
-          class="flex items-center gap-3"
-        >
-          <Truck class="h-5 w-5 text-blue-600 dark:text-blue-400" />
-          <span class="font-bold text-lg text-blue-700 dark:text-blue-300">Delivery Fee:</span>
-          <span class="text-blue-700 dark:text-blue-300 font-semibold text-lg"
-            >Php {{ summary.delivery_options?.delivery_fee || 0 }}</span
-          >
-        </div>
-        <div class="flex items-center gap-3">
-          <Calculator class="h-5 w-5 text-primary" />
-          <span class="font-extrabold text-xl text-primary">Total Price:</span>
-          <span class="text-primary font-extrabold text-xl">Php {{ summary.total_price }}</span>
-          <span v-if="!summary.available" class="text-red-500 font-semibold ml-2">
-            (Not available for selected dates)
-          </span>
-        </div>
-      </div>
+      <BookingSummaryReceipt
+        v-if="summary"
+        :summary="summary"
+        :form="form"
+        v-model:minimized="minimizedSummary"
+      />
       <div v-if="error && !Object.keys(fieldErrors).length" class="text-red-500">{{ error }}</div>
       <!-- ID Upload Section -->
       <div class="bg-muted/60 rounded-xl p-6 border border-border flex flex-col gap-3">
@@ -269,6 +245,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { DateFormatter, getLocalTimeZone, today } from '@internationalized/date'
 import { isDateDisabled } from '@/lib/utils'
+import BookingSummaryReceipt from '@/components/features/BookingSummaryReceipt.vue'
 
 const df = new DateFormatter('en-US', { dateStyle: 'long' })
 const startDate = ref(null)
@@ -393,6 +370,8 @@ function removeIdImage(idx) {
 function goBack() {
   router.push({ name: 'vehicle-details', params: { id: vehicleId.value } })
 }
+
+const minimizedSummary = ref(false)
 
 async function onSubmit() {
   loading.value = true

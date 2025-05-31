@@ -1,7 +1,7 @@
 <template>
   <div class="container mx-auto max-w-5xl">
-    <div v-if="isLoading" class="flex justify-center items-center h-64">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    <div v-if="isLoading" class="h-[calc(100vh-10rem)] flex items-center justify-center">
+      <Loading text="Loading vehicle..." />
     </div>
 
     <div v-else-if="error" class="text-center text-red-600">
@@ -128,7 +128,9 @@
               v-if="vehicle.status !== 'maintenance'"
               class="w-full py-3 rounded-lg bg-primary text-primary-foreground font-bold text-lg shadow hover:bg-primary/90 transition-all border border-primary/30 opacity-80 hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-50"
               @click.prevent="router.push({ path: `/book/${vehicleId}` })"
-              :disabled="booking?.status === 'pending' || booking?.status === 'paid'"
+              :disabled="
+                userAuth.isAdmin() || booking?.status === 'pending' || booking?.status === 'paid'
+              "
             >
               Book Now
             </button>
@@ -351,6 +353,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useVehicleDetails } from '@/services/vehicle-service'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import Loading from '@/components/features/Loading.vue'
 import { Button } from '@/components/ui/button'
 import { getStatusVariant } from '@/lib/utils'
 import VehicleUpdateForm from '@/components/features/vehicles/VehicleUpdateForm.vue'
