@@ -6,6 +6,13 @@ import { RouterLink } from 'vue-router'
 import { useThemeStore } from '@/stores/themeStore'
 import { Sun, Moon } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/authStore'
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion'
+import vScrollAnimate from '@/lib/v-scroll-animate'
 
 const faq = [
   {
@@ -65,6 +72,8 @@ function toggleTheme() {
 }
 
 const authStore = useAuthStore()
+
+defineExpose({})
 </script>
 
 <template>
@@ -117,9 +126,12 @@ const authStore = useAuthStore()
       </div>
     </nav>
 
-    <!-- Add pt-16 to the first section to account for fixed nav -->
     <!-- Hero Section -->
-    <section id="home" class="pt-32 pb-24 text-center relative">
+    <section
+      id="home"
+      class="pt-32 pb-24 text-center relative"
+      v-scroll-animate="{ enter: 'animate-fade-in-down', once: true }"
+    >
       <div class="max-w-3xl mx-auto">
         <h1 class="text-4xl md:text-6xl font-bold mb-4">
           Marinduque Vehicle Rental System<br />
@@ -155,7 +167,11 @@ const authStore = useAuthStore()
     </section>
 
     <!-- Features/Dashboard Preview Section -->
-    <section id="platform" class="py-20 bg-card text-card-foreground text-center">
+    <section
+      id="platform"
+      class="py-20 bg-card text-card-foreground text-center"
+      v-scroll-animate="{ enter: 'animate-fade-in-up', once: true }"
+    >
       <h2 class="text-3xl md:text-5xl font-bold mb-4">
         All-in-One <span class="text-primary">Vehicle Rental Hub</span>
       </h2>
@@ -164,7 +180,7 @@ const authStore = useAuthStore()
         and provides real-time business insights for staff and managers.
       </p>
       <div
-        class="max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-border bg-popover"
+        class="max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-border bg-popover stagger-children"
       >
         <div class="h-64 md:h-96 flex items-center justify-center text-muted-foreground">
           <!-- Placeholder for dashboard image -->
@@ -174,47 +190,65 @@ const authStore = useAuthStore()
     </section>
 
     <!-- Growth & Impact Section -->
-    <section id="features" class="py-20 bg-background text-foreground">
+    <section
+      id="features"
+      class="py-20 bg-background text-foreground"
+      v-scroll-animate="{ enter: 'animate-fade-in', once: true }"
+    >
       <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-        <div>
-          <h3 class="text-2xl md:text-4xl font-bold mb-4">
-            Why Choose <span class="text-primary">MVR?</span>
-          </h3>
-          <p class="text-muted-foreground mb-8">
-            From manual logs to digital convenience—MVR helps you save time, reduce errors, and
-            deliver a seamless rental experience for both customers and staff.
-          </p>
-          <div class="space-y-4">
-            <div class="bg-card rounded-xl p-4 flex items-center gap-4">
-              <img src="https://github.com/shadcn.png" alt="Icon" class="w-12 h-12 rounded-full" />
-              <div>
-                <div class="font-semibold text-card-foreground">Automated Bookings</div>
-                <div class="text-muted-foreground text-sm">
-                  No more paper logs—book and confirm rentals online.
+        <div class="stagger-children">
+          <div>
+            <h3 class="text-2xl md:text-4xl font-bold mb-4">
+              Why Choose <span class="text-primary">MVR?</span>
+            </h3>
+            <p class="text-muted-foreground mb-8">
+              From manual logs to digital convenience—MVR helps you save time, reduce errors, and
+              deliver a seamless rental experience for both customers and staff.
+            </p>
+            <div class="space-y-4">
+              <div class="bg-card rounded-xl p-4 flex items-center gap-4">
+                <img
+                  src="https://github.com/shadcn.png"
+                  alt="Icon"
+                  class="w-12 h-12 rounded-full"
+                />
+                <div>
+                  <div class="font-semibold text-card-foreground">Automated Bookings</div>
+                  <div class="text-muted-foreground text-sm">
+                    No more paper logs—book and confirm rentals online.
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="bg-card rounded-xl p-4 flex items-center gap-4">
-              <img src="https://github.com/shadcn.png" alt="Icon" class="w-12 h-12 rounded-full" />
-              <div>
-                <div class="font-semibold text-card-foreground">Integrated Payments</div>
-                <div class="text-muted-foreground text-sm">
-                  Pay securely via GCash, bank, or cash. Digital receipts included.
+              <div class="bg-card rounded-xl p-4 flex items-center gap-4">
+                <img
+                  src="https://github.com/shadcn.png"
+                  alt="Icon"
+                  class="w-12 h-12 rounded-full"
+                />
+                <div>
+                  <div class="font-semibold text-card-foreground">Integrated Payments</div>
+                  <div class="text-muted-foreground text-sm">
+                    Pay securely via GCash, bank, or cash. Digital receipts included.
+                  </div>
                 </div>
               </div>
-            </div>
-            <div class="bg-card rounded-xl p-4 flex items-center gap-4">
-              <img src="https://github.com/shadcn.png" alt="Icon" class="w-12 h-12 rounded-full" />
-              <div>
-                <div class="font-semibold text-card-foreground">Smart Reporting</div>
-                <div class="text-muted-foreground text-sm">
-                  Track earnings, deposits, and business growth in real time.
+              <div class="bg-card rounded-xl p-4 flex items-center gap-4">
+                <img
+                  src="https://github.com/shadcn.png"
+                  alt="Icon"
+                  class="w-12 h-12 rounded-full"
+                />
+                <div>
+                  <div class="font-semibold text-card-foreground">Smart Reporting</div>
+                  <div class="text-muted-foreground text-sm">
+                    Track earnings, deposits, and business growth in real time.
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-4 stagger-children">
           <div class="bg-card rounded-xl p-6 shadow-lg">
             <div class="flex items-center gap-3 mb-2">
               <img src="https://github.com/shadcn.png" alt="Avatar" class="w-8 h-8 rounded-full" />
@@ -252,8 +286,8 @@ const authStore = useAuthStore()
     </section>
 
     <!-- Testimonials Section -->
-    <section class="py-20 bg-card">
-      <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-8">
+    <section class="py-20 bg-card" v-scroll-animate="{ enter: 'animate-fade-in-up', once: true }">
+      <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-8 stagger-children">
         <div class="bg-popover rounded-xl p-6 shadow-lg flex flex-col gap-2">
           <div class="flex items-center gap-3">
             <img src="https://github.com/shadcn.png" alt="Avatar" class="w-8 h-8 rounded-full" />
@@ -300,30 +334,32 @@ const authStore = useAuthStore()
     </section>
 
     <!-- FAQ Section -->
-    <section id="faq" class="py-20 bg-background">
+    <section
+      id="faq"
+      class="py-20 bg-background"
+      v-scroll-animate="{ enter: 'animate-fade-in', once: true }"
+    >
       <div class="max-w-3xl mx-auto">
         <h3 class="text-3xl md:text-4xl font-bold text-center mb-10">
           Your Questions? <span class="text-primary">Answered</span>
         </h3>
-        <div class="space-y-4">
-          <div v-for="(item, idx) in faq" :key="item.question" class="bg-card rounded-xl">
-            <button
-              @click="toggleFaq(idx)"
-              class="w-full flex justify-between items-center px-6 py-4 text-left focus:outline-none"
-            >
-              <span class="font-semibold text-card-foreground">{{ item.question }}</span>
-              <span class="text-primary">{{ openFaq.includes(idx) ? '−' : '+' }}</span>
-            </button>
-            <div v-if="openFaq.includes(idx)" class="px-6 pb-4 text-muted-foreground text-sm">
+        <Accordion type="multiple" class="w-full" collapsible :default-value="openFaq">
+          <AccordionItem v-for="(item, idx) in faq" :key="item.question" :value="String(idx)">
+            <AccordionTrigger>{{ item.question }}</AccordionTrigger>
+            <AccordionContent>
               {{ item.answer }}
-            </div>
-          </div>
-        </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
     </section>
 
     <!-- Contact Section -->
-    <section id="contact" class="py-20 bg-card">
+    <section
+      id="contact"
+      class="py-20 bg-card"
+      v-scroll-animate="{ enter: 'animate-fade-in-up', once: true }"
+    >
       <div class="max-w-5xl mx-auto px-4">
         <h2 class="text-3xl md:text-4xl font-bold text-center mb-10">
           Get in <span class="text-primary">Touch</span>
@@ -491,3 +527,12 @@ const authStore = useAuthStore()
     </footer>
   </main>
 </template>
+
+<script>
+import vScrollAnimate from '@/lib/v-scroll-animate'
+export default {
+  directives: {
+    scrollAnimate: vScrollAnimate,
+  },
+}
+</script>
