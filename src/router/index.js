@@ -118,6 +118,26 @@ const router = createRouter({
       view: () => import('../views/AddVehicle.vue'),
       meta: { title: 'Add Vehicle', requiresAuth: true, requiredRoles: ['admin'] },
     }),
+    createDashboardRoute({
+      path: '/admin/businesses',
+      name: 'admin-businesses',
+      view: () => import('../views/Businesses.vue'),
+      meta: {
+        title: 'Business/Services',
+        requiresAuth: true,
+        requiredRoles: ['admin'],
+      },
+    }),
+    createDashboardRoute({
+      path: '/admin/businesses/:id',
+      name: 'business-view',
+      view: () => import('../views/BusinessView.vue'),
+      meta: {
+        title: 'Business Details',
+        requiresAuth: true,
+        requiredRoles: ['admin'],
+      },
+    }),
   ],
 })
 

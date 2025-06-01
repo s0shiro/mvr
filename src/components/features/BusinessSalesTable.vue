@@ -1,0 +1,125 @@
+<template>
+  <div class="bg-card text-card-foreground rounded-xl shadow-md">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xl font-bold">Sales & Notes</h2>
+      <Button @click="openAddModal">Add Sale/Note</Button>
+    </div>
+    <div v-if="isLoading" class="h-[calc(100vh-10rem)] flex items-center justify-center">
+      <Loading text="Loading sales..." />
+    </div>
+    <div v-else>
+      <div v-if="sales.length === 0" class="text-center text-muted-foreground py-8">
+        No sales or notes yet.
+      </div>
+      <div v-else class="overflow-x-auto rounded-lg border bg-card text-card-foreground">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-100 dark:bg-gray-900">
+            <tr>
+              <th class="p-3 text-left font-semibold">Date</th>
+              <th class="p-3 text-left font-semibold">Amount</th>
+              <th class="p-3 text-left font-semibold">Type</th>
+              <th class="p-3 text-left font-semibold">Note</th>
+              <th class="p-3 text-left font-semibold">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="sale in sales" :key="sale.id" class="border-t">
+              <td class="p-3">{{ sale.date || '-' }}</td>
+              <td class="p-3">{{ sale.amount !== null ? sale.amount : '-' }}</td>
+              <td class="p-3">{{ sale.type }}</td>
+              <td class="p-3">{{ sale.note }}</td>
+              <td class="p-3">
+                <DropdownMenu>
+                  <DropdownMenuTrigger as-child>
+                    <Button variant="ghost" size="icon">
+                      <Ellipsis class="w-5 h-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" class="min-w-[120px]">
+                    <DropdownMenuItem @click="openEditModal(sale)">Edit</DropdownMenuItem>
+                    <DropdownMenuItem @click="deleteSaleHandler(sale.id)">Delete</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <BusinessSaleModal
+      v-if="showModal"
+      :business-id="businessId"
+      :sale="selectedSale"
+      :is-edit="isEdit"
+      @close="closeModal"
+      @saved="onSaved"
+    />
+  </div>
+</template>
+
+<script setup>
+import { ref, computed } from 'vue'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
+import { fetchBusinessSales, deleteBusinessSale } from '@/services/businessSalesService'
+import BusinessSaleModal from '@/components/features/BusinessSaleModal.vue'
+import Loading from '@/components/features/Loading.vue'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu'
+import { Ellipsis } from 'lucide-vue-next'
+
+const props = defineProps({
+  businessId: { type: [String, Number], required: true },
+})
+
+const showModal = ref(false)
+const isEdit = ref(false)
+const selectedSale = ref(null)
+const queryClient = useQueryClient()
+
+const { data, isLoading } = useQuery({
+  queryKey: ['business-sales', props.businessId],
+  queryFn: () => fetchBusinessSales(props.businessId),
+})
+
+const sales = computed(() => data.value || [])
+
+const mutationDelete = useMutation({
+  mutationFn: ({ id }) => deleteBusinessSale({ businessId: props.businessId, id }),
+  onSuccess: () => queryClient.invalidateQueries(['business-sales', props.businessId]),
+})
+
+function openAddModal() {
+  selectedSale.value = null
+  isEdit.value = false
+  showModal.value = false
+  setTimeout(() => {
+    showModal.value = true
+  }, 10)
+}
+function openEditModal(sale) {
+  selectedSale.value = { ...sale }
+  isEdit.value = true
+  showModal.value = false
+  setTimeout(() => {
+    showModal.value = true
+  }, 10)
+}
+function closeModal() {
+  showModal.value = false
+}
+function onSaved() {
+  showModal.value = false
+  queryClient.invalidateQueries(['business-sales', props.businessId])
+}
+
+function deleteSaleHandler(id) {
+  if (confirm('Are you sure you want to delete this entry?')) {
+    mutationDelete.mutate({ id })
+  }
+}
+</script>
