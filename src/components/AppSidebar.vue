@@ -97,6 +97,13 @@ const data = {
       items: [],
       roleRequired: 'admin',
     },
+    {
+      title: 'Payment Methods',
+      url: '/admin/payment-methods',
+      icon: ClipboardList,
+      items: [],
+      roleRequired: 'admin',
+    },
   ],
 }
 

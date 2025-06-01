@@ -138,6 +138,16 @@ const router = createRouter({
         requiredRoles: ['admin'],
       },
     }),
+    createDashboardRoute({
+      path: '/admin/payment-methods',
+      name: 'admin-payment-methods',
+      view: () => import('../views/admin/AdminPaymentMethods.vue'),
+      meta: {
+        title: 'Payment Methods',
+        requiresAuth: true,
+        requiredRoles: ['admin'],
+      },
+    }),
   ],
 })
 

@@ -51,11 +51,16 @@ export function useCancelBooking() {
   })
 }
 
+export const fetchPaymentMethods = async () => {
+  const { data } = await axiosInstance.get('/api/payment-methods')
+  return data
+}
+
 export function usePaymentMethods() {
-  return async () => {
-    const res = await axiosInstance.get('/api/payment-methods')
-    return res.data
-  }
+  return useQuery({
+    queryKey: ['payment-methods'],
+    queryFn: fetchPaymentMethods,
+  })
 }
 
 export function useSubmitPayment() {
