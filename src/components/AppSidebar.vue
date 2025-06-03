@@ -133,7 +133,7 @@ function isActive(url) {
                 <img src="@/assets/mvr-logo.png" alt="MVR Logo" class="size-8" />
               </div>
               <div class="flex flex-col gap-0.5 leading-none">
-                <span class="font-bold text-lg">Worth a Ride</span>
+                <span class="font-bold text-lg">Worth the Ride</span>
               </div>
             </RouterLink>
           </SidebarMenuButton>

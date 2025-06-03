@@ -48,6 +48,12 @@ const router = createRouter({
       view: () => import('../views/MyCompletedBookings.vue'),
       meta: { title: 'Completed Bookings', requiresAuth: true },
     }),
+    createDashboardRoute({
+      path: '/my-completed-bookings/:id',
+      name: 'completed-booking-details',
+      view: () => import('../views/CompletedBookingDetails.vue'),
+      meta: { title: 'Completed Booking Details', requiresAuth: true },
+    }),
     {
       path: '/login',
       name: 'login',

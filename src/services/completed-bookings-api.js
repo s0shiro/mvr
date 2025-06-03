@@ -11,3 +11,14 @@ export function useMyCompletedBookingsQuery(options = {}) {
     ...options,
   })
 }
+
+export function useCompletedBookingDetailsQuery(bookingId) {
+  return useQuery({
+    queryKey: ['completed-booking-details', bookingId],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get(`/api/bookings/${bookingId}/completed-details`)
+      return data
+    },
+    enabled: !!bookingId,
+  })
+}

@@ -47,6 +47,12 @@
                 <span class="text-primary font-bold text-lg mt-1"
                   >₱{{ booking.total_price?.toLocaleString() }}</span
                 >
+                <router-link
+                  :to="{ name: 'completed-booking-details', params: { id: booking.id } }"
+                  class="mt-2 text-xs underline text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                >
+                  View Details
+                </router-link>
               </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm p-4 pt-2">
