@@ -182,10 +182,11 @@ defineExpose({})
       <div
         class="max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-2xl border border-border bg-popover stagger-children"
       >
-        <div class="h-64 md:h-96 flex items-center justify-center text-muted-foreground">
-          <!-- Placeholder for dashboard image -->
-          <span class="text-2xl">[Rental Dashboard Preview]</span>
-        </div>
+        <img
+          src="/Cover-mvr.jpg"
+          alt="Rental Dashboard Preview"
+          class="w-full h-64 md:h-96 object-cover"
+        />
       </div>
     </section>
 

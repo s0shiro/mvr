@@ -9,7 +9,7 @@
       <!-- Center the contract title -->
       <h1 class="contract-title">CONTRACT OF LEASE</h1>
       <div class="contract-no-line">
-        <b>VEHICLE CONTRACT NO.</b> <span class="underline">{{ contractNo }}</span>
+        <b>VEHICLE CONTRACT NO.</b> <span class="underline"><!--{{ contractNo }}--></span>
       </div>
       <div class="section-title left"><b>KNOW ALL MEN BY THESE PRESENTS:</b></div>
       <div class="contract-body">
@@ -80,7 +80,7 @@
           <li style="page-break-before: always; margin-top: 4em">
             <div class="clause-item mt-1em">
               <b>3. RENTAL</b> – The <b>LESSEE</b> shall pay the <b>LESSOR</b> a daily rental amount
-              of <b>{{ rentalAmount }}</b> (<b>{{ rentalAmountWords }}</b
+              of <b>{{ dailyRate }}</b> (<b>{{ dailyRateWords }}</b
               >), Philippine Currency.
             </div>
           </li>
@@ -190,8 +190,8 @@
               prior notice and approval from the <b>LESSE</b>. In the event that the vehicle has not
               been returned by the end of the <b>TWENTY FOUR (24)</b> hour window, the
               <b>LESSE</b> shall be subject to additional charges equivalent to the
-              <b>HOURLY RATE</b> of _____________, based on the <b>DAILY RATE</b> of
-              _____________agreed upon in this contract until the return of the vehicle to the
+              <b>HOURLY RATE</b> of {{ hourlyRate }}, based on the <b>DAILY RATE</b> of
+              {{ dailyRate }} agreed upon in this contract until the return of the vehicle to the
               <b>LESSOR</b>.
             </div>
           </li>
@@ -270,7 +270,9 @@
               style="margin: 0"
             />
           </div>
-          <h3 style="text-align: left; margin-bottom: 1em">VEHICLE STUB No. {{ contractNo }}</h3>
+          <h3 style="text-align: left; margin-bottom: 1em">
+            VEHICLE STUB No. _______<!--{{ contractNo }}-->
+          </h3>
           <table style="width: 100%; border-collapse: collapse; border: 1px solid black">
             <tbody>
               <tr>
@@ -321,22 +323,75 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, toRef } from 'vue'
+import { useRoute } from 'vue-router'
+import { useBookingSummaryDetails } from '@/services/useBookingSummaryDetails'
 
-// Demo data for preview; replace with props or API data as needed
-const contractNo = '2025-001'
-const contractDay = '25'
-const contractMonth = 'May'
-const contractYear = '2025'
-const lesseeName = 'JUAN DELA CRUZ'
-const lesseeAddress = '123 Main St, Boac, Marinduque'
-const vehicleDetails = 'Toyota Vios 2022, Plate ABC-1234'
-const leasePeriod = '7 DAYS'
-const leaseStart = 'May 25, 2025'
-const rentalAmount = '2,000.00'
-const rentalAmountWords = 'TWO THOUSAND PESOS'
-const securityDeposit = '5,000.00'
-const securityDepositWords = 'FIVE THOUSAND PESOS'
+const props = defineProps({
+  booking: {
+    type: Object,
+    default: null,
+  },
+})
+
+const route = useRoute()
+const bookingId = computed(
+  () => props.booking?.id || route.params.bookingId || route.query.bookingId,
+)
+const { data: summary, isLoading, isError } = useBookingSummaryDetails(bookingId.value)
+
+// Fallbacks for demo/preview
+const contractNo = computed(() => (bookingId.value ? `MVR-${bookingId.value}` : '2025-001'))
+const contractDay = computed(() => summary.value?.executed_at?.split('/')[0] || '25')
+const contractMonth = computed(() => {
+  const m = summary.value?.executed_at?.split('/')[1]
+  return m ? new Date(2000, parseInt(m) - 1, 1).toLocaleString('default', { month: 'long' }) : 'May'
+})
+const contractYear = computed(() => summary.value?.executed_at?.split('/')[2] || '2025')
+const lesseeName = computed(() => summary.value?.customer_name || 'JUAN DELA CRUZ')
+const lesseeAddress = computed(
+  () => summary.value?.customer_address || '123 Main St, Boac, Marinduque',
+)
+const vehicleDetails = computed(() =>
+  summary.value?.vehicle
+    ? `${summary.value.vehicle.brand} ${summary.value.vehicle.name} ${summary.value.vehicle.year}, Model: ${summary.value.vehicle.model}`
+    : 'Toyota Vios 2022, Plate ABC-1234',
+)
+const leasePeriod = computed(() => summary.value?.period?.toUpperCase() || '7 DAYS')
+const leaseStart = computed(() => summary.value?.executed_at || 'May 25, 2025')
+const rentalAmount = computed(() =>
+  summary.value?.rental_amount
+    ? Number(summary.value.rental_amount).toLocaleString(undefined, { minimumFractionDigits: 2 })
+    : '2,000.00',
+)
+const rentalAmountWords = computed(() => summary.value?.rental_amount_words || 'TWO THOUSAND PESOS')
+
+const securityDeposit = computed(() =>
+  summary.value?.security_deposit
+    ? Number(summary.value.security_deposit).toLocaleString(undefined, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      })
+    : '5,000',
+)
+const securityDepositWords = computed(
+  () => summary.value?.security_deposit_words || 'FIVE THOUSAND PESOS',
+)
+
+const hourlyRate = computed(() =>
+  summary.value?.hourly_rate
+    ? Number(summary.value.hourly_rate).toLocaleString(undefined, { minimumFractionDigits: 2 })
+    : '',
+)
+const dailyRate = computed(() =>
+  summary.value?.daily_rate
+    ? Number(summary.value.daily_rate).toLocaleString(undefined, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      })
+    : '',
+)
+const dailyRateWords = computed(() => summary.value?.daily_rate_words || 'FIVE THOUSAND PESOS')
 
 function printContract() {
   const printContent = document.querySelector('.contract-print').innerHTML

@@ -3,76 +3,80 @@
     class="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-background transition-colors"
   >
     <div
-      class="w-full max-w-md p-8 bg-white dark:bg-card rounded-lg shadow-md dark:shadow-lg dark:border dark:border-border transition-colors"
+      class="w-full max-w-md p-6 bg-white dark:bg-card rounded-2xl shadow-lg dark:shadow-2xl"
     >
-      <div class="flex justify-center mb-6">
-        <img src="/mvr-logo.png" alt="MVR Logo" class="h-10 w-auto" />
+      <div class="text-center mb-6">
+        <img src="/mvr-logo.png" alt="MVR Logo" class="h-8 w-auto mx-auto mb-3" />
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-foreground">
+          Create an account
+        </h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          Already have an account?
+          <router-link to="/login" class="text-primary hover:underline">Log in</router-link>
+        </p>
       </div>
-      <h2 class="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-foreground">
-        Register
-      </h2>
-      <form @submit.prevent="onRegister">
-        <div class="mb-4">
-          <Label for="username" class="block mb-1 font-medium">Username</Label>
-          <Input
-            v-model="form.username"
-            id="username"
-            type="text"
-            placeholder="Enter your username"
-            required
-            class="focus:ring-2 focus:ring-primary/50 transition"
-          />
-        </div>
-        <div class="mb-4">
-          <Label for="name" class="block mb-1 font-medium">Full Name</Label>
-          <Input
-            v-model="form.name"
-            id="name"
-            type="text"
-            placeholder="Enter your full name"
-            required
-            class="focus:ring-2 focus:ring-primary/50 transition"
-          />
-        </div>
-        <div class="mb-4">
-          <Label for="email" class="block mb-1 font-medium">Email</Label>
-          <Input
-            v-model="form.email"
-            id="email"
-            type="email"
-            placeholder="Enter your email address"
-            required
-            class="focus:ring-2 focus:ring-primary/50 transition"
-          />
-        </div>
-        <div class="mb-4 relative">
-          <Label for="password" class="block mb-1 font-medium">Password</Label>
+
+      <form @submit.prevent="onRegister" class="space-y-3">
+        <Input
+          v-model="form.username"
+          type="text"
+          placeholder="Username"
+          required
+          class="w-full"
+        />
+
+        <Input
+          v-model="form.name"
+          type="text"
+          placeholder="Full Name"
+          required
+          class="w-full"
+        />
+
+        <Input
+          v-model="form.email"
+          type="email"
+          placeholder="Email Address"
+          required
+          class="w-full"
+        />
+
+        <Input
+          v-model="form.address"
+          type="text"
+          placeholder="Address"
+          required
+          class="w-full"
+        />
+
+        <div>
           <Input
             v-model="form.password"
             type="password"
-            id="password"
-            placeholder="Enter your password"
+            placeholder="Password"
             required
-            class="focus:ring-2 focus:ring-primary/50 transition pr-10"
+            class="w-full"
             @input="checkPasswordStrength"
           />
           <div v-if="passwordStrength" class="mt-1 text-xs" :class="passwordStrengthColor">
             {{ passwordStrength }}
           </div>
         </div>
-        <div class="mb-6 relative">
-          <Label for="password_confirmation" class="block mb-1 font-medium">Confirm Password</Label>
-          <Input
-            v-model="form.password_confirmation"
-            type="password"
-            id="password_confirmation"
-            placeholder="Re-enter your password"
-            required
-            class="focus:ring-2 focus:ring-primary/50 transition pr-10"
-          />
-        </div>
-        <Button type="submit" class="w-full flex items-center justify-center" :disabled="isLoading">
-          <svg v-if="isLoading" class="animate-spin h-4 w-4 mr-2" viewBox="0 0 24 24">
+
+        <Input
+          v-model="form.password_confirmation"
+          type="password"
+          placeholder="Confirm Password"
+          required
+          class="w-full"
+        />
+
+        <Button
+          type="submit"
+          class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2.5 rounded-lg transition-colors mt-2"
+          :disabled="isLoading"
+        >
+          <svg v-if="isLoading" class="animate-spin h-4 w-4 mr-2 inline" viewBox="0 0 24 24">
             <circle
               class="opacity-25"
               cx="12"
@@ -84,15 +88,11 @@
             />
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
           </svg>
-          <span>{{ isLoading ? 'Registering...' : 'Register' }}</span>
+          <span>{{ isLoading ? 'Creating account...' : 'Create account' }}</span>
         </Button>
-        <div v-if="error" class="mt-4 text-red-600 dark:text-red-400 text-sm text-center">
+
+        <div v-if="error" class="mt-3 text-red-600 dark:text-red-400 text-sm text-center">
           {{ error }}
-        </div>
-        <div class="mt-6 text-center">
-          <router-link to="/login" class="text-sm text-primary hover:underline"
-            >Already have an account? Sign In</router-link
-          >
         </div>
       </form>
     </div>
@@ -114,6 +114,7 @@ const authStore = useAuthStore()
 const form = ref({
   username: '',
   name: '',
+  address: '',
   email: '',
   password: '',
   password_confirmation: '',
