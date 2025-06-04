@@ -10,6 +10,13 @@
           <Input id="name" v-model="form.name" placeholder="Business/Service Name" required />
         </div>
         <div class="flex flex-col gap-2">
+          <Label for="type">Type</Label>
+          <select id="type" v-model="form.type" required class="input">
+            <option value="resort">Resort</option>
+            <option value="photography">Photography</option>
+          </select>
+        </div>
+        <div class="flex flex-col gap-2">
           <Label for="description">Description</Label>
           <Textarea
             id="description"
@@ -46,7 +53,7 @@ const props = defineProps({
 const emit = defineEmits(['close', 'saved'])
 
 const isOpen = ref(true)
-const form = ref({ name: '', description: '' })
+const form = ref({ name: '', type: 'resort', description: '' })
 const queryClient = useQueryClient()
 const isPending = ref(false)
 
@@ -55,8 +62,9 @@ watch(
   (val) => {
     if (val) {
       form.value = { ...val }
+      if (!form.value.type) form.value.type = 'resort'
     } else {
-      form.value = { name: '', description: '' }
+      form.value = { name: '', type: 'resort', description: '' }
     }
   },
   { immediate: true },

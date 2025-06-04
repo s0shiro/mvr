@@ -11,11 +11,16 @@
             <PopoverTrigger as-child>
               <Button
                 variant="outline"
-                :class="'justify-start text-left font-normal ' + (!form.date ? 'text-muted-foreground' : '')"
+                :class="
+                  'justify-start text-left font-normal ' +
+                  (!form.date ? 'text-muted-foreground' : '')
+                "
                 type="button"
               >
                 <CalendarIcon class="mr-2 h-4 w-4 text-muted-foreground" />
-                <span v-if="calendarDate">{{ df.format(calendarDate.toDate(getLocalTimeZone())) }}</span>
+                <span v-if="calendarDate">{{
+                  df.format(calendarDate.toDate(getLocalTimeZone()))
+                }}</span>
                 <span v-else>Pick a date</span>
               </Button>
             </PopoverTrigger>
@@ -53,6 +58,25 @@
           <Label for="note">Note</Label>
           <Textarea id="note" v-model="form.note" placeholder="Details or remarks..." rows="3" />
         </div>
+        <!-- Business-type-specific fields -->
+        <div v-if="businessType === 'photography'" class="flex flex-col gap-2">
+          <Label for="eventType">Event Type</Label>
+          <Input
+            id="eventType"
+            v-model="form.details.eventType"
+            placeholder="e.g. Wedding, Portrait"
+          />
+          <Label for="clientName">Client Name</Label>
+          <Input id="clientName" v-model="form.details.clientName" placeholder="Client Name" />
+          <Label for="eventDate">Event Date</Label>
+          <Input id="eventDate" v-model="form.details.eventDate" type="date" />
+        </div>
+        <div v-if="businessType === 'resort'" class="flex flex-col gap-2">
+          <Label for="roomNumber">Room Number</Label>
+          <Input id="roomNumber" v-model="form.details.roomNumber" placeholder="Room Number" />
+          <Label for="guestName">Guest Name</Label>
+          <Input id="guestName" v-model="form.details.guestName" placeholder="Guest Name" />
+        </div>
         <div class="flex justify-end gap-2 pt-2">
           <Button type="button" variant="secondary" @click="closeModal">Cancel</Button>
           <Button type="submit" variant="primary" :disabled="isPending">
@@ -85,17 +109,23 @@ import {
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
 import { Calendar as CalendarIcon } from 'lucide-vue-next'
-import { DateFormatter, getLocalTimeZone, parseDate, today as intlToday } from '@internationalized/date'
+import {
+  DateFormatter,
+  getLocalTimeZone,
+  parseDate,
+  today as intlToday,
+} from '@internationalized/date'
 
 const props = defineProps({
   businessId: { type: [String, Number], required: true },
+  businessType: { type: String, default: 'resort' },
   sale: { type: Object, default: null },
   isEdit: { type: Boolean, default: false },
 })
 const emit = defineEmits(['close', 'saved'])
 
 const isOpen = ref(true)
-const form = ref({ date: '', amount: '', type: 'sale', note: '' })
+const form = ref({ date: '', amount: '', type: 'sale', note: '', details: {} })
 const queryClient = useQueryClient()
 const isPending = ref(false)
 const df = new DateFormatter('en-US', { dateStyle: 'long' })
@@ -107,10 +137,10 @@ watch(
   () => props.sale,
   (val) => {
     if (val) {
-      form.value = { ...val }
+      form.value = { ...val, details: val.details || {} }
       calendarDate.value = val.date ? parseDate(val.date) : undefined
     } else {
-      form.value = { date: '', amount: '', type: 'sale', note: '' }
+      form.value = { date: '', amount: '', type: 'sale', note: '', details: {} }
       calendarDate.value = undefined
     }
   },

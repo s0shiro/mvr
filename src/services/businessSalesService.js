@@ -19,3 +19,10 @@ export const deleteBusinessSale = async ({ businessId, id }) => {
   const { data } = await axiosInstance.delete(`/api/businesses/${businessId}/sales/${id}`)
   return data
 }
+
+export async function fetchBusinessSalesSummary(businessId, params = {}) {
+  const { data } = await axiosInstance.get(`/api/businesses/${businessId}/sales/summary`, {
+    params,
+  })
+  return data
+}

@@ -38,6 +38,9 @@
                   <DropdownMenuContent align="end" class="min-w-[120px]">
                     <DropdownMenuItem @click="openEditModal(sale)">Edit</DropdownMenuItem>
                     <DropdownMenuItem @click="deleteSaleHandler(sale.id)">Delete</DropdownMenuItem>
+                    <DropdownMenuItem @click="openDetailsModal(sale)"
+                      >View Details</DropdownMenuItem
+                    >
                   </DropdownMenuContent>
                 </DropdownMenu>
               </td>
@@ -49,10 +52,18 @@
     <BusinessSaleModal
       v-if="showModal"
       :business-id="businessId"
+      :business-type="businessType"
       :sale="selectedSale"
       :is-edit="isEdit"
       @close="closeModal"
       @saved="onSaved"
+    />
+    <SaleDetailsModal
+      v-if="showDetailsModal && selectedDetailsSale"
+      :open="showDetailsModal"
+      :sale="selectedDetailsSale"
+      :business-type="businessType"
+      @close="closeDetailsModal"
     />
   </div>
 </template>
@@ -62,6 +73,7 @@ import { ref, computed } from 'vue'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { fetchBusinessSales, deleteBusinessSale } from '@/services/businessSalesService'
 import BusinessSaleModal from '@/components/features/BusinessSaleModal.vue'
+import SaleDetailsModal from '@/components/features/SaleDetailsModal.vue'
 import Loading from '@/components/features/Loading.vue'
 import { Button } from '@/components/ui/button'
 import {
@@ -74,11 +86,14 @@ import { Ellipsis } from 'lucide-vue-next'
 
 const props = defineProps({
   businessId: { type: [String, Number], required: true },
+  businessType: { type: String, default: 'resort' },
 })
 
 const showModal = ref(false)
 const isEdit = ref(false)
 const selectedSale = ref(null)
+const showDetailsModal = ref(false)
+const selectedDetailsSale = ref(null)
 const queryClient = useQueryClient()
 
 const { data, isLoading } = useQuery({
@@ -121,5 +136,13 @@ function deleteSaleHandler(id) {
   if (confirm('Are you sure you want to delete this entry?')) {
     mutationDelete.mutate({ id })
   }
+}
+function openDetailsModal(sale) {
+  selectedDetailsSale.value = sale
+  showDetailsModal.value = true
+}
+function closeDetailsModal() {
+  showDetailsModal.value = false
+  selectedDetailsSale.value = null
 }
 </script>

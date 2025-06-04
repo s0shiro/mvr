@@ -145,6 +145,16 @@ const router = createRouter({
       },
     }),
     createDashboardRoute({
+      path: '/admin/businesses/:id/sales-report',
+      name: 'business-sales-report',
+      view: () => import('../views/BusinessSalesReport.vue'),
+      meta: {
+        title: 'Sales Report',
+        requiresAuth: true,
+        requiredRoles: ['admin'],
+      },
+    }),
+    createDashboardRoute({
       path: '/admin/payment-methods',
       name: 'admin-payment-methods',
       view: () => import('../views/admin/AdminPaymentMethods.vue'),
