@@ -5,6 +5,13 @@ export const fetchBusinessSales = async (businessId) => {
   return data
 }
 
+// Infinite/cursor-based fetch
+export const fetchBusinessSalesInfinite = async ({ businessId, cursor = null }) => {
+  const params = cursor ? { cursor } : {}
+  const { data } = await axiosInstance.get(`/api/businesses/${businessId}/sales`, { params })
+  return data // { data: [...], next_cursor: ... }
+}
+
 export const createBusinessSale = async ({ businessId, ...payload }) => {
   const { data } = await axiosInstance.post(`/api/businesses/${businessId}/sales`, payload)
   return data

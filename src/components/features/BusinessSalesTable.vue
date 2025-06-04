@@ -47,6 +47,17 @@
             </tr>
           </tbody>
         </table>
+        <div class="flex justify-center py-4">
+          <Button
+            v-if="hasNextPage"
+            :disabled="isFetchingNextPage"
+            @click="fetchNextPage"
+            variant="outline"
+          >
+            <span v-if="isFetchingNextPage">Loading...</span>
+            <span v-else>Load More</span>
+          </Button>
+        </div>
       </div>
     </div>
     <BusinessSaleModal
@@ -70,8 +81,12 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
-import { fetchBusinessSales, deleteBusinessSale } from '@/services/businessSalesService'
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
+import {
+  fetchBusinessSales,
+  fetchBusinessSalesInfinite,
+  deleteBusinessSale,
+} from '@/services/businessSalesService'
 import BusinessSaleModal from '@/components/features/BusinessSaleModal.vue'
 import SaleDetailsModal from '@/components/features/SaleDetailsModal.vue'
 import Loading from '@/components/features/Loading.vue'
@@ -96,12 +111,22 @@ const showDetailsModal = ref(false)
 const selectedDetailsSale = ref(null)
 const queryClient = useQueryClient()
 
-const { data, isLoading } = useQuery({
+const {
+  data: infiniteData,
+  isLoading,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
+} = useInfiniteQuery({
   queryKey: ['business-sales', props.businessId],
-  queryFn: () => fetchBusinessSales(props.businessId),
+  queryFn: ({ pageParam }) =>
+    fetchBusinessSalesInfinite({ businessId: props.businessId, cursor: pageParam }),
+  getNextPageParam: (lastPage) => lastPage.next_cursor || undefined,
 })
 
-const sales = computed(() => data.value || [])
+const sales = computed(() =>
+  infiniteData.value ? infiniteData.value.pages.flatMap((page) => page.data) : [],
+)
 
 const mutationDelete = useMutation({
   mutationFn: ({ id }) => deleteBusinessSale({ businessId: props.businessId, id }),
