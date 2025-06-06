@@ -3,8 +3,8 @@
     <h1 class="text-2xl font-bold mb-6 flex items-center gap-2">
       <ClipboardList class="w-6 h-6" /> My Bookings
     </h1>
-    <div v-if="isLoading" class="flex justify-center items-center h-40">
-      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+    <div v-if="isLoading" class="h-[calc(100vh-10rem)] flex items-center justify-center">
+      <Loading text="bookings..." />
     </div>
     <div v-else-if="error" class="text-center text-red-600">{{ error.message }}</div>
     <div v-else>
@@ -274,6 +274,7 @@ import PaymentProofDialog from '@/components/features/bookings/PaymentProofDialo
 import ContractPrint from '@/components/features/ContractPrint.vue'
 import { useCancelBooking } from '@/services/booking-service'
 import { toast } from 'vue-sonner'
+import Loading from '@/components/features/Loading.vue'
 import {
   CalendarDays,
   CreditCard,
