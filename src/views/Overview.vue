@@ -12,7 +12,6 @@ const dashboardRole = computed(() => (role && typeof role === 'function' ? role(
 
 <template>
   <div>
-    <h1>Dashboard Overview</h1>
     <div v-if="isAuthLoading" class="h-[calc(100vh-10rem)] flex items-center justify-center">
       <Loading text="Loading dashboard..." />
     </div>
