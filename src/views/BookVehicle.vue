@@ -24,10 +24,25 @@
       Complete the form below to reserve your vehicle. Fields marked with
       <span class="text-red-500">*</span> are required.
     </p>
+    <!-- Driver Unavailable Alert -->
+    <div
+      v-if="error === 'No driver available for selected dates'"
+      class="mb-6"
+      ref="driverUnavailableRef"
+    >
+      <DriverUnavailableAlert />
+      <div class="text-sm text-muted-foreground mt-2">
+        No drivers are available for your selected dates. You may try adjusting your booking dates,
+        or proceed without requesting a driver.
+      </div>
+    </div>
     <form @submit.prevent="onSubmit" class="space-y-8">
       <!-- Date/Time Section -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div class="bg-muted/60 rounded-xl p-6 flex flex-col gap-3 border border-border">
+        <div
+          ref="startDateRef"
+          class="bg-muted/60 rounded-xl p-6 flex flex-col gap-3 border border-border"
+        >
           <Label for="start_date" class="font-semibold">
             Start Date <span class="text-red-500">*</span>
           </Label>
@@ -44,7 +59,10 @@
           </Popover>
           <Input type="time" v-model="form.start_time" id="start_time" class="rounded-lg" />
         </div>
-        <div class="bg-muted/60 rounded-xl p-6 flex flex-col gap-3 border border-border">
+        <div
+          ref="endDateRef"
+          class="bg-muted/60 rounded-xl p-6 flex flex-col gap-3 border border-border"
+        >
           <Label for="end_date" class="font-semibold">
             End Date <span class="text-red-500">*</span>
           </Label>
@@ -84,7 +102,7 @@
               <Label for="delivery_location">
                 Delivery Location <span class="text-red-500">*</span>
               </Label>
-              <Select v-model="form.delivery_location">
+              <Select v-model="form.delivery_location" ref="deliveryLocationRef">
                 <SelectTrigger>
                   <SelectValue placeholder="Select location" />
                 </SelectTrigger>
@@ -112,6 +130,7 @@
               <Textarea
                 v-model="form.delivery_details"
                 id="delivery_details"
+                ref="deliveryDetailsRef"
                 placeholder="Barangay, landmark, instructions"
                 class="rounded-lg"
               />
@@ -145,9 +164,12 @@
         :form="form"
         v-model:minimized="minimizedSummary"
       />
-      <div v-if="error && !Object.keys(fieldErrors).length" class="text-red-500">{{ error }}</div>
+
       <!-- ID Upload Section -->
-      <div class="bg-muted/60 rounded-xl p-6 border border-border flex flex-col gap-3">
+      <div
+        ref="idUploadSectionRef"
+        class="bg-muted/60 rounded-xl p-6 border border-border flex flex-col gap-3"
+      >
         <Label class="font-semibold">Upload 2 Valid IDs <span class="text-red-500">*</span></Label>
         <div class="grid grid-cols-2 gap-6">
           <div
@@ -215,7 +237,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -244,8 +266,10 @@ import {
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { DateFormatter, getLocalTimeZone, today } from '@internationalized/date'
+import { DateTime } from 'luxon'
 import { isDateDisabled } from '@/lib/utils'
 import BookingSummaryReceipt from '@/components/features/BookingSummaryReceipt.vue'
+import DriverUnavailableAlert from '@/components/features/DriverUnavailableAlert.vue'
 
 const df = new DateFormatter('en-US', { dateStyle: 'long' })
 const startDate = ref(null)
@@ -317,21 +341,27 @@ watch(
 
 watch([startDate, () => form.value.start_time], ([date, time]) => {
   if (date && time) {
+    // Use Luxon to create a DateTime in Asia/Manila
     const d = date.toDate(getLocalTimeZone())
     const [h, m] = time.split(':')
-    d.setHours(Number(h))
-    d.setMinutes(Number(m))
-    form.value.start_date = d.toISOString().slice(0, 16).replace('T', ' ')
+    d.setHours(Number(h), Number(m), 0, 0)
+    // Format as ISO 8601 with +08:00 offset
+    form.value.start_date = DateTime.fromJSDate(d, { zone: 'Asia/Manila' }).toISO({
+      suppressMilliseconds: true,
+    })
   }
 })
 
 watch([endDate, () => form.value.end_time], ([date, time]) => {
   if (date && time) {
+    // Use Luxon to create a DateTime in Asia/Manila
     const d = date.toDate(getLocalTimeZone())
     const [h, m] = time.split(':')
-    d.setHours(Number(h))
-    d.setMinutes(Number(m))
-    form.value.end_date = d.toISOString().slice(0, 16).replace('T', ' ')
+    d.setHours(Number(h), Number(m), 0, 0)
+    // Format as ISO 8601 with +08:00 offset
+    form.value.end_date = DateTime.fromJSDate(d, { zone: 'Asia/Manila' }).toISO({
+      suppressMilliseconds: true,
+    })
   }
 })
 
@@ -380,6 +410,10 @@ async function onSubmit() {
     if (!idFiles.value[0] || !idFiles.value[1]) {
       idUploadError.value = 'Please upload exactly two valid ID images.'
       loading.value = false
+      // Scroll to ID upload section
+      nextTick(() => {
+        idUploadSectionRef.value?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      })
       return
     }
     const toBase64 = (file) =>
@@ -412,8 +446,33 @@ async function onSubmit() {
         Object.entries(e.response.data.errors).map(([k, v]) => [k, v[0]]),
       )
       error.value = e.response.data.message
+      // Auto-scroll to first error field
+      nextTick(() => {
+        if (fieldErrors.value.start_date && startDateRef.value) {
+          startDateRef.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        } else if (fieldErrors.value.end_date && endDateRef.value) {
+          endDateRef.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        } else if (fieldErrors.value.delivery_location && deliveryLocationRef.value) {
+          deliveryLocationRef.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        } else if (fieldErrors.value.delivery_details && deliveryDetailsRef.value) {
+          deliveryDetailsRef.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        } else if (idUploadSectionRef.value) {
+          idUploadSectionRef.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        }
+      })
     } else {
       error.value = e.response?.data?.message || 'Booking failed'
+      // If the error is 'No driver available for selected dates', scroll to the alert after DOM update
+      nextTick(() => {
+        setTimeout(() => {
+          if (
+            error.value === 'No driver available for selected dates' &&
+            driverUnavailableRef.value
+          ) {
+            driverUnavailableRef.value.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }
+        }, 50)
+      })
     }
   } finally {
     loading.value = false

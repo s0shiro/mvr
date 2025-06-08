@@ -60,10 +60,10 @@ const data = {
       url: '',
       icon: Users,
       items: [
-        { title: 'Users', url: '/users', icon: Users },
+        { title: 'Users', url: '/users', icon: Users, roleRequired: 'admin' },
         { title: 'Manage Bookings', url: '/admin/bookings', icon: ClipboardList },
       ],
-      roleRequired: 'admin',
+      roleRequired: ['admin', 'manager'],
     },
 
     {
@@ -74,7 +74,7 @@ const data = {
         { title: 'Vehicle Releases', url: '/admin/vehicle-releases', icon: Car },
         { title: 'Vehicle Returns', url: '/admin/vehicle-returns', icon: Car },
       ],
-      roleRequired: 'admin',
+      roleRequired: ['admin', 'manager'],
     },
     {
       title: 'History',
@@ -104,13 +104,32 @@ const data = {
       items: [],
       roleRequired: 'admin',
     },
+    {
+      title: 'Driver Management',
+      url: '/admin/drivers',
+      icon: Users,
+      items: [],
+      roleRequired: ['admin', 'manager'],
+    },
   ],
 }
 
 // Filter navigation items based on role requirements
 const filteredNavMain = computed(() => {
   return data.navMain.filter((item) => {
-    return !item.roleRequired || authStore.hasRole(item.roleRequired)
+    // First check if the parent item is accessible
+    if (item.roleRequired && !authStore.hasRole(item.roleRequired)) {
+      return false
+    }
+
+    // If the item has sub-items, filter them based on roles
+    if (item.items && item.items.length) {
+      item.items = item.items.filter(
+        (subItem) => !subItem.roleRequired || authStore.hasRole(subItem.roleRequired),
+      )
+    }
+
+    return true
   })
 })
 

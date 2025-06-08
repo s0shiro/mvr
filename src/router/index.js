@@ -164,6 +164,16 @@ const router = createRouter({
         requiredRoles: ['admin'],
       },
     }),
+    createDashboardRoute({
+      path: '/admin/drivers',
+      name: 'admin-drivers',
+      view: () => import('../views/admin/Drivers.vue'),
+      meta: {
+        title: 'Driver Management',
+        requiresAuth: true,
+        requiredRoles: ['admin', 'manager'],
+      },
+    }),
   ],
 })
 

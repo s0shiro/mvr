@@ -290,6 +290,7 @@ import {
   Truck,
 } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
+import DriverAssignmentStatus from '@/components/features/DriverAssignmentStatus.vue'
 
 function formatDate(dateStr) {
   const d = new Date(dateStr)
