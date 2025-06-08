@@ -51,7 +51,9 @@
           </div>
         </div>
       </div>
+      <!-- Users summary card - only shown for admin -->
       <div
+        v-if="summary.users"
         class="summary-card flex flex-col p-6 bg-card text-card-foreground rounded-2xl shadow border border-border relative overflow-hidden"
       >
         <div class="flex items-center gap-3 mb-4">
