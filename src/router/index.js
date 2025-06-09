@@ -83,6 +83,16 @@ const router = createRouter({
       },
     }),
     createDashboardRoute({
+      path: '/admin/bookings/:id',
+      name: 'admin-booking-details',
+      view: () => import('../views/admin/BookingDetails.vue'),
+      meta: {
+        title: 'Booking Details',
+        requiresAuth: true,
+        requiredRoles: ['admin'],
+      },
+    }),
+    createDashboardRoute({
       path: '/admin/vehicle-releases',
       name: 'admin-vehicle-releases',
       view: () => import('../views/admin/VehicleReleases.vue'),
@@ -173,6 +183,12 @@ const router = createRouter({
         requiresAuth: true,
         requiredRoles: ['admin', 'manager'],
       },
+    }),
+    createDashboardRoute({
+      path: '/vehicles/:id/edit',
+      name: 'vehicle-edit',
+      view: () => import('@/components/features/vehicles/VehicleUpdatePage.vue'),
+      meta: { title: 'Edit Vehicle', requiresAuth: true, requiredRoles: ['admin'] },
     }),
   ],
 })

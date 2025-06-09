@@ -14,16 +14,28 @@
         <!-- Image Gallery -->
         <div class="md:w-1/2 w-full">
           <div
-            class="rounded-xl overflow-hidden shadow-lg bg-card flex flex-col border border-border"
+            class="rounded-2xl overflow-hidden shadow-xl bg-card flex flex-col border border-border relative group"
           >
+            <!-- Floating Edit Button for Admins -->
+            <RouterLink
+              v-if="userAuth.isAdmin()"
+              :to="{ name: 'vehicle-edit', params: { id: vehicle.id } }"
+              class="absolute top-4 right-4 z-10"
+              title="Edit Vehicle"
+            >
+              <Button variant="ghost" size="icon" class="bg-white/80 hover:bg-primary/10 shadow-lg rounded-full border border-primary/20">
+                <SquarePen class="w-5 h-5 text-primary" />
+                <span class="sr-only">Edit Vehicle</span>
+              </Button>
+            </RouterLink>
             <div
-              class="w-full aspect-video bg-muted flex items-center justify-center min-h-[240px] max-h-[400px]"
+              class="w-full aspect-video bg-muted flex items-center justify-center min-h-[240px] max-h-[400px] relative"
             >
               <img
                 v-if="mainImage"
                 :src="mainImage"
                 :alt="vehicle.name"
-                class="object-cover w-full h-full min-h-[240px] max-h-[400px] bg-card"
+                class="object-cover w-full h-full min-h-[240px] max-h-[400px] bg-card transition-transform duration-300 group-hover:scale-105"
               />
               <div
                 v-else
@@ -36,14 +48,14 @@
             <!-- Thumbnails -->
             <div
               v-if="vehicle.images && vehicle.images.length > 1"
-              class="flex gap-2 p-2 overflow-x-auto bg-card border-t border-border"
+              class="flex gap-2 p-3 overflow-x-auto bg-card border-t border-border"
             >
               <img
                 v-for="image in vehicle.images"
                 :key="image.id"
                 :src="image.image_url || image.url"
                 :alt="vehicle.name"
-                class="h-16 w-28 object-cover rounded cursor-pointer border-2 border-transparent hover:border-primary focus:border-primary transition-all duration-200 bg-muted min-w-[7rem] max-w-[7rem]"
+                class="h-16 w-28 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-primary focus:border-primary transition-all duration-200 bg-muted min-w-[7rem] max-w-[7rem] shadow-sm hover:shadow-md"
                 :class="{ 'ring-2 ring-primary': mainImage === (image.image_url || image.url) }"
                 @click="selectedImage = image.image_url || image.url"
                 tabindex="0"
@@ -52,53 +64,45 @@
           </div>
         </div>
         <!-- Main Info -->
-        <div class="md:w-1/2 w-full flex flex-col justify-between gap-6">
+        <div class="md:w-1/2 w-full flex flex-col justify-between gap-8 py-2">
           <div>
-            <div class="flex items-center gap-3 mb-2">
-              <h1 class="text-3xl font-bold text-card-foreground">{{ vehicle.name }}</h1>
-              <Badge
-                :variant="badgeVariant"
-                class="px-3 py-1 rounded-full text-xs font-semibold shadow-sm uppercase tracking-wide"
-              >
-                {{ vehicle.status }}
-              </Badge>
-            </div>
-            <div class="flex items-center gap-2 text-lg text-muted-foreground mb-2">
-              <span>{{ vehicle.brand }}</span>
-              <span>•</span>
-              <span>{{ vehicle.model }}</span>
-              <span>({{ vehicle.year }})</span>
-            </div>
-            <div class="flex items-center gap-2 text-base text-muted-foreground mb-2">
-              <span class="capitalize">{{ vehicle.type }}</span>
-              <span>•</span>
-              <span>Plate: {{ vehicle.plate_number }}</span>
-            </div>
-            <div class="flex flex-col gap-2 text-base text-muted-foreground mb-2">
-              <div class="flex items-center gap-2">
-                <span>Capacity: {{ vehicle.capacity }} person(s)</span>
+            <div class="flex flex-col gap-2 mb-4">
+              <div class="flex items-center gap-3">
+                <h1 class="text-4xl font-extrabold text-card-foreground leading-tight">{{ vehicle.name }}</h1>
+                <Badge
+                  :variant="badgeVariant"
+                  class="px-4 py-1 rounded-full text-sm font-semibold shadow-sm uppercase tracking-wide"
+                >
+                  {{ vehicle.status }}
+                </Badge>
+              </div>
+              <div class="flex items-center gap-3 text-lg text-muted-foreground">
+                <span class="font-medium">{{ vehicle.brand }}</span>
                 <span>•</span>
-                <span class="font-semibold text-primary">Php {{ vehicle.rental_rate }}/day</span>
+                <span>{{ vehicle.model }}</span>
+                <span>({{ vehicle.year }})</span>
+              </div>
+              <div class="flex items-center gap-3 text-base text-muted-foreground">
+                <span class="capitalize">{{ vehicle.type }}</span>
+                <span>•</span>
+                <span>Plate: {{ vehicle.plate_number }}</span>
+              </div>
+            </div>
+            <div class="flex flex-col gap-3 text-base text-muted-foreground mb-2">
+              <div class="flex items-center gap-2">
+                <span>Capacity: <span class="font-semibold text-foreground">{{ vehicle.capacity }}</span> person(s)</span>
+                <span>•</span>
+                <span class="font-semibold text-primary text-lg">Php {{ Number(vehicle.rental_rate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}/day</span>
               </div>
               <template v-if="vehicle.rental_rate_with_driver">
                 <div class="flex items-center gap-2 pl-1">
-                  <span
-                    class="inline-block w-4 h-4 bg-primary/10 rounded-full flex items-center justify-center mr-1"
-                  >
+                  <span class="inline-block w-4 h-4 bg-primary/10 rounded-full flex items-center justify-center mr-1">
                     <User2 class="w-3 h-3 text-primary" />
                   </span>
-                  <span class="font-semibold text-primary"
-                    >Php {{ vehicle.rental_rate_with_driver }}/day</span
-                  >
+                  <span class="font-semibold text-primary text-base">Php {{ Number(vehicle.rental_rate_with_driver).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}/day</span>
                   <span class="text-xs text-muted-foreground">(with driver)</span>
                 </div>
               </template>
-            </div>
-            <!-- Move Edit Button here -->
-            <div v-if="userAuth.isAdmin()" class="flex justify-end mt-4">
-              <Button @click="openEditModal" variant="default" class="px-4 py-2 cursor-pointer">
-                Edit Vehicle
-              </Button>
             </div>
           </div>
           <!-- Ratings -->
@@ -108,39 +112,31 @@
                 <Star
                   v-for="n in 5"
                   :key="n"
-                  :class="
-                    n <= Math.round(averageRating)
-                      ? 'text-yellow-400'
-                      : 'text-gray-300 dark:text-gray-600'
-                  "
-                  class="w-5 h-5"
+                  :class="n <= Math.round(averageRating) ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'"
+                  class="w-6 h-6"
                 />
               </span>
-              <span class="text-lg font-semibold">{{ averageRating }}</span>
-              <span class="text-muted-foreground text-sm"
-                >({{ feedbackList.length }} review{{ feedbackList.length === 1 ? '' : 's' }})</span
-              >
+              <span class="text-xl font-semibold">{{ averageRating }}</span>
+              <span class="text-muted-foreground text-base">({{ feedbackList.length }} review{{ feedbackList.length === 1 ? '' : 's' }})</span>
             </div>
           </div>
-          <!-- Book Now Button -->
-          <div class="mt-4">
+          <!-- Book Now Button modernized -->
+          <div class="mt-6">
             <button
               v-if="vehicle.status !== 'maintenance'"
-              class="w-full py-3 rounded-lg bg-primary text-primary-foreground font-bold text-lg shadow hover:bg-primary/90 transition-all border border-primary/30 opacity-80 hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-50"
+              class="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold text-xl shadow-lg hover:from-primary/90 hover:to-primary/80 transition-all border border-primary/30 opacity-90 hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-50"
               @click.prevent="router.push({ path: `/book/${vehicleId}` })"
-              :disabled="
-                userAuth.isAdmin() || booking?.status === 'pending' || booking?.status === 'paid'
-              "
+              :disabled="userAuth.isAdmin() || booking?.status === 'pending' || booking?.status === 'paid'"
             >
               Book Now
             </button>
             <div v-else class="text-center">
               <div
-                class="w-full py-3 rounded-lg bg-muted text-muted-foreground font-bold text-lg border border-border"
+                class="w-full py-4 rounded-xl bg-muted text-muted-foreground font-bold text-xl border border-border shadow"
               >
                 Under Maintenance
               </div>
-              <p class="text-sm text-muted-foreground mt-2">
+              <p class="text-base text-muted-foreground mt-2">
                 This vehicle is currently unavailable for booking.
               </p>
             </div>
@@ -334,15 +330,6 @@
         </Card>
       </section>
       <!-- End Reviews & Feedback Section -->
-
-      <!-- Edit Vehicle Modal -->
-      <VehicleUpdateForm
-        v-if="dialogStore.editOpen && dialogStore.editVehicle"
-        :key="dialogStore.editVehicle.id + '-' + (dialogStore.editOpen ? 'open' : 'closed')"
-        :vehicle="dialogStore.editVehicle"
-        @close="closeEditModal"
-        @updated="handleUpdated"
-      />
     </div>
   </div>
 </template>
@@ -356,11 +343,9 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import Loading from '@/components/features/Loading.vue'
 import { Button } from '@/components/ui/button'
 import { getStatusVariant } from '@/lib/utils'
-import VehicleUpdateForm from '@/components/features/vehicles/VehicleUpdateForm.vue'
-import { useVehicleDialogStore } from '@/stores/vehicleDialogStore'
 import { useUserAuth } from '@/services/useUserAuth'
 import { useVehicleFeedbackQuery } from '@/services/feedback-api'
-import { Star, User2 } from 'lucide-vue-next'
+import { Star, User2, SquarePen } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
@@ -382,24 +367,7 @@ const mainImage = computed(() => {
   return vehicle.value?.primary_image_url || null
 })
 
-// Edit vehicle modal
-const dialogStore = useVehicleDialogStore()
-
-function openEditModal() {
-  dialogStore.openEdit(vehicle.value)
-}
-function closeEditModal() {
-  dialogStore.closeEdit()
-}
-function handleUpdated(updatedVehicle) {
-  // Optionally show a toast or update local state
-}
-
-// Close edit dialog on component mount
-onMounted(() => {
-  dialogStore.closeEdit()
-})
-
+// Admin edit button logic
 const userAuth = useUserAuth()
 
 const { data: feedbackData, isLoading: feedbackLoading } = useVehicleFeedbackQuery(vehicleId)

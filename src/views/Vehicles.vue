@@ -7,11 +7,6 @@
       </div>
       <!-- Add Vehicle Button (admin only) -->
       <template v-if="userAuth.isAdmin()">
-        <AddVehicleDialog
-          :open="dialogStore.addOpen"
-          @vehicle-added="refetch"
-          @close="dialogStore.closeAdd"
-        />
         <RouterLink :to="{ name: 'add-vehicle' }">
           <Button class="cursor-pointer" variant="default">Add Vehicle</Button>
         </RouterLink>
@@ -186,14 +181,11 @@ import { useIntersectionObserver } from '@vueuse/core'
 import { useDebounce } from '@/stores/useDebounce'
 import Loading from '@/components/features/Loading.vue'
 import { cn } from '@/lib/utils'
-import { useVehicleDialogStore } from '@/stores/vehicleDialogStore'
 import { useUserAuth } from '@/services/useUserAuth'
 
 const debounceStore = useDebounce()
-const dialogStore = useVehicleDialogStore()
 const userAuth = useUserAuth()
 
-// Filter form state
 const filterForm = ref({
   search: '',
   brand: '',
