@@ -7,6 +7,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import Loading from '../features/Loading.vue'
 
 defineProps({
   open: Boolean,
@@ -39,6 +40,7 @@ const handleConfirm = () => {
           Yes, Reject
         </Button>
       </DialogFooter>
+      <Loading v-if="loading" text="Rejecting payment..." :fullscreen="true" />
     </DialogContent>
   </Dialog>
 </template>

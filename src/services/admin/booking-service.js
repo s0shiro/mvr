@@ -25,3 +25,12 @@ export function useRejectPayment() {
         .then((res) => res.data),
   })
 }
+
+export function useAdminBookingDetails(bookingId) {
+  return useQuery({
+    queryKey: ['admin', 'booking-details', bookingId],
+    queryFn: () =>
+      axiosInstance.get(`/api/admin/bookings/${bookingId}`).then((res) => res.data.booking),
+    enabled: !!bookingId,
+  })
+}
