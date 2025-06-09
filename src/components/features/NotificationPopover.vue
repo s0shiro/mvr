@@ -1,4 +1,3 @@
-```vue
 <script setup>
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -6,6 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Bell } from 'lucide-vue-next'
 import { useNotifications } from '@/services/useNotifications'
 import { format } from 'date-fns'
+import { RouterLink } from 'vue-router'
 
 const { data: notifications, isLoading, markAsRead, markAllAsRead } = useNotifications()
 
@@ -85,6 +85,17 @@ const formatDate = (date) => {
                 <p v-if="notification.data.payment_status" class="capitalize">
                   Status: {{ notification.data.payment_status }}
                 </p>
+                <RouterLink
+                  v-if="notification.data.frontend_url"
+                  :to="{
+                    name: 'admin-booking-details',
+                    params: { id: notification.data.booking_id },
+                  }"
+                  class="text-primary underline text-xs mt-1 inline-block"
+                  @click.stop
+                >
+                  View Booking
+                </RouterLink>
               </template>
 
               <!-- Vehicle released notification specific data -->
@@ -115,4 +126,3 @@ const formatDate = (date) => {
     </PopoverContent>
   </Popover>
 </template>
-```
