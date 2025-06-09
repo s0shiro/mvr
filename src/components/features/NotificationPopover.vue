@@ -6,8 +6,19 @@ import { Bell } from 'lucide-vue-next'
 import { useNotifications } from '@/services/useNotifications'
 import { format } from 'date-fns'
 import { RouterLink } from 'vue-router'
+import { computed } from 'vue'
 
-const { data: notifications, isLoading, markAsRead, markAllAsRead } = useNotifications()
+const {
+  data: notifications,
+  isLoading,
+  fetchNextPage,
+  hasNextPage,
+  isFetchingNextPage,
+  markAsRead,
+  markAllAsRead,
+  unreadCount,
+  isUnreadCountLoading,
+} = useNotifications()
 
 const formatDate = (date) => {
   return format(new Date(date), 'MMM d, yyyy h:mm a')
@@ -21,10 +32,10 @@ const formatDate = (date) => {
         <Bell class="h-5 w-5" />
         <!-- Notification badge -->
         <span
-          v-if="notifications?.notifications?.length > 0"
+          v-if="!isUnreadCountLoading && unreadCount > 0"
           class="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-[10px] text-destructive-foreground flex items-center justify-center"
         >
-          {{ notifications?.notifications?.filter((n) => !n.read_at).length }}
+          {{ unreadCount }}
         </span>
       </Button>
     </PopoverTrigger>
@@ -121,6 +132,18 @@ const formatDate = (date) => {
               </span>
             </div>
           </button>
+          <div class="flex justify-center mt-2">
+            <Button
+              v-if="hasNextPage"
+              @click="fetchNextPage"
+              :disabled="isFetchingNextPage"
+              variant="outline"
+              size="sm"
+            >
+              <span v-if="isFetchingNextPage">Loading...</span>
+              <span v-else>Load More</span>
+            </Button>
+          </div>
         </div>
       </ScrollArea>
     </PopoverContent>
