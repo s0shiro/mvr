@@ -1,45 +1,57 @@
 <template>
-  <div class="container py-8">
-    <h1 class="text-2xl font-bold mb-6 flex items-center gap-2">
-      <Users class="w-6 h-6" /> Driver Management
-    </h1>
-    <div class="mb-6 flex flex-row gap-4 items-center">
+  <div class="bg-card text-card-foreground rounded-xl shadow-md">
+    <div class="flex items-center justify-between mb-4">
+      <h1 class="text-xl font-bold flex items-center gap-2">
+        <Users class="w-6 h-6" /> Driver Management
+      </h1>
       <Button @click="openDialog(true)" variant="default">Add Driver</Button>
     </div>
-    <div v-if="isLoading" class="flex items-center justify-center h-32">
-      <span>Loading drivers...</span>
+    <div v-if="isLoading" class="h-[calc(100vh-10rem)] flex items-center justify-center">
+      <Loading text="Loading drivers..." />
     </div>
-    <div v-else-if="error" class="text-red-500">{{ error.message }}</div>
+    <div v-else-if="error" class="text-red-500 text-center py-8">{{ error.message }}</div>
     <div v-else>
-      <table class="min-w-full bg-white border rounded-lg overflow-hidden">
-        <thead>
-          <tr class="bg-muted text-left">
-            <th class="py-2 px-4">Name</th>
-            <th class="py-2 px-4">Phone</th>
-            <th class="py-2 px-4">Email</th>
-            <th class="py-2 px-4">Status</th>
-            <th class="py-2 px-4">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="driver in drivers" :key="driver.id" class="border-b">
-            <td class="py-2 px-4">{{ driver.name }}</td>
-            <td class="py-2 px-4">{{ driver.phone }}</td>
-            <td class="py-2 px-4">{{ driver.email }}</td>
-            <td class="py-2 px-4">
-              <span :class="driver.status === 'active' ? 'text-green-600' : 'text-gray-400'">
-                {{ driver.status }}
-              </span>
-            </td>
-            <td class="py-2 px-4 flex gap-2">
-              <Button size="sm" variant="outline" @click="openDialog(false, driver)">Edit</Button>
-              <Button size="sm" variant="destructive" @click="deleteDriver(driver.id)"
-                >Delete</Button
-              >
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div v-if="drivers.length === 0" class="text-center text-muted-foreground py-8">
+        No drivers yet.
+      </div>
+      <div v-else class="overflow-x-auto rounded-lg border bg-card text-card-foreground">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-100 dark:bg-gray-900">
+            <tr>
+              <th class="p-3 text-left font-semibold">Name</th>
+              <th class="p-3 text-left font-semibold">Phone</th>
+              <th class="p-3 text-left font-semibold">Email</th>
+              <th class="p-3 text-left font-semibold">Status</th>
+              <th class="p-3 text-left font-semibold">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="driver in drivers" :key="driver.id" class="border-t">
+              <td class="p-3">{{ driver.name }}</td>
+              <td class="p-3">{{ driver.phone }}</td>
+              <td class="p-3">{{ driver.email }}</td>
+              <td class="p-3">
+                <span :class="driver.status === 'active' ? 'text-green-600' : 'text-gray-400'">
+                  {{ driver.status }}
+                </span>
+              </td>
+              <td class="p-3">
+                <DropdownMenu>
+                  <DropdownMenuTrigger as-child>
+                    <Button variant="ghost" size="icon">
+                      <Ellipsis class="w-5 h-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" class="min-w-[120px]">
+                    <DropdownMenuItem @click="openDialog(false, driver)">Edit</DropdownMenuItem>
+                    <DropdownMenuItem @click="deleteDriver(driver.id)">Delete</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
     <!-- Add/Edit Dialog -->
     <Dialog :open="dialogOpen" @update:open="onDialogUpdate">
@@ -59,8 +71,13 @@
             </Select>
           </div>
           <div class="flex justify-end gap-2 mt-6">
-            <Button type="button" variant="outline" @click="closeDialog">Cancel</Button>
-            <Button type="submit" variant="default">{{ editDriverData ? 'Update' : 'Add' }}</Button>
+            <Button type="button" variant="outline" @click="closeDialog" :disabled="isPending"
+              >Cancel</Button
+            >
+            <Button type="submit" variant="default" :disabled="isPending">
+              <span v-if="isPending">Saving...</span>
+              <span v-else>{{ editDriverData ? 'Update' : 'Add' }}</span>
+            </Button>
           </div>
         </form>
       </DialogContent>
@@ -87,6 +104,15 @@ import {
 } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Users } from 'lucide-vue-next'
+import Loading from '@/components/features/Loading.vue'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu'
+import { Ellipsis } from 'lucide-vue-next'
+import { toast } from 'vue-sonner'
 
 const dialogOpen = ref(false)
 const editDriverData = ref(null)
@@ -98,8 +124,14 @@ const createDriver = useCreateDriver()
 const updateDriver = useUpdateDriver()
 const deleteDriverMutation = useDeleteDriver()
 
+const isPending = computed(
+  () => createDriver.status.value === 'pending' || updateDriver.status.value === 'pending',
+)
+
 function openDialog(isAdd, driver = null) {
   dialogOpen.value = true
+  createDriver.reset()
+  updateDriver.reset()
   if (isAdd) {
     editDriverData.value = null
     form.value = { name: '', phone: '', email: '', status: 'active' }
@@ -113,6 +145,8 @@ function closeDialog() {
   dialogOpen.value = false
   editDriverData.value = null
   form.value = { name: '', phone: '', email: '', status: 'active' }
+  createDriver.reset()
+  updateDriver.reset()
 }
 
 function onDialogUpdate(val) {
@@ -123,8 +157,14 @@ function onDialogUpdate(val) {
 async function handleSubmit() {
   if (editDriverData.value) {
     await updateDriver.mutateAsync({ id: editDriverData.value.id, ...form.value })
+    toast('Driver updated', {
+      description: `${form.value.name} has been updated successfully.`,
+    })
   } else {
     await createDriver.mutateAsync(form.value)
+    toast('Driver created', {
+      description: `${form.value.name} has been added successfully.`,
+    })
   }
   closeDialog()
   refetch()
