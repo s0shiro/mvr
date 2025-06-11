@@ -15,7 +15,6 @@
         <span>You have no bookings yet.</span>
         <Button as-child variant="default" size="lg" class="mt-2 px-6 py-3 text-base font-semibold">
           <RouterLink to="/vehicles" class="flex items-center justify-center gap-2">
-            <Car class="w-5 h-5" />
             Add Booking
           </RouterLink>
         </Button>
@@ -225,7 +224,7 @@
         <PaymentDialog
           v-if="paymentDialogBookingId"
           :bookingId="paymentDialogBookingId"
-          :open="paymentDialogOpen"
+          v-model:open="paymentDialogOpen"
           :onClose="closePaymentDialog"
           :type="paymentDialogType"
           @paid="
