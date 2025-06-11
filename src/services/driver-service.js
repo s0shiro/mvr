@@ -1,13 +1,17 @@
 import { useQuery, useMutation } from '@tanstack/vue-query'
 import axiosInstance from '@/lib/axiosInstance'
+import { computed } from 'vue'
 
-export function useDrivers() {
+export function useDrivers(pageRef, perPageRef, searchRef) {
   return useQuery({
-    queryKey: ['drivers'],
+    queryKey: computed(() => ['drivers', pageRef.value, perPageRef.value, searchRef.value]),
     queryFn: async () => {
-      const { data } = await axiosInstance.get('/api/drivers')
+      const { data } = await axiosInstance.get('/api/drivers', {
+        params: { page: pageRef.value, per_page: perPageRef.value, search: searchRef.value },
+      })
       return data
     },
+    keepPreviousData: true,
   })
 }
 

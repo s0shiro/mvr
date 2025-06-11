@@ -47,16 +47,26 @@
             </tr>
           </tbody>
         </table>
-        <div class="flex justify-center py-4">
-          <Button
-            v-if="hasNextPage"
-            :disabled="isFetchingNextPage"
-            @click="fetchNextPage"
-            variant="outline"
-          >
-            <span v-if="isFetchingNextPage">Loading...</span>
-            <span v-else>Load More</span>
-          </Button>
+        <!-- Pagination Controls -->
+        <div class="flex justify-between items-center py-4">
+          <div class="text-sm text-muted-foreground">
+            Showing
+            <span class="font-semibold">{{ (currentPage - 1) * perPage + 1 }}</span>
+            to
+            <span class="font-semibold">{{ Math.min(currentPage * perPage, total) }}</span>
+            of
+            <span class="font-semibold">{{ total }}</span>
+            sales
+          </div>
+          <div class="flex gap-2">
+            <Button :disabled="currentPage === 1" @click="goToPage(currentPage - 1)"
+              >Previous</Button
+            >
+            <span class="px-2">Page {{ currentPage }} of {{ lastPage }}</span>
+            <Button :disabled="currentPage === lastPage" @click="goToPage(currentPage + 1)"
+              >Next</Button
+            >
+          </div>
         </div>
       </div>
     </div>
@@ -80,13 +90,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
-import {
-  fetchBusinessSales,
-  fetchBusinessSalesInfinite,
-  deleteBusinessSale,
-} from '@/services/businessSalesService'
+import { ref, computed, watch } from 'vue'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
+import { fetchBusinessSales, deleteBusinessSale } from '@/services/businessSalesService'
 import BusinessSaleModal from '@/components/features/BusinessSaleModal.vue'
 import SaleDetailsModal from '@/components/features/SaleDetailsModal.vue'
 import Loading from '@/components/features/Loading.vue'
@@ -111,22 +117,18 @@ const showDetailsModal = ref(false)
 const selectedDetailsSale = ref(null)
 const queryClient = useQueryClient()
 
-const {
-  data: infiniteData,
-  isLoading,
-  fetchNextPage,
-  hasNextPage,
-  isFetchingNextPage,
-} = useInfiniteQuery({
-  queryKey: ['business-sales', props.businessId],
-  queryFn: ({ pageParam }) =>
-    fetchBusinessSalesInfinite({ businessId: props.businessId, cursor: pageParam }),
-  getNextPageParam: (lastPage) => lastPage.next_cursor || undefined,
+const currentPage = ref(1)
+const perPage = ref(5)
+
+const { data, isLoading, refetch, error } = useQuery({
+  queryKey: computed(() => ['business-sales', props.businessId, currentPage.value, perPage.value]),
+  queryFn: () => fetchBusinessSales(props.businessId, currentPage.value, perPage.value),
+  keepPreviousData: true,
 })
 
-const sales = computed(() =>
-  infiniteData.value ? infiniteData.value.pages.flatMap((page) => page.data) : [],
-)
+const sales = computed(() => (data.value && data.value.data ? data.value.data : []))
+const total = computed(() => (data.value && data.value.total ? data.value.total : 0))
+const lastPage = computed(() => (data.value && data.value.last_page ? data.value.last_page : 1))
 
 const mutationDelete = useMutation({
   mutationFn: ({ id }) => deleteBusinessSale({ businessId: props.businessId, id }),
@@ -169,5 +171,11 @@ function openDetailsModal(sale) {
 function closeDetailsModal() {
   showDetailsModal.value = false
   selectedDetailsSale.value = null
+}
+
+function goToPage(page) {
+  if (page >= 1 && page <= lastPage.value) {
+    currentPage.value = page
+  }
 }
 </script>

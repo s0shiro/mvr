@@ -4,7 +4,10 @@
       <h1 class="text-xl font-bold flex items-center gap-2">
         <Users class="w-6 h-6" /> Driver Management
       </h1>
-      <Button @click="openDialog(true)" variant="default">Add Driver</Button>
+      <div class="flex gap-2 items-center">
+        <Input v-model="filterForm.search" placeholder="Search drivers..." class="w-64" />
+        <Button @click="openDialog(true)" variant="default">Add Driver</Button>
+      </div>
     </div>
     <div v-if="isLoading" class="h-[calc(100vh-10rem)] flex items-center justify-center">
       <Loading text="Loading drivers..." />
@@ -51,6 +54,27 @@
             </tr>
           </tbody>
         </table>
+        <!-- Pagination Controls -->
+        <div class="flex justify-between items-center py-4">
+          <div class="text-sm text-muted-foreground">
+            Showing
+            <span class="font-semibold">{{ (currentPage - 1) * perPage + 1 }}</span>
+            to
+            <span class="font-semibold">{{ Math.min(currentPage * perPage, total) }}</span>
+            of
+            <span class="font-semibold">{{ total }}</span>
+            drivers
+          </div>
+          <div class="flex gap-2">
+            <Button :disabled="currentPage === 1" @click="goToPage(currentPage - 1)"
+              >Previous</Button
+            >
+            <span class="px-2">Page {{ currentPage }} of {{ lastPage }}</span>
+            <Button :disabled="currentPage === lastPage" @click="goToPage(currentPage + 1)"
+              >Next</Button
+            >
+          </div>
+        </div>
       </div>
     </div>
     <!-- Add/Edit Dialog -->
@@ -86,7 +110,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import {
   useDrivers,
   useCreateDriver,
@@ -113,13 +137,44 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Ellipsis } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
+import { useDebounce } from '@/stores/useDebounce'
 
 const dialogOpen = ref(false)
 const editDriverData = ref(null)
 const form = ref({ name: '', phone: '', email: '', status: 'active' })
+const currentPage = ref(1)
+const perPage = ref(5)
+const filterForm = ref({
+  search: '',
+})
+const filters = ref({})
+const debounceStore = useDebounce()
 
-const { data, error, isLoading, refetch } = useDrivers()
-const drivers = computed(() => data.value || [])
+const handleFilterChange = debounceStore.debounce(
+  () => {
+    filters.value = filterForm.value.search ? { search: filterForm.value.search } : {}
+    currentPage.value = 1
+  },
+  400,
+  'driver-filters',
+)
+
+watch(
+  () => filterForm.value.search,
+  () => {
+    handleFilterChange()
+  },
+)
+
+const { data, error, isLoading, refetch } = useDrivers(
+  currentPage,
+  perPage,
+  computed(() => filters.value.search || ''),
+)
+
+const drivers = computed(() => data.value?.data || [])
+const total = computed(() => data.value?.total || 0)
+const lastPage = computed(() => data.value?.last_page || 1)
 const createDriver = useCreateDriver()
 const updateDriver = useUpdateDriver()
 const deleteDriverMutation = useDeleteDriver()
@@ -127,6 +182,10 @@ const deleteDriverMutation = useDeleteDriver()
 const isPending = computed(
   () => createDriver.status.value === 'pending' || updateDriver.status.value === 'pending',
 )
+
+watch(currentPage, (val) => {
+  refetch()
+})
 
 function openDialog(isAdd, driver = null) {
   dialogOpen.value = true
@@ -174,6 +233,12 @@ async function deleteDriver(id) {
   if (confirm('Are you sure you want to delete this driver?')) {
     await deleteDriverMutation.mutateAsync(id)
     refetch()
+  }
+}
+
+function goToPage(page) {
+  if (page >= 1 && page <= lastPage.value) {
+    currentPage.value = page
   }
 }
 </script>

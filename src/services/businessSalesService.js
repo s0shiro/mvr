@@ -1,15 +1,10 @@
 import axiosInstance from '@/lib/axiosInstance'
 
-export const fetchBusinessSales = async (businessId) => {
-  const { data } = await axiosInstance.get(`/api/businesses/${businessId}/sales`)
+export const fetchBusinessSales = async (businessId, page = 1, perPage = 10) => {
+  const { data } = await axiosInstance.get(`/api/businesses/${businessId}/sales`, {
+    params: { page, per_page: perPage },
+  })
   return data
-}
-
-// Infinite/cursor-based fetch
-export const fetchBusinessSalesInfinite = async ({ businessId, cursor = null }) => {
-  const params = cursor ? { cursor } : {}
-  const { data } = await axiosInstance.get(`/api/businesses/${businessId}/sales`, { params })
-  return data // { data: [...], next_cursor: ... }
 }
 
 export const createBusinessSale = async ({ businessId, ...payload }) => {
