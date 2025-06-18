@@ -62,6 +62,7 @@ const data = {
       items: [
         { title: 'Users', url: '/users', icon: Users, roleRequired: 'admin' },
         { title: 'Manage Bookings', url: '/admin/bookings', icon: ClipboardList },
+        { title: 'Booking Calendar', url: '/admin/bookings/calendar', icon: Book },
       ],
       roleRequired: ['admin', 'manager'],
     },

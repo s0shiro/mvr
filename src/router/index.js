@@ -93,6 +93,16 @@ const router = createRouter({
       },
     }),
     createDashboardRoute({
+      path: '/admin/bookings/calendar',
+      name: 'admin-booking-calendar',
+      view: () => import('../views/admin/BookingCalendarView.vue'),
+      meta: {
+        title: 'Booking Calendar',
+        requiresAuth: true,
+        requiredRoles: ['admin', 'manager'],
+      },
+    }),
+    createDashboardRoute({
       path: '/admin/vehicle-releases',
       name: 'admin-vehicle-releases',
       view: () => import('../views/admin/VehicleReleases.vue'),
