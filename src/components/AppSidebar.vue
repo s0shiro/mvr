@@ -135,8 +135,12 @@ const filteredNavMain = computed(() => {
 })
 
 // Highlight active route
-function isActive(url) {
-  return url && route.path.startsWith(url)
+function isActive(url, exact = false) {
+  if (!url) return false
+  if (exact) {
+    return route.path === url
+  }
+  return route.path.startsWith(url)
 }
 </script>
 
@@ -164,7 +168,7 @@ function isActive(url) {
       <SidebarGroup>
         <SidebarMenu>
           <SidebarMenuItem v-for="item in filteredNavMain" :key="item.title">
-            <SidebarMenuButton as-child>
+            <SidebarMenuButton as-child :is-active="isActive(item.url, true)">
               <RouterLink :to="item.url" class="font-semibold text-base flex items-center gap-2">
                 <component :is="item.icon" class="w-5 h-5" />
                 <span
@@ -175,7 +179,7 @@ function isActive(url) {
             </SidebarMenuButton>
             <SidebarMenuSub v-if="item.items.length">
               <SidebarMenuSubItem v-for="childItem in item.items" :key="childItem.title">
-                <SidebarMenuSubButton as-child :is-active="isActive(childItem.url)">
+                <SidebarMenuSubButton as-child :is-active="isActive(childItem.url, true)">
                   <RouterLink :to="childItem.url" class="flex items-center gap-2 text-base">
                     <component :is="childItem.icon" class="w-5 h-5" />
                     <span>{{ childItem.title }}</span>
