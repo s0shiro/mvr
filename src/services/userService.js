@@ -33,3 +33,8 @@ export function useUsers(filters = {}) {
     },
   })
 }
+
+export async function addUser(data) {
+  const response = await axiosInstance.post('/api/admin/users', data)
+  return response.data
+}

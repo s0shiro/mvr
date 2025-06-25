@@ -12,6 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import AddUserForm from '@/components/features/AddUserForm.vue'
+import { useAuthStore } from '@/stores/authStore'
 
 const debounceStore = useDebounce()
 const searchInput = ref('')
@@ -51,16 +53,29 @@ const users = computed(() => {
     return acc
   }, [])
 })
+
+const authStore = useAuthStore()
+const showAddUser = ref(false)
+
+function handleAddUserSuccess() {
+  showAddUser.value = false
+  refetch()
+}
 </script>
 
 <template>
   <div class="container mx-auto space-y-6">
     <div class="flex justify-between items-center">
       <h1 class="text-2xl font-bold">User Management</h1>
+      <Button v-if="authStore.hasRole && authStore.hasRole('admin')" @click="showAddUser = true"
+        >Add User</Button
+      >
     </div>
 
+    <AddUserForm v-if="showAddUser" @success="handleAddUserSuccess" @cancel="showAddUser = false" />
+
     <!-- Filters -->
-    <div class="flex gap-4">
+    <div class="flex gap-4" v-if="!showAddUser">
       <div class="flex-1">
         <Input v-model="searchInput" placeholder="Search users..." @input="debouncedSearch()" />
       </div>

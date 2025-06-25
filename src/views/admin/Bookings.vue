@@ -95,7 +95,16 @@
                 </div>
               </div>
             </div>
-            <div class="flex justify-end mt-4">
+            <div class="flex justify-end gap-2 mt-4">
+              <Button
+                v-if="shouldShowCancelButton(booking)"
+                size="sm"
+                variant="destructive"
+                @click="openCancelDialog(booking)"
+              >
+                <Ban class="w-4 h-4 mr-2" />
+                Cancel Booking
+              </Button>
               <RouterLink :to="`/admin/bookings/${booking.id}`">
                 <Button size="sm" variant="default">View Details</Button>
               </RouterLink>
@@ -104,6 +113,14 @@
         </div>
       </Card>
     </div>
+
+    <!-- Cancel Confirmation Dialog -->
+    <ConfirmCancelDialog
+      v-model:open="showCancelDialog"
+      :booking="selectedBooking"
+      :loading="cancelLoading[selectedBooking?.id]"
+      @confirm="handleCancelBooking"
+    />
   </div>
 </template>
 
@@ -114,12 +131,46 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import Loading from '@/components/features/Loading.vue'
-import { useAdminBookings } from '@/services/admin/booking-service'
+import ConfirmCancelDialog from '@/components/features/ConfirmCancelDialog.vue'
+import { useAdminBookings, useAdminCancelBooking } from '@/services/admin/booking-service'
 import { getStatusVariant } from '@/lib/utils'
-import { CalendarDays, Truck } from 'lucide-vue-next'
+import { CalendarDays, Truck, Ban } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
+import { toast } from 'vue-sonner'
 
-const { data: bookings, error, isLoading } = useAdminBookings()
+const { data: bookings, error, isLoading, refetch } = useAdminBookings()
+const cancelBooking = useAdminCancelBooking()
+const cancelLoading = ref({})
+const showCancelDialog = ref(false)
+const selectedBooking = ref(null)
+
+function shouldShowCancelButton(booking) {
+  // Admin can cancel pending or confirmed bookings
+  return booking && (booking.status === 'pending' || booking.status === 'confirmed')
+}
+
+function openCancelDialog(booking) {
+  selectedBooking.value = booking
+  showCancelDialog.value = true
+}
+
+async function handleCancelBooking() {
+  const booking = selectedBooking.value
+  if (!booking) return
+
+  cancelLoading.value[booking.id] = true
+  try {
+    await cancelBooking.mutateAsync(booking.id)
+    toast.success('Booking cancelled successfully')
+    showCancelDialog.value = false
+    selectedBooking.value = null
+    refetch()
+  } catch (e) {
+    toast.error(e.response?.data?.message || 'Failed to cancel booking')
+  } finally {
+    cancelLoading.value[booking.id] = false
+  }
+}
 
 function formatDate(date, pretty = false) {
   const d = new Date(date)

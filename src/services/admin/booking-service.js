@@ -34,3 +34,12 @@ export function useAdminBookingDetails(bookingId) {
     enabled: !!bookingId,
   })
 }
+
+export function useAdminCancelBooking() {
+  return useMutation({
+    mutationFn: async (bookingId) => {
+      const res = await axiosInstance.post(`/api/admin/bookings/${bookingId}/cancel`)
+      return res.data
+    },
+  })
+}
