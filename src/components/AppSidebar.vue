@@ -24,6 +24,7 @@ import {
   LogOut,
   UserCircle,
   Clock3,
+  X,
 } from 'lucide-vue-next'
 import { RouterLink, useRoute } from 'vue-router'
 
@@ -84,10 +85,18 @@ const data = {
       items: [
         {
           title: 'Completed Bookings',
-          url: computed(() =>
-            authStore.hasRole('admin') ? '/admin/completed-bookings' : '/my-completed-bookings',
+            url: computed(() =>
+            authStore.hasRole('admin') || authStore.hasRole('manager')
+              ? '/admin/completed-bookings'
+              : '/my-completed-bookings',
           ),
           icon: ClipboardList,
+        },
+        {
+          title: 'Canceled Bookings',
+          url: '/admin/canceled-bookings',
+          icon: X,
+          roleRequired: ['admin', 'manager'],
         },
       ],
     },

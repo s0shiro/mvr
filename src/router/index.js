@@ -133,6 +133,26 @@ const router = createRouter({
       },
     }),
     createDashboardRoute({
+      path: '/admin/canceled-bookings',
+      name: 'admin-canceled-bookings',
+      view: () => import('../views/admin/CanceledBookings.vue'),
+      meta: {
+        title: 'Canceled Bookings',
+        requiresAuth: true,
+        requiredRoles: ['admin'],
+      },
+    }),
+    createDashboardRoute({
+      path: '/admin/completed-bookings/:id',
+      name: 'admin-completed-booking-details',
+      view: () => import('../views/CompletedBookingDetails.vue'),
+      meta: {
+        title: 'Completed Booking Details',
+        requiresAuth: true,
+        requiredRoles: ['admin'],
+      },
+    }),
+    createDashboardRoute({
       path: '/book/:id',
       name: 'book-vehicle',
       view: () => import('../views/BookVehicle.vue'),

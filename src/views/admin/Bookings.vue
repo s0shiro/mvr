@@ -10,6 +10,21 @@
     <div v-else-if="error" class="text-center text-destructive text-lg font-medium">
       {{ error }}
     </div>
+    <div v-else-if="!bookings || bookings.length === 0" class="h-[calc(100vh-10rem)] flex flex-col items-center justify-center text-center space-y-4">
+      <div class="w-24 h-24 mx-auto mb-4 opacity-50">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full text-muted-foreground">
+          <path d="M16 3h5v5"></path>
+          <path d="m21 3-5 5"></path>
+          <path d="M4 20h5v-5"></path>
+          <path d="m4 20 5-5"></path>
+          <path d="M8 8h8v8H8z"></path>
+        </svg>
+      </div>
+      <h3 class="text-xl font-semibold text-foreground">No bookings found</h3>
+      <p class="text-muted-foreground max-w-md">
+        There are currently no bookings in the system. New bookings will appear here once customers start making reservations.
+      </p>
+    </div>
     <div v-else class="space-y-8">
       <Card
         v-for="booking in bookings"
@@ -105,6 +120,14 @@
                 <Ban class="w-4 h-4 mr-2" />
                 Cancel Booking
               </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                @click="openContractDialog(booking)"
+              >
+                <FileText class="w-4 h-4 mr-2" />
+                Print Contract
+              </Button>
               <RouterLink :to="`/admin/bookings/${booking.id}`">
                 <Button size="sm" variant="default">View Details</Button>
               </RouterLink>
@@ -121,6 +144,19 @@
       :loading="cancelLoading[selectedBooking?.id]"
       @confirm="handleCancelBooking"
     />
+
+    <!-- Contract Print Modal -->
+    <div v-if="contractDialogOpen">
+      <div class="modal-overlay" @click="closeContractDialog"></div>
+      <div class="modal-content">
+        <button class="modal-close" @click="closeContractDialog">&times;</button>
+        <ContractPrint 
+          v-if="selectedBookingForContract"
+          :booking="selectedBookingForContract" 
+          :show-print-button="true" 
+        />
+      </div>
+    </div>
   </div>
 </template>
 
@@ -132,9 +168,10 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import Loading from '@/components/features/Loading.vue'
 import ConfirmCancelDialog from '@/components/features/ConfirmCancelDialog.vue'
+import ContractPrint from '@/components/features/ContractPrint.vue'
 import { useAdminBookings, useAdminCancelBooking } from '@/services/admin/booking-service'
 import { getStatusVariant } from '@/lib/utils'
-import { CalendarDays, Truck, Ban } from 'lucide-vue-next'
+import { CalendarDays, Truck, Ban, FileText } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import { toast } from 'vue-sonner'
 
@@ -144,6 +181,10 @@ const cancelLoading = ref({})
 const showCancelDialog = ref(false)
 const selectedBooking = ref(null)
 
+// Contract dialog state
+const contractDialogOpen = ref(false)
+const selectedBookingForContract = ref(null)
+
 function shouldShowCancelButton(booking) {
   // Admin can cancel pending or confirmed bookings
   return booking && (booking.status === 'pending' || booking.status === 'confirmed')
@@ -152,6 +193,17 @@ function shouldShowCancelButton(booking) {
 function openCancelDialog(booking) {
   selectedBooking.value = booking
   showCancelDialog.value = true
+}
+
+function openContractDialog(booking) {
+  console.log('Opening contract for booking:', booking)
+  selectedBookingForContract.value = booking
+  contractDialogOpen.value = true
+}
+
+function closeContractDialog() {
+  contractDialogOpen.value = false
+  selectedBookingForContract.value = null
 }
 
 async function handleCancelBooking() {
@@ -190,3 +242,41 @@ function formatDate(date, pretty = false) {
   return d.toLocaleString()
 }
 </script>
+
+<style scoped>
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+}
+.modal-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  z-index: 1001;
+  max-width: 900px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.18);
+}
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #888;
+  cursor: pointer;
+  z-index: 1002;
+}
+</style>

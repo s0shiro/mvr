@@ -1,6 +1,6 @@
 <template>
   <div class="contract-print">
-    <button @click="printContract" class="print-btn">Print</button>
+    <button v-if="showPrintButton" @click="printContract" class="print-btn">Print</button>
     <div class="contract-content">
       <!-- logo here then center the logo-->
       <div class="logo-section">
@@ -331,6 +331,10 @@ const props = defineProps({
   booking: {
     type: Object,
     default: null,
+  },
+  showPrintButton: {
+    type: Boolean,
+    default: false,
   },
 })
 

@@ -146,8 +146,9 @@
               <div v-if="payment.proof_image" class="mt-2">
                 <img
                   :src="payment.proof_image"
-                  alt="Proof"
-                  class="w-36 h-24 object-cover rounded border"
+                  alt="Payment Proof"
+                  class="w-36 h-24 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                  @click="openPaymentProofDialog(payment.proof_image, payment.created_at)"
                 />
               </div>
             </CardContent>
@@ -253,12 +254,21 @@
         </CardContent>
       </Card>
     </section>
+
+    <!-- Payment Proof Dialog -->
+    <PaymentProofDialog
+      v-model:open="paymentProofDialogOpen"
+      :image-url="selectedPaymentProof.imageUrl"
+      :payment-date="selectedPaymentProof.paymentDate"
+    />
   </section>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import PaymentProofDialog from '@/components/features/bookings/PaymentProofDialog.vue'
 import {
   User,
   MapPin,
@@ -271,6 +281,21 @@ import {
   Truck,
   RotateCcw,
 } from 'lucide-vue-next'
+
+const paymentProofDialogOpen = ref(false)
+const selectedPaymentProof = ref({
+  imageUrl: '',
+  paymentDate: ''
+})
+
+function openPaymentProofDialog(imageUrl, paymentDate) {
+  selectedPaymentProof.value = {
+    imageUrl,
+    paymentDate
+  }
+  paymentProofDialogOpen.value = true
+}
+
 function formatDate(dateStr) {
   if (!dateStr) return ''
   const d = new Date(dateStr)
@@ -284,6 +309,7 @@ function formatDate(dateStr) {
     hour12: true,
   })
 }
+
 const props = defineProps({
   details: { type: Object, required: true },
 })
