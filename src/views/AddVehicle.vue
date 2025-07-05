@@ -7,7 +7,9 @@
         <div class="flex flex-col gap-2">
           <Label for="name">Name <span class="text-red-500">*</span></Label>
           <Input id="name" v-model="addForm.name" placeholder="Vehicle name" class="w-full" />
-          <p v-if="addErrors.name" class="text-destructive text-xs mt-1">{{ addErrors.name }}</p>
+          <p v-if="addErrors.name" class="text-destructive text-xs mt-1">
+            {{ Array.isArray(addErrors.name) ? addErrors.name[0] : addErrors.name }}
+          </p>
         </div>
         <div class="flex flex-col gap-2">
           <Label>Type <span class="text-red-500">*</span></Label>
@@ -39,17 +41,23 @@
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <p v-if="addErrors.type" class="text-destructive text-xs mt-1">{{ addErrors.type }}</p>
+          <p v-if="addErrors.type" class="text-destructive text-xs mt-1">
+            {{ Array.isArray(addErrors.type) ? addErrors.type[0] : addErrors.type }}
+          </p>
         </div>
         <div class="flex flex-col gap-2">
           <Label for="brand">Brand <span class="text-red-500">*</span></Label>
           <Input id="brand" v-model="addForm.brand" placeholder="Brand" class="w-full" />
-          <p v-if="addErrors.brand" class="text-destructive text-xs mt-1">{{ addErrors.brand }}</p>
+          <p v-if="addErrors.brand" class="text-destructive text-xs mt-1">
+            {{ Array.isArray(addErrors.brand) ? addErrors.brand[0] : addErrors.brand }}
+          </p>
         </div>
         <div class="flex flex-col gap-2">
           <Label for="model">Model <span class="text-red-500">*</span></Label>
           <Input id="model" v-model="addForm.model" placeholder="Model" class="w-full" />
-          <p v-if="addErrors.model" class="text-destructive text-xs mt-1">{{ addErrors.model }}</p>
+          <p v-if="addErrors.model" class="text-destructive text-xs mt-1">
+            {{ Array.isArray(addErrors.model) ? addErrors.model[0] : addErrors.model }}
+          </p>
         </div>
         <div class="flex flex-col gap-2">
           <Label for="year">Year</Label>
@@ -68,7 +76,9 @@
               </NumberFieldContent>
             </NumberField>
           </div>
-          <p v-if="addErrors.year" class="text-destructive text-xs mt-1">{{ addErrors.year }}</p>
+          <p v-if="addErrors.year" class="text-destructive text-xs mt-1">
+            {{ Array.isArray(addErrors.year) ? addErrors.year[0] : addErrors.year }}
+          </p>
         </div>
         <div class="flex flex-col gap-2">
           <Label for="plate_number">Plate Number <span class="text-red-500">*</span></Label>
@@ -79,7 +89,7 @@
             class="w-full"
           />
           <p v-if="addErrors.plate_number" class="text-destructive text-xs mt-1">
-            {{ addErrors.plate_number }}
+            {{ Array.isArray(addErrors.plate_number) ? addErrors.plate_number[0] : addErrors.plate_number }}
           </p>
         </div>
       </div>
@@ -107,7 +117,7 @@
             </NumberField>
           </div>
           <p v-if="addErrors.capacity" class="text-destructive text-xs mt-1">
-            {{ addErrors.capacity }}
+            {{ Array.isArray(addErrors.capacity) ? addErrors.capacity[0] : addErrors.capacity }}
           </p>
         </div>
         <div class="flex flex-col gap-2">
@@ -131,7 +141,7 @@
             </NumberField>
           </div>
           <p v-if="addErrors.rental_rate" class="text-destructive text-xs mt-1">
-            {{ addErrors.rental_rate }}
+            {{ Array.isArray(addErrors.rental_rate) ? addErrors.rental_rate[0] : addErrors.rental_rate }}
           </p>
         </div>
         <div class="flex flex-col gap-2">
@@ -155,7 +165,7 @@
             </NumberField>
           </div>
           <p v-if="addErrors.rental_rate_with_driver" class="text-destructive text-xs mt-1">
-            {{ addErrors.rental_rate_with_driver }}
+            {{ Array.isArray(addErrors.rental_rate_with_driver) ? addErrors.rental_rate_with_driver[0] : addErrors.rental_rate_with_driver }}
           </p>
         </div>
         <div class="flex flex-col gap-2">
@@ -177,7 +187,7 @@
             </NumberField>
           </div>
           <p v-if="addErrors.deposit" class="text-destructive text-xs mt-1">
-            {{ addErrors.deposit }}
+            {{ Array.isArray(addErrors.deposit) ? addErrors.deposit[0] : addErrors.deposit }}
           </p>
         </div>
       </div>
@@ -215,7 +225,9 @@
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <p v-if="addErrors.status" class="text-destructive text-xs mt-1">{{ addErrors.status }}</p>
+        <p v-if="addErrors.status" class="text-destructive text-xs mt-1">
+          {{ Array.isArray(addErrors.status) ? addErrors.status[0] : addErrors.status }}
+        </p>
       </div>
       <div class="flex flex-col gap-2">
         <Label for="description">Description</Label>
@@ -226,7 +238,7 @@
           class="w-full"
         />
         <p v-if="addErrors.description" class="text-destructive text-xs mt-1">
-          {{ addErrors.description }}
+          {{ Array.isArray(addErrors.description) ? addErrors.description[0] : addErrors.description }}
         </p>
       </div>
     </div>
@@ -281,7 +293,7 @@
           Upload up to 5 images. First image will be set as primary.
         </p>
         <p v-if="addErrors.images" class="text-destructive text-xs mt-1">
-          {{ addErrors.images }}
+          {{ Array.isArray(addErrors.images) ? addErrors.images[0] : addErrors.images }}
         </p>
       </div>
     </div>
