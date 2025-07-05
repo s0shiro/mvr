@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-6">
     <div v-if="isLoading" class="h-40">
-      <Loading text="Loading dashboard..." size="lg" />
+      <Loading text="Loading dashboard..."/>
     </div>
     <div v-else-if="error" class="text-red-500">
       <Alert variant="destructive">

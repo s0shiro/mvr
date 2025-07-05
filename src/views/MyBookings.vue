@@ -20,13 +20,29 @@
         </Button>
       </div>
       <div v-else class="space-y-6">
-        <Card v-for="booking in bookings" :key="booking.id" class="border border-border bg-card">
+        <Card 
+          v-for="booking in bookings" 
+          :key="booking.id" 
+          :class="[
+            'border bg-card transition-all duration-200',
+            booking.status === 'cancelled' 
+              ? 'border-red-200 bg-red-50/50 opacity-75 hover:opacity-90 cancelled-card' 
+              : 'border-border hover:shadow-md'
+          ]"
+        >
           <CardHeader class="flex flex-row items-center justify-between gap-4">
-            <div>
-              <CardTitle class="text-lg font-semibold">{{
+            <div :class="booking.status === 'cancelled' ? 'line-through text-muted-foreground' : ''">
+              <CardTitle 
+                :class="[
+                  'text-lg font-semibold',
+                  booking.status === 'cancelled' ? 'text-muted-foreground' : ''
+                ]"
+              >{{
                 booking.vehicle?.name || 'Vehicle'
               }}</CardTitle>
-              <CardDescription>
+              <CardDescription 
+                :class="booking.status === 'cancelled' ? 'text-muted-foreground/70' : ''"
+              >
                 <span class="font-medium">{{ booking.vehicle?.brand }}</span>
                 <span v-if="booking.vehicle"
                   >• {{ booking.vehicle.model }} ({{ booking.vehicle.year }})</span
@@ -36,13 +52,33 @@
             <Badge :variant="getStatusVariant(booking.status)">{{ booking.status }}</Badge>
           </CardHeader>
           <CardContent class="flex flex-col md:flex-row gap-6 items-center md:items-start">
-            <img
-              v-if="booking.vehicle?.primary_image_url"
-              :src="booking.vehicle.primary_image_url"
-              alt="Vehicle"
-              class="w-40 h-28 object-cover rounded-lg shadow-sm border"
-            />
-            <div class="flex-1 space-y-4">
+            <div 
+              v-if="booking.vehicle?.primary_image_url" 
+              class="relative"
+            >
+              <img
+                :src="booking.vehicle.primary_image_url"
+                alt="Vehicle"
+                :class="[
+                  'w-40 h-28 object-cover rounded-lg shadow-sm border',
+                  booking.status === 'cancelled' ? 'grayscale opacity-60' : ''
+                ]"
+              />
+              <div 
+                v-if="booking.status === 'cancelled'"
+                class="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg"
+              >
+                <span class="text-red-600 font-bold text-sm bg-white/90 px-2 py-1 rounded shadow">
+                  CANCELLED
+                </span>
+              </div>
+            </div>
+            <div 
+              :class="[
+                'flex-1 space-y-4',
+                booking.status === 'cancelled' ? 'text-muted-foreground/70' : ''
+              ]"
+            >
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="space-y-2">
                   <div class="flex items-center gap-2">
@@ -114,10 +150,31 @@
                   </span>
                   {{ booking.notes }}
                 </div>
+
+                <div
+                  v-if="booking.status === 'cancelled'"
+                  class="text-sm bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg"
+                >
+                  <span class="font-semibold block mb-1 flex items-center gap-2">
+                    <X class="w-4 h-4" /> Booking Cancelled
+                  </span>
+                  <p class="text-red-700">
+                    This booking has been cancelled. 
+                    <span v-if="booking.cancellation_reason">
+                      Reason: {{ booking.cancellation_reason }}
+                    </span>
+                    <span v-if="booking.cancelled_at">
+                      Cancelled on {{ formatDate(booking.cancelled_at) }}
+                    </span>
+                  </p>
+                </div>
               </div>
 
               <div class="flex gap-2 mb-4">
-                <template v-if="booking.status === 'pending' || booking.status === 'confirmed'">
+                <div v-if="booking.status === 'cancelled'" class="text-sm text-muted-foreground italic">
+                  No actions available for cancelled bookings
+                </div>
+                <template v-else-if="booking.status === 'pending' || booking.status === 'confirmed'">
                   <Button
                     v-if="shouldShowDepositButton(booking)"
                     variant="outline"
@@ -166,22 +223,48 @@
               </div>
 
               <div
-                class="space-y-4 relative before:absolute before:inset-0 before:ml-5 before:w-0.5 before:-translate-x-1/2 before:bg-border before:h-full"
+                :class="[
+                  'space-y-4 relative before:absolute before:inset-0 before:ml-5 before:w-0.5 before:-translate-x-1/2 before:h-full',
+                  booking.status === 'cancelled' 
+                    ? 'before:bg-red-200 opacity-60' 
+                    : 'before:bg-border'
+                ]"
               >
                 <template v-for="payment in booking.payments" :key="payment.id">
                   <div class="relative pl-8">
                     <!-- Timeline dot -->
                     <div
-                      class="absolute left-0 top-0 flex items-center justify-center w-8 h-8 rounded-full bg-background border-2 border-border"
+                      :class="[
+                        'absolute left-0 top-0 flex items-center justify-center w-8 h-8 rounded-full border-2',
+                        booking.status === 'cancelled'
+                          ? 'bg-red-50 border-red-200'
+                          : 'bg-background border-border'
+                      ]"
                     >
                       <ShieldCheck
                         v-if="payment.type === 'deposit'"
-                        class="w-4 h-4 text-foreground"
+                        :class="[
+                          'w-4 h-4',
+                          booking.status === 'cancelled' ? 'text-red-400' : 'text-foreground'
+                        ]"
                       />
-                      <Receipt v-else class="w-4 h-4 text-foreground" />
+                      <Receipt 
+                        v-else 
+                        :class="[
+                          'w-4 h-4',
+                          booking.status === 'cancelled' ? 'text-red-400' : 'text-foreground'
+                        ]"
+                      />
                     </div>
                     <!-- Content -->
-                    <div class="bg-card rounded-lg border p-4 shadow-sm">
+                    <div 
+                      :class="[
+                        'rounded-lg border p-4 shadow-sm',
+                        booking.status === 'cancelled' 
+                          ? 'bg-red-50/50 border-red-200' 
+                          : 'bg-card'
+                      ]"
+                    >
                       <div class="flex items-center justify-between mb-3">
                         <div class="font-semibold">
                           {{ payment.type === 'deposit' ? 'Security Deposit' : 'Rental Payment' }}
@@ -287,6 +370,7 @@ import {
   Edit2,
   Image as ImageIcon,
   Truck,
+  X,
 } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import DriverAssignmentStatus from '@/components/features/DriverAssignmentStatus.vue'
@@ -410,6 +494,34 @@ async function handleCancelBooking(booking) {
 </script>
 
 <style scoped>
+/* Cancelled booking styles */
+.cancelled-overlay {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+}
+
+.cancelled-card {
+  position: relative;
+}
+
+.cancelled-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(239, 68, 68, 0.05) 10px,
+    rgba(239, 68, 68, 0.05) 20px
+  );
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Modal styles */
 .modal-overlay {
   position: fixed;
   top: 0;

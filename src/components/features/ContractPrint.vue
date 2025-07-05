@@ -56,8 +56,8 @@
           aforementioned vehicle and <b>LESSEE</b> hereby accepts the same by way of lease subject
           to the following terms and conditions:
         </p>
-        <ol class="contract-clauses pl-2em">
-          <li>
+        <div class="contract-clauses pl-2em">
+          <div>
             <div class="clause-item mt-1em">
               1. <b>PURPOSE OF LEASE</b> – The <b>LESSEE</b> agrees and undertakes to use, drive and
               devote the <b>LEASED VEHICLE</b> exclusively for personal purposes only as allowed by
@@ -68,26 +68,26 @@
               Rules shall be a ground for the cancellation or termination of this Contract; or
               otherwise, the <b>LESSOR</b> may opt to increase rent on account thereof.
             </div>
-          </li>
-          <li>
+          </div>
+          <div>
             <div class="clause-item mt-1em">
               2. <b>LEASE PERIOD</b> – The term of this lease shall be for the period of
               {{ leasePeriod }} commencing on {{ leaseStart }}. Prior to expiration of this lease,
               both the <b>LESSEE</b> and the <b>LESSOR</b> shall notify each other of their
               intention to renew or terminate this contract.
             </div>
-          </li>
-          <li style="page-break-before: always; margin-top: 4em">
+          </div>
+          <div style="page-break-before: always; margin-top: 4em">
             <div class="clause-item mt-1em">
-              <b>3. RENTAL</b> – The <b>LESSEE</b> shall pay the <b>LESSOR</b> a daily rental amount
+              3. <b>RENTAL</b> – The <b>LESSEE</b> shall pay the <b>LESSOR</b> a daily rental amount
               of <b>{{ dailyRate }}</b> (<b>{{ dailyRateWords }}</b
               >), Philippine Currency.
             </div>
-          </li>
+          </div>
 
-          <li>
+          <div>
             <div class="clause-item mt-1em">
-              <b>4. SECURITY DEPOSIT</b> – The <b>LESSEE</b> shall pay the <b>LESSOR</b> the sum
+              4. <b>SECURITY DEPOSIT</b> – The <b>LESSEE</b> shall pay the <b>LESSOR</b> the sum
               equivalent to <b>{{ securityDeposit }}</b> (<b>{{ securityDepositWords }}</b
               >), Philippine Currency. Said security deposit is non-interest bearing and shall
               remain intact for the entire duration of this lease. Likewise, said deposit shall
@@ -99,9 +99,9 @@
               <b>ONE (1) WEEK</b>, the <b>LESSEE</b> warrants that he will pay the bill with no
               further question.
             </div>
-          </li>
+          </div>
 
-          <li style="list-style: none; padding: 0; margin: 0">
+          <div style="list-style: none; padding: 0; margin: 0">
             <table
               style="width: 100%; margin-top: 2em; margin-left: 3em; border-collapse: collapse"
             >
@@ -131,11 +131,11 @@
                 </tr>
               </tbody>
             </table>
-          </li>
+          </div>
 
-          <li>
+          <div>
             <div class="clause-item mt-1em">
-              <b>5. THIRD PARTY LIABILITY</b> – The <b>LESSEE</b> during their occupancy of the
+              5. <b>THIRD PARTY LIABILITY</b> – The <b>LESSEE</b> during their occupancy of the
               leased vehicle shall hold the <b>LESSOR</b> free and harmless from any damage or
               liability or responsibility to any person or property arising out of or as consequence
               of the use of the leased vehicle by the <b>LESSEE</b>, their agents, employees,
@@ -143,33 +143,33 @@
               such as acts of <b>GOD</b>, such as typhoons, earthquakes, etc. which are beyond the
               control of the <b>LESSEE</b>, the latter shall not be liable to the <b>LESSOR</b>.
             </div>
-          </li>
+          </div>
 
-          <li>
+          <div>
             <div class="clause-item mt-1em">
-              <b>6. SUBLEASE / TRANSFER OF RIGHTS</b> – The <b>LESSEE</b> shall not assign or
+              6. <b>SUBLEASE / TRANSFER OF RIGHTS</b> – The <b>LESSEE</b> shall not assign or
               transfer rights in this contract without the prior written consent of the
               <b>LESSOR</b> and no right or interest shall be conferred or vested upon anyone other
               than the <b>LESSEE</b> without such written consent. The <b>LESSEE</b>, shall be
               solidarily liable to the <b>LESSOR</b> for any and all acts and obligations of its
               co-residents/staff/guests in violation of the terms of this contract.
             </div>
-          </li>
+          </div>
 
-          <li>
+          <div>
             <div class="clause-item mt-1em">
-              <b>7. INSPECTION OF VEHICLE</b> – The <b>LESSOR</b> shall maintain the
+              7. <b>INSPECTION OF VEHICLE</b> – The <b>LESSOR</b> shall maintain the
               <b>LEASED</b> vehicle in good and tenantable condition and for such purpose of the
               <b>LESSOR</b> reserves the right at reasonable times and with prior notice to enter
               and inspect the vehicle and to make the necessary repairs thereof. The
               <b>LESSEE</b> likewise agrees to cooperate with the <b>LESSOR</b>
               in the keeping the vehicle in good and tenantable condition.
             </div>
-          </li>
+          </div>
 
-          <li>
+          <div>
             <div class="clause-item mt-1em">
-              <b>8. TERMINATION CLAUSE</b> – In the event the <b>LESSEE</b> decides to pre-terminate
+              8. <b>TERMINATION CLAUSE</b> – In the event the <b>LESSEE</b> decides to pre-terminate
               this <b>Contract of Lease</b>, the <b>LESSEE</b> should give the <b>LESSOR</b> at
               least <b>SIXTY (60)</b> days written notice in advance of such intention. Thus, the
               security deposit and unused rentals shall be forfeited in favor of the
@@ -177,11 +177,11 @@
               <b>LESSOR</b> may show the <b>Leased</b> vehicle to prospective tenants at reasonable
               hours with prior notice and approval from the <b>LESSEE</b>.
             </div>
-          </li>
+          </div>
 
-          <li>
+          <div>
             <div class="clause-item mt-1em" style="page-break-before: always; margin-top: 4em">
-              <b>9. RETURN OF VEHICLE</b> – Upon termination of this contract for any reason
+              9. <b>RETURN OF VEHICLE</b> – Upon termination of this contract for any reason
               whatsoever, the <b>LESSE</b> shall immediately return possession of the vehicle
               thereof to the <b>LESSOR</b>, upon the latter's request, unless this
               <b>Contract of Lease</b> is extended. <b>TWENTY FOUR (24)</b> hours prior to the
@@ -194,50 +194,50 @@
               {{ dailyRate }} agreed upon in this contract until the return of the vehicle to the
               <b>LESSOR</b>.
             </div>
-          </li>
+          </div>
 
-          <li>
+          <div>
             <div class="clause-item mt-1em">
-              <b>10. PENAL PROVISON</b> – Any violation of the terms provided for in this Contract
+              10. <b>PENAL PROVISON</b> – Any violation of the terms provided for in this Contract
               on the part of the <b>LESSOR</b>/<b>MANAGER</b> or <b>LESSEE</b> shall be sufficient
               grounds for the termination of this <b>CONTRACT OF LEASE</b>, by the aggrieved party.
             </div>
-          </li>
+          </div>
 
-          <li>
+          <div>
             <div class="clause-item mt-1em">
-              <b>11. NON-WAIVER</b> – The failure of the <b>LESSORS</b> to insist upon the strict
+              11. <b>NON-WAIVER</b> – The failure of the <b>LESSORS</b> to insist upon the strict
               performance of any of the terms and conditions herein contained shall not be construed
               as a waiver or relinquishment of any such right or remedy belonging to the
               <b>LESSORS</b>. No such waiver thereof shall be deemed to have been made, unless in
               writing and duly signed by the <b>LESSEOR</b>.
             </div>
-          </li>
+          </div>
 
-          <li>
+          <div>
             <div class="clause-item mt-1em">
-              <b>12. SEVERABILITY CLAUSE</b> – If any provision under this <b>CONTRACT</b> to be
+              12. <b>SEVERABILITY CLAUSE</b> – If any provision under this <b>CONTRACT</b> to be
               declared invalid, illegal or unenforceable in any respect by a court of competent
               jurisdiction, the validity, legality or enforceability of the remaining provisions
               shall not in any manner be affected or impaired.
             </div>
-          </li>
+          </div>
 
-          <li>
+          <div>
             <div class="clause-item mt-1em">
-              <b>13. COMPLETE AGREEMENT</b> – This <b>CONTRACT</b> constitutes and embodies the
+              13. <b>COMPLETE AGREEMENT</b> – This <b>CONTRACT</b> constitutes and embodies the
               entire and complete agreement between the <b>PARTIES</b> herein superseding any prior
               understanding and/or agreement among the parties, and no other terms and conditions,
               verbal or otherwise, not expressly included or provisions agreed upon, unless the same
               is stipulated in writing, signed by both <b>PARTIES</b>, and duty notarized.
             </div>
-          </li>
+          </div>
 
           <p class="indent mt-1em">
             IN WITNESS THEREOF, the parties hereto have signed these presents on the date and the
             place first above mentioned or written.
           </p>
-        </ol>
+        </div>
 
         <div
           class="signatures"
