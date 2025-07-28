@@ -1,8 +1,22 @@
 <template>
   <div class="container">
-    <h1 class="text-2xl font-bold mb-6 flex items-center gap-2">
-      <ClipboardList class="w-6 h-6" /> My Bookings
-    </h1>
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-bold flex items-center gap-2">
+        <ClipboardList class="w-6 h-6" /> My Bookings
+      </h1>
+      <div v-if="bookings.length > 0" class="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          @click="toggleAllCards"
+          class="flex items-center gap-2"
+        >
+          <Minimize2 v-if="!globalMinimized" class="w-4 h-4" />
+          <Maximize2 v-else class="w-4 h-4" />
+          {{ globalMinimized ? 'Expand All' : 'Minimize All' }}
+        </Button>
+      </div>
+    </div>
     <div v-if="isLoading" class="h-[calc(100vh-10rem)] flex items-center justify-center">
       <Loading text="bookings..." />
     </div>
@@ -31,7 +45,7 @@
           ]"
         >
           <CardHeader class="flex flex-row items-center justify-between gap-4">
-            <div :class="booking.status === 'cancelled' ? 'line-through text-muted-foreground' : ''">
+            <div :class="booking.status === 'cancelled' ? 'line-through text-muted-foreground' : ''" class="flex-1">
               <CardTitle 
                 :class="[
                   'text-lg font-semibold',
@@ -48,10 +62,56 @@
                   >• {{ booking.vehicle.model }} ({{ booking.vehicle.year }})</span
                 >
               </CardDescription>
+              <!-- Minimized view - show key info in header -->
+              <div v-if="isCardMinimized(booking.id)" class="mt-2 flex flex-wrap items-center gap-3 text-sm">
+                <div class="flex items-center gap-1">
+                  <CalendarDays class="w-3 h-3 text-muted-foreground" />
+                  <span>{{ formatDate(booking.start_date) }} - {{ formatDate(booking.end_date) }}</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <Receipt class="w-3 h-3 text-muted-foreground" />
+                  <span class="font-medium text-primary">₱{{ Number(booking.total_price).toLocaleString() }}</span>
+                </div>
+                <div v-if="booking.payment" class="flex items-center gap-1">
+                  <CreditCard class="w-3 h-3 text-muted-foreground" />
+                  <Badge
+                    v-if="booking.payment.status === 'approved'"
+                    variant="available"
+                    class="text-xs"
+                    >Paid</Badge
+                  >
+                  <Badge
+                    v-else-if="booking.payment.status === 'pending'"
+                    variant="maintenance"
+                    class="text-xs"
+                    >Pending</Badge
+                  >
+                  <Badge
+                    v-else-if="booking.payment.status === 'rejected'"
+                    variant="destructive"
+                    class="text-xs"
+                    >Rejected</Badge
+                  >
+                </div>
+              </div>
             </div>
-            <Badge :variant="getStatusVariant(booking.status)">{{ booking.status }}</Badge>
+            <div class="flex items-center gap-2">
+              <Badge :variant="getStatusVariant(booking.status)">{{ booking.status }}</Badge>
+              <Button
+                variant="ghost"
+                size="sm"
+                @click="toggleCardMinimized(booking.id)"
+                class="h-8 w-8 p-0 minimize-button"
+              >
+                <ChevronDown v-if="!isCardMinimized(booking.id)" class="w-4 h-4" />
+                <ChevronUp v-else class="w-4 h-4" />
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent class="flex flex-col md:flex-row gap-6 items-center md:items-start">
+          <CardContent 
+            v-if="!isCardMinimized(booking.id)"
+            class="flex flex-col md:flex-row gap-6 items-center md:items-start card-content-transition"
+          >
             <div 
               v-if="booking.vehicle?.primary_image_url" 
               class="relative"
@@ -371,6 +431,10 @@ import {
   Image as ImageIcon,
   Truck,
   X,
+  ChevronDown,
+  ChevronUp,
+  Maximize2,
+  Minimize2,
 } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import DriverAssignmentStatus from '@/components/features/DriverAssignmentStatus.vue'
@@ -382,6 +446,37 @@ function formatDate(dateStr) {
 
 const { data, error, isLoading, refetch } = useMyBookings()
 const bookings = computed(() => data.value || [])
+
+// Card minimization state
+const minimizedCards = ref(new Set())
+const globalMinimized = ref(false)
+
+// Toggle individual card
+function toggleCardMinimized(bookingId) {
+  const newSet = new Set(minimizedCards.value)
+  if (newSet.has(bookingId)) {
+    newSet.delete(bookingId)
+  } else {
+    newSet.add(bookingId)
+  }
+  minimizedCards.value = newSet
+}
+
+// Toggle all cards
+function toggleAllCards() {
+  globalMinimized.value = !globalMinimized.value
+  if (globalMinimized.value) {
+    // Minimize all cards
+    minimizedCards.value = new Set(bookings.value.map(b => b.id))
+  } else {
+    // Maximize all cards
+    minimizedCards.value = new Set()
+  }
+}
+
+function isCardMinimized(bookingId) {
+  return minimizedCards.value.has(bookingId)
+}
 
 // Dialog state per booking and type
 const paymentDialogBookingId = ref(null)
@@ -519,6 +614,29 @@ async function handleCancelBooking(booking) {
   );
   pointer-events: none;
   border-radius: inherit;
+}
+
+/* Card minimize/maximize transitions */
+.card-content-transition {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-minimized {
+  max-height: auto;
+}
+
+.card-expanded {
+  max-height: none;
+}
+
+/* Smooth hover effects for minimize button */
+.minimize-button {
+  transition: all 0.2s ease-in-out;
+}
+
+.minimize-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: scale(1.05);
 }
 
 /* Modal styles */

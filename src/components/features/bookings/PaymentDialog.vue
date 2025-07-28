@@ -140,7 +140,9 @@
               id="reference_number"
               placeholder="Enter reference number"
               required
+              :class="{ 'border-red-500': referenceNumberError }"
             />
+            <p v-if="referenceNumberError" class="text-sm text-red-500">{{ referenceNumberError }}</p>
           </div>
           <div class="space-y-2">
             <Label for="proof_image">Proof of Payment</Label>
@@ -191,7 +193,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import {
   Dialog,
   DialogContent,
@@ -253,8 +255,16 @@ const form = ref({
   proof_image: '',
 })
 const error = ref('')
+const referenceNumberError = ref('')
 const loading = ref(false)
 const submitPayment = useSubmitPayment()
+
+// Clear reference number error when user starts typing
+watch(() => form.value.reference_number, () => {
+  if (referenceNumberError.value) {
+    referenceNumberError.value = ''
+  }
+})
 
 function onFileChange(e) {
   const file = e.target.files[0]
@@ -268,6 +278,9 @@ function onFileChange(e) {
 
 async function onSubmit() {
   loading.value = true
+  error.value = ''
+  referenceNumberError.value = ''
+  
   try {
     await submitPayment.mutateAsync({
       bookingId: props.bookingId,
@@ -275,9 +288,20 @@ async function onSubmit() {
       type: props.type,
     })
     emit('paid')
-    onClose()
+    props.onClose()
   } catch (e) {
-    error.value = e.response?.data?.message || 'Payment submission failed'
+    const response = e.response?.data
+    
+    // Check for validation errors
+    if (response?.errors) {
+      if (response.errors.reference_number) {
+        referenceNumberError.value = response.errors.reference_number[0]
+      } else {
+        error.value = 'Validation failed. Please check your inputs.'
+      }
+    } else {
+      error.value = response?.message || 'Payment submission failed'
+    }
   } finally {
     loading.value = false
   }

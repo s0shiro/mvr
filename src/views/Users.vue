@@ -95,7 +95,7 @@ function handleAddUserSuccess() {
     </div>
 
     <div v-if="isLoading" class="h-[calc(100vh-10rem)] flex items-center justify-center">
-      <Loading text="Loading bookings..." />
+      <Loading text="Loading users..." />
     </div>
 
     <UserList

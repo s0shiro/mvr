@@ -9,6 +9,40 @@
     </div>
     <div v-else>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Rental System Card (Main Business) -->
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg shadow-lg p-6 border-2 border-blue-300">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                </svg>
+              </div>
+              <h3 class="text-xl font-semibold text-blue-800">Rental System</h3>
+            </div>
+            <span class="px-3 py-1 bg-blue-600 text-white text-sm rounded-full font-medium">Main Business</span>
+          </div>
+          <p class="text-gray-700 mb-4">Vehicle rental transactions</p>
+          <div class="flex gap-2 flex-wrap">
+            <Button 
+              variant="default" 
+              size="sm"
+              class="bg-blue-600 hover:bg-blue-700"
+              @click="handleViewRentalTransactions"
+            >
+              View Transactions
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              @click="handleViewRentalReports"
+            >
+              Reports
+            </Button>
+          </div>
+        </div>
+        
+        <!-- Other Businesses -->
         <BusinessCard
           v-for="business in businesses"
           :key="business.id"
@@ -93,5 +127,13 @@ function deleteBusinessHandler(id) {
 }
 function handleViewBusiness(business) {
   router.push({ name: 'business-view', params: { id: business.id } })
+}
+
+function handleViewRentalTransactions() {
+  router.push({ name: 'rental-transactions' })
+}
+
+function handleViewRentalReports() {
+  router.push({ name: 'rental-sales-report' })
 }
 </script>

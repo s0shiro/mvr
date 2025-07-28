@@ -195,6 +195,36 @@ const router = createRouter({
       },
     }),
     createDashboardRoute({
+      path: '/admin/rental/sales',
+      name: 'rental-sales',
+      view: () => import('../views/RentalSales.vue'),
+      meta: {
+        title: 'Rental Sales & Revenue',
+        requiresAuth: true,
+        requiredRoles: ['admin'],
+      },
+    }),
+    createDashboardRoute({
+      path: '/admin/rental/sales-report',
+      name: 'rental-sales-report',
+      view: () => import('../views/RentalSalesReport.vue'),
+      meta: {
+        title: 'Rental Sales Report',
+        requiresAuth: true,
+        requiredRoles: ['admin'],
+      },
+    }),
+    createDashboardRoute({
+      path: '/admin/rental/transactions',
+      name: 'rental-transactions',
+      view: () => import('../views/RentalSales.vue'), // Same view for now
+      meta: {
+        title: 'Rental Transactions',
+        requiresAuth: true,
+        requiredRoles: ['admin'],
+      },
+    }),
+    createDashboardRoute({
       path: '/admin/payment-methods',
       name: 'admin-payment-methods',
       view: () => import('../views/admin/AdminPaymentMethods.vue'),
