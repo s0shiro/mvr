@@ -171,7 +171,7 @@ const router = createRouter({
       meta: {
         title: 'Business/Services',
         requiresAuth: true,
-        requiredRoles: ['admin'],
+        requiredRoles: ['admin', 'manager'],
       },
     }),
     createDashboardRoute({
@@ -181,7 +181,7 @@ const router = createRouter({
       meta: {
         title: 'Business Details',
         requiresAuth: true,
-        requiredRoles: ['admin'],
+        requiredRoles: ['admin', 'manager'],
       },
     }),
     createDashboardRoute({
@@ -191,7 +191,7 @@ const router = createRouter({
       meta: {
         title: 'Sales Report',
         requiresAuth: true,
-        requiredRoles: ['admin'],
+        requiredRoles: ['admin', 'manager'],
       },
     }),
     createDashboardRoute({
@@ -201,7 +201,7 @@ const router = createRouter({
       meta: {
         title: 'Rental Sales & Revenue',
         requiresAuth: true,
-        requiredRoles: ['admin'],
+        requiredRoles: ['admin', 'manager'],
       },
     }),
     createDashboardRoute({
@@ -211,7 +211,7 @@ const router = createRouter({
       meta: {
         title: 'Rental Sales Report',
         requiresAuth: true,
-        requiredRoles: ['admin'],
+        requiredRoles: ['admin', 'manager'],
       },
     }),
     createDashboardRoute({
@@ -221,7 +221,7 @@ const router = createRouter({
       meta: {
         title: 'Rental Transactions',
         requiresAuth: true,
-        requiredRoles: ['admin'],
+        requiredRoles: ['admin', 'manager'],
       },
     }),
     createDashboardRoute({

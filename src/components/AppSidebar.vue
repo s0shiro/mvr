@@ -105,7 +105,7 @@ const data = {
       url: '/admin/businesses',
       icon: ClipboardList,
       items: [],
-      roleRequired: 'admin',
+      roleRequired: ['admin', 'manager'],
     },
     {
       title: 'Payment Methods',
