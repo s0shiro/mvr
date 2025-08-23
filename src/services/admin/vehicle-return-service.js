@@ -15,3 +15,10 @@ export function useReturnVehicle() {
       axiosInstance.post(`/api/admin/bookings/${bookingId}/return`, data).then((res) => res.data),
   })
 }
+
+export function useProcessDepositRefund() {
+  return useMutation({
+    mutationFn: ({ bookingId, ...data }) =>
+      axiosInstance.post(`/api/admin/bookings/${bookingId}/refund-deposit`, data).then((res) => res.data),
+  })
+}

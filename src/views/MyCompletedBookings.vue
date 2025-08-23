@@ -69,22 +69,53 @@
             <div class="p-4 border-t mt-2">
               <FeedbackSection :booking-id="booking.id" />
             </div>
+            
+            <!-- Deposit Refund Section -->
+            <div v-if="booking.vehicle_return" class="p-4 border-t">
+              <DepositRefundCard 
+                :vehicle-return="booking.vehicle_return" 
+                :original-deposit="booking.vehicle?.deposit || 0"
+                @openImageModal="openImageModal"
+              />
+            </div>
           </Card>
         </div>
       </div>
     </div>
+    
+    <!-- Image Modal -->
+    <Dialog :open="imageModalOpen" @update:open="imageModalOpen = $event">
+      <DialogContent class="max-w-4xl">
+        <DialogHeader>
+          <DialogTitle>Refund Proof</DialogTitle>
+        </DialogHeader>
+        <div class="flex justify-center">
+          <img :src="selectedImage" class="max-w-full max-h-[70vh] object-contain" />
+        </div>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useMyCompletedBookingsQuery } from '@/services/completed-bookings-api'
 import { Card } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Loader2, CheckCircle2, XCircle } from 'lucide-vue-next'
 import FeedbackSection from '@/components/features/feedback/FeedbackSection.vue'
+import DepositRefundCard from '@/components/features/vehicle-return/DepositRefundCard.vue'
 
 const { data, isLoading, isError, error, refetch } = useMyCompletedBookingsQuery()
 const completedBookings = computed(() => data.value || [])
+
+const imageModalOpen = ref(false)
+const selectedImage = ref('')
+
+function openImageModal(imageSrc) {
+  selectedImage.value = imageSrc
+  imageModalOpen.value = true
+}
 
 function formatDate(dateStr) {
   if (!dateStr) return ''

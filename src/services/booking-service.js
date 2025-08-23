@@ -44,8 +44,10 @@ export function useUpdateBooking() {
 
 export function useCancelBooking() {
   return useMutation({
-    mutationFn: async (bookingId) => {
-      const res = await axiosInstance.post(`/api/bookings/${bookingId}/cancel`)
+    mutationFn: async ({ bookingId, cancellation_reason }) => {
+      const res = await axiosInstance.post(`/api/bookings/${bookingId}/cancel`, {
+        cancellation_reason
+      })
       return res.data
     },
   })
@@ -103,4 +105,15 @@ export function useMyBookings() {
       return res.data.bookings
     },
   })
+}
+
+export function useBookingService() {
+  return {
+    processRefund: async (bookingId, data) => {
+      const res = await axiosInstance.post(`/api/admin/bookings/${bookingId}/process-refund`, data, {
+        headers: { 'Content-Type': 'application/json' },
+      })
+      return res.data
+    }
+  }
 }

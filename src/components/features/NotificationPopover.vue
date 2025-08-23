@@ -118,6 +118,69 @@ const formatDate = (date) => {
                   {{ formatDate(notification.data.end_date) }}
                 </p>
               </template>
+
+              <!-- Vehicle return submitted notification specific data -->
+              <template v-if="notification.type === 'vehicle_return_submitted'">
+                <p v-if="notification.data.vehicle_name">Vehicle: {{ notification.data.vehicle_name }}</p>
+                <p>Booking #: {{ notification.data.booking_id }}</p>
+                <p v-if="notification.data.customer_images_count">
+                  Photos submitted: {{ notification.data.customer_images_count }}
+                </p>
+              </template>
+
+              <!-- Vehicle return completed notification specific data -->
+              <template v-if="notification.type === 'vehicle_return_completed'">
+                <p v-if="notification.data.vehicle_name">Vehicle: {{ notification.data.vehicle_name }}</p>
+                <p>Booking #: {{ notification.data.booking_id }}</p>
+                <div v-if="notification.data.total_additional_fees > 0" class="mt-1">
+                  <p class="text-red-600 font-medium">Additional Fees: ₱{{ notification.data.total_additional_fees }}</p>
+                  <div class="text-xs">
+                    <span v-if="notification.data.late_fee > 0">Late: ₱{{ notification.data.late_fee }}</span>
+                    <span v-if="notification.data.damage_fee > 0" class="ml-2">Damage: ₱{{ notification.data.damage_fee }}</span>
+                    <span v-if="notification.data.cleaning_fee > 0" class="ml-2">Cleaning: ₱{{ notification.data.cleaning_fee }}</span>
+                  </div>
+                </div>
+                <div v-if="notification.data.deposit_status" class="mt-1">
+                  <p class="font-medium">
+                    Deposit: 
+                    <span :class="{
+                      'text-green-600': notification.data.deposit_status === 'refunded',
+                      'text-red-600': notification.data.deposit_status === 'withheld',
+                      'text-yellow-600': notification.data.deposit_status === 'pending'
+                    }">
+                      {{ notification.data.deposit_status === 'refunded' ? 'Refunded' : 
+                         notification.data.deposit_status === 'withheld' ? 'Withheld' : 'Pending' }}
+                    </span>
+                  </p>
+                  <p v-if="notification.data.deposit_refund_amount && notification.data.deposit_status === 'refunded'" 
+                     class="text-xs text-green-600">
+                    Amount: ₱{{ notification.data.deposit_refund_amount }}
+                    <span v-if="notification.data.refund_method"> via {{ notification.data.refund_method }}</span>
+                  </p>
+                </div>
+              </template>
+
+              <!-- Deposit refund processed notification specific data -->
+              <template v-if="notification.type === 'deposit_refund_processed'">
+                <p v-if="notification.data.vehicle_name">Vehicle: {{ notification.data.vehicle_name }}</p>
+                <p>Booking #: {{ notification.data.booking_id }}</p>
+                <div class="mt-1">
+                  <p class="font-medium">
+                    Status: 
+                    <span :class="{
+                      'text-green-600': notification.data.deposit_status === 'refunded',
+                      'text-red-600': notification.data.deposit_status === 'withheld'
+                    }">
+                      {{ notification.data.deposit_status === 'refunded' ? 'Refunded' : 'Withheld' }}
+                    </span>
+                  </p>
+                  <p v-if="notification.data.deposit_refund_amount && notification.data.deposit_status === 'refunded'" 
+                     class="text-xs text-green-600">
+                    Amount: ₱{{ notification.data.deposit_refund_amount }}
+                    <span v-if="notification.data.refund_method"> via {{ notification.data.refund_method }}</span>
+                  </p>
+                </div>
+              </template>
             </div>
 
             <div class="flex items-center gap-2 mt-1">

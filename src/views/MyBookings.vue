@@ -38,10 +38,10 @@
           v-for="booking in bookings" 
           :key="booking.id" 
           :class="[
-            'border bg-card transition-all duration-200',
+            'border transition-all duration-300 hover:shadow-lg',
             booking.status === 'cancelled' 
-              ? 'border-red-200 bg-red-50/50 opacity-75 hover:opacity-90 cancelled-card' 
-              : 'border-border hover:shadow-md'
+              ? 'border-red-300 dark:border-red-700 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/40 dark:to-red-900/20 relative overflow-hidden' 
+              : 'border-border bg-card hover:shadow-md'
           ]"
         >
           <CardHeader class="flex flex-row items-center justify-between gap-4">
@@ -114,23 +114,25 @@
           >
             <div 
               v-if="booking.vehicle?.primary_image_url" 
-              class="relative"
+              class="relative group"
             >
               <img
                 :src="booking.vehicle.primary_image_url"
                 alt="Vehicle"
                 :class="[
-                  'w-40 h-28 object-cover rounded-lg shadow-sm border',
-                  booking.status === 'cancelled' ? 'grayscale opacity-60' : ''
+                  'w-40 h-28 object-cover rounded-xl shadow-md border-2 transition-all duration-300',
+                  booking.status === 'cancelled' 
+                    ? 'grayscale opacity-70 border-red-200 dark:border-red-700/50' 
+                    : 'border-border group-hover:shadow-lg'
                 ]"
               />
               <div 
                 v-if="booking.status === 'cancelled'"
-                class="absolute inset-0 flex items-center justify-center bg-black/20 rounded-lg"
+                class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-red-900/30 to-red-800/20 rounded-xl backdrop-blur-[1px]"
               >
-                <span class="text-red-600 font-bold text-sm bg-white/90 px-2 py-1 rounded shadow">
-                  CANCELLED
-                </span>
+                <div class="bg-red-600/90 dark:bg-red-700/90 text-white px-3 py-1 rounded-lg shadow-lg border border-red-400 dark:border-red-500">
+                  <span class="font-bold text-sm tracking-wide">CANCELLED</span>
+                </div>
               </div>
             </div>
             <div 
@@ -213,20 +215,90 @@
 
                 <div
                   v-if="booking.status === 'cancelled'"
-                  class="text-sm bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg"
+                  class="space-y-3"
                 >
-                  <span class="font-semibold block mb-1 flex items-center gap-2">
-                    <X class="w-4 h-4" /> Booking Cancelled
-                  </span>
-                  <p class="text-red-700">
-                    This booking has been cancelled. 
-                    <span v-if="booking.cancellation_reason">
-                      Reason: {{ booking.cancellation_reason }}
-                    </span>
-                    <span v-if="booking.cancelled_at">
-                      Cancelled on {{ formatDate(booking.cancelled_at) }}
-                    </span>
-                  </p>
+                  <!-- Cancellation Notice -->
+                  <div class="bg-gradient-to-r from-red-100 to-red-50 dark:from-red-950/60 dark:to-red-900/40 border border-red-300 dark:border-red-700 text-red-800 dark:text-red-200 p-4 rounded-xl shadow-sm">
+                    <div class="flex items-start gap-3">
+                      <div class="flex-shrink-0 w-10 h-10 bg-red-200 dark:bg-red-800/50 rounded-full flex items-center justify-center">
+                        <X class="w-5 h-5 text-red-600 dark:text-red-400" />
+                      </div>
+                      <div class="flex-1">
+                        <h4 class="font-semibold text-red-900 dark:text-red-100 mb-1">Booking Cancelled</h4>
+                        <p class="text-red-700 dark:text-red-300 text-sm leading-relaxed">
+                          This booking has been cancelled.
+                          <span v-if="booking.cancellation_reason" class="block mt-1">
+                            <strong>Reason:</strong> {{ booking.cancellation_reason }}
+                          </span>
+                          <span v-if="booking.cancelled_at" class="block mt-1 text-red-600 dark:text-red-400 text-xs">
+                            Cancelled on {{ formatDate(booking.cancelled_at) }}
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Refund Status -->
+                  <div 
+                    v-if="booking.refund_status" 
+                    class="rounded-xl border shadow-sm overflow-hidden"
+                    :class="getRefundStatusClasses(booking.refund_status)"
+                  >
+                    <div class="p-4">
+                      <div class="flex items-center gap-3 mb-3">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
+                             :class="getRefundStatusIconBg(booking.refund_status)">
+                          <component :is="getRefundStatusIcon(booking.refund_status)" class="w-5 h-5" 
+                                     :class="getRefundStatusIconColor(booking.refund_status)" />
+                        </div>
+                        <div class="flex-1">
+                          <h4 class="font-semibold text-lg" :class="getRefundStatusTextColor(booking.refund_status)">
+                            {{ getRefundStatusText(booking.refund_status) }}
+                          </h4>
+                        </div>
+                      </div>
+                      
+                      <!-- Refund Amount Display -->
+                      <div v-if="booking.refund_amount && booking.refund_status === 'processed'" 
+                           class="mb-3 p-3 rounded-lg border bg-white/60 dark:bg-white/5 border-green-200 dark:border-green-700/50">
+                        <div class="flex items-center justify-between">
+                          <span class="text-sm font-medium text-green-800 dark:text-green-200">Refund Amount:</span>
+                          <span class="text-xl font-bold text-green-700 dark:text-green-300">₱{{ Number(booking.refund_amount).toLocaleString() }}</span>
+                        </div>
+                      </div>
+                      
+                      <!-- Processing Details -->
+                      <div v-if="booking.refund_processed_at" class="space-y-2 text-sm">
+                        <p class="opacity-75">
+                          <strong>Processed:</strong> {{ formatDate(booking.refund_processed_at) }}
+                        </p>
+                        <p v-if="booking.refund_notes" class="opacity-75 italic bg-white/30 dark:bg-black/20 p-2 rounded border border-white/40 dark:border-white/10">
+                          "{{ booking.refund_notes }}"
+                        </p>
+                      </div>
+                      
+                      <!-- Refund Proof View Button -->
+                      <div v-if="booking.refund_proof && booking.refund_status === 'processed'" class="mt-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          class="w-full text-xs bg-white/50 dark:bg-white/5 hover:bg-white/70 dark:hover:bg-white/10 border-green-300 dark:border-green-700 text-green-800 dark:text-green-200 hover:text-green-900 dark:hover:text-green-100"
+                          @click="openRefundProofDialog(booking)"
+                        >
+                          <ImageIcon class="w-3 h-3 mr-1" />
+                          View Refund Proof
+                        </Button>
+                      </div>
+                      
+                      <!-- Expected Refund Timeline for Pending -->
+                      <div v-if="booking.refund_status === 'pending'" class="mt-3 text-xs opacity-75 bg-white/30 dark:bg-black/20 p-2 rounded border border-white/40 dark:border-white/10">
+                        <p class="flex items-center gap-1">
+                          <Clock class="w-3 h-3" />
+                          Refunds are typically processed within 3-5 business days
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -234,7 +306,7 @@
                 <div v-if="booking.status === 'cancelled'" class="text-sm text-muted-foreground italic">
                   No actions available for cancelled bookings
                 </div>
-                <template v-else-if="booking.status === 'pending' || booking.status === 'confirmed'">
+                <template v-else-if="!['cancelled', 'completed', 'released', 'pending_return'].includes(booking.status)">
                   <Button
                     v-if="shouldShowDepositButton(booking)"
                     variant="outline"
@@ -255,8 +327,7 @@
 
                   <Button
                     variant="destructive"
-                    :loading="cancelLoading[booking.id]"
-                    @click="handleCancelBooking(booking)"
+                    @click="openCancelDialog(booking)"
                     v-if="shouldShowCancelButton(booking)"
                   >
                     <Ban class="w-4 h-4 mr-2" />
@@ -272,6 +343,34 @@
                     Edit Booking
                   </Button>
                 </template>
+                
+                <template v-else-if="booking.status === 'released'">
+                  <Button
+                    v-if="!booking.vehicle_return"
+                    variant="default"
+                    @click="openReturnDialog(booking)"
+                    class="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <RotateCcw class="w-4 h-4 mr-2" />
+                    Submit Vehicle Return
+                  </Button>
+                  <Badge 
+                    v-else-if="booking.vehicle_return.status === 'customer_submitted'" 
+                    variant="secondary"
+                  >
+                    Return Submitted - Pending Review
+                  </Badge>
+                </template>
+                
+                <template v-else-if="booking.status === 'pending_return'">
+                  <Badge variant="secondary">
+                    Return Submitted - Admin Review
+                  </Badge>
+                  <div class="text-xs text-muted-foreground">
+                    Submitted: {{ formatDate(booking.vehicle_return?.customer_submitted_at) }}
+                  </div>
+                </template>
+                
                 <Button
                   v-if="booking.status === 'confirmed' || booking.status === 'active'"
                   variant="outline"
@@ -385,12 +484,71 @@
           @update:open="editDialogOpen = $event"
           @updated="() => refetch()"
         />
+        <CustomerReturnDialog
+          v-if="returnDialogOpen"
+          :booking="selectedReturnBooking"
+          :open="returnDialogOpen"
+          @update:open="returnDialogOpen = $event"
+          @submitted="onReturnSubmitted"
+        />
         <PaymentProofDialog
           v-if="selectedPaymentProof"
           v-model:open="paymentProofDialogOpen"
           :image-url="selectedPaymentProof?.proof_image"
           :payment-date="selectedPaymentProof?.created_at"
         />
+
+        <!-- Refund Proof Dialog -->
+        <Dialog v-model:open="refundProofDialogOpen">
+          <DialogContent class="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle class="flex items-center gap-2">
+                <CheckCircle class="w-5 h-5 text-green-600" />
+                Refund Processing Proof
+              </DialogTitle>
+              <DialogDescription>
+                Official proof that your refund has been processed by our admin team.
+              </DialogDescription>
+            </DialogHeader>
+            <div v-if="selectedRefundProof" class="space-y-4">
+              <!-- Refund Details Summary -->
+              <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p class="font-medium text-green-800">Refund Amount</p>
+                    <p class="text-xl font-bold text-green-700">₱{{ Number(selectedRefundProof.refund_amount).toLocaleString() }}</p>
+                  </div>
+                  <div>
+                    <p class="font-medium text-green-800">Processed Date</p>
+                    <p class="text-green-700">{{ formatDate(selectedRefundProof.refund_processed_at) }}</p>
+                  </div>
+                </div>
+                <div v-if="selectedRefundProof.refund_notes" class="mt-3 pt-3 border-t border-green-200">
+                  <p class="font-medium text-green-800 text-sm">Admin Notes</p>
+                  <p class="text-green-700 text-sm italic">"{{ selectedRefundProof.refund_notes }}"</p>
+                </div>
+              </div>
+              
+              <!-- Proof Image -->
+              <div class="text-center">
+                <img 
+                  v-if="isImageFile(selectedRefundProof.refund_proof)"
+                  :src="selectedRefundProof.refund_proof" 
+                  alt="Refund processing proof"
+                  class="max-w-full h-auto rounded-lg shadow-lg mx-auto border"
+                />
+                <div v-else class="p-8 border-2 border-dashed border-muted-foreground rounded-lg">
+                  <FileText class="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                  <p class="text-muted-foreground mb-4">PDF document - Click below to view</p>
+                  <Button @click="window.open(selectedRefundProof.refund_proof, '_blank')" variant="outline">
+                    <FileText class="w-4 h-4 mr-2" />
+                    Open Document
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
         <div v-if="contractDialogOpen">
           <div class="modal-overlay" @click="closeContractDialog"></div>
           <div class="modal-content">
@@ -400,18 +558,164 @@
         </div>
       </div>
     </div>
+
+    <!-- Cancellation Reason Dialog -->
+    <Dialog v-model:open="cancelDialog.open">
+      <DialogContent class="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle class="flex items-center gap-2">
+            <AlertTriangle class="w-5 h-5 text-yellow-600" />
+            Cancel Booking
+          </DialogTitle>
+          <DialogDescription>
+            Please provide a reason for cancelling this booking and your refund account details if eligible for a refund.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div v-if="cancelDialog.booking" class="space-y-4">
+          <!-- Booking Summary -->
+          <div class="bg-muted/30 rounded-lg p-3 text-sm">
+            <p class="font-medium">{{ cancelDialog.booking.vehicle?.name }}</p>
+            <p class="text-muted-foreground">{{ formatDateRange(cancelDialog.booking.start_date, cancelDialog.booking.end_date) }}</p>
+          </div>
+
+          <!-- Refund Eligibility Notice -->
+          <div v-if="hasApprovedPayments(cancelDialog.booking)" class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <p class="text-sm text-blue-800">
+              <strong>Refund Information:</strong> You have approved payments for this booking. Please provide your refund account details below for potential refund processing.
+            </p>
+          </div>
+
+          <!-- Cancellation Form -->
+          <form @submit.prevent="handleCancelBooking" class="space-y-4">
+            <div class="space-y-2">
+              <Label for="cancellation-reason">Reason for Cancellation</Label>
+              <Textarea
+                id="cancellation-reason"
+                v-model="cancelForm.reason"
+                placeholder="Please explain why you're cancelling this booking..."
+                rows="3"
+                class="resize-none"
+                required
+              />
+            </div>
+
+            <!-- Refund Account Information (only if has approved payments) -->
+            <div v-if="hasApprovedPayments(cancelDialog.booking)" class="border border-border rounded-lg p-4 space-y-3">
+              <h3 class="font-semibold text-foreground">Refund Account Details</h3>
+              
+              <div class="flex flex-col gap-2">
+                <Label>Preferred Refund Method *</Label>
+                <select 
+                  v-model="cancelForm.refund_method" 
+                  required
+                  class="w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
+                >
+                  <option value="">Select refund method</option>
+                  <option value="gcash">GCash</option>
+                  <option value="bank_transfer">Bank Transfer</option>
+                  <option value="cash">Cash Pickup</option>
+                </select>
+              </div>
+              
+              <!-- GCash Details -->
+              <div v-if="cancelForm.refund_method === 'gcash'" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="flex flex-col gap-2">
+                  <Label>GCash Number *</Label>
+                  <Input 
+                    v-model="cancelForm.account_number" 
+                    type="tel" 
+                    placeholder="09XXXXXXXXX"
+                    required
+                  />
+                </div>
+                <div class="flex flex-col gap-2">
+                  <Label>Account Holder Name *</Label>
+                  <Input 
+                    v-model="cancelForm.account_name" 
+                    placeholder="Full name as registered"
+                    required
+                  />
+                </div>
+              </div>
+              
+              <!-- Bank Transfer Details -->
+              <div v-if="cancelForm.refund_method === 'bank_transfer'" class="space-y-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div class="flex flex-col gap-2">
+                    <Label>Bank Name *</Label>
+                    <Input 
+                      v-model="cancelForm.bank_name" 
+                      placeholder="e.g. BDO, BPI, Metrobank"
+                      required
+                    />
+                  </div>
+                  <div class="flex flex-col gap-2">
+                    <Label>Account Number *</Label>
+                    <Input 
+                      v-model="cancelForm.account_number" 
+                      placeholder="Bank account number"
+                      required
+                    />
+                  </div>
+                </div>
+                <div class="flex flex-col gap-2">
+                  <Label>Account Holder Name *</Label>
+                  <Input 
+                    v-model="cancelForm.account_name" 
+                    placeholder="Full name as registered in bank"
+                    required
+                  />
+                </div>
+              </div>
+              
+              <!-- Additional Notes -->
+              <div class="flex flex-col gap-2">
+                <Label>{{ cancelForm.refund_method === 'cash' ? 'Pickup Instructions' : 'Additional Notes' }} (optional)</Label>
+                <Textarea 
+                  v-model="cancelForm.refund_notes" 
+                  :placeholder="cancelForm.refund_method === 'cash' ? 'Specify pickup location or special instructions...' : 'Any special instructions for the refund process...'"
+                  rows="2"
+                />
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end gap-3 pt-2">
+              <Button type="button" variant="outline" @click="cancelDialog.open = false">
+                Keep Booking
+              </Button>
+              <Button 
+                type="submit" 
+                variant="destructive"
+                :disabled="!cancelForm.reason.trim() || cancelForm.processing"
+              >
+                <Loader2 v-if="cancelForm.processing" class="w-4 h-4 mr-2 animate-spin" />
+                <Ban v-else class="w-4 h-4 mr-2" />
+                {{ cancelForm.processing ? 'Cancelling...' : 'Cancel Booking' }}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </DialogContent>
+    </Dialog>
   </div>
 </template>
 
 <script setup>
+import { ref, computed, reactive } from 'vue'
 import { useMyBookings } from '@/services/booking-service'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { getStatusVariant } from '@/lib/utils'
-import { computed, ref } from 'vue'
 import PaymentDialog from '@/components/features/bookings/PaymentDialog.vue'
 import EditBookingDialog from '@/components/features/bookings/EditBookingDialog.vue'
+import CustomerReturnDialog from '@/components/features/vehicle-return/CustomerReturnDialog.vue'
 import PaymentProofDialog from '@/components/features/bookings/PaymentProofDialog.vue'
 import ContractPrint from '@/components/features/ContractPrint.vue'
 import { useCancelBooking } from '@/services/booking-service'
@@ -435,6 +739,11 @@ import {
   ChevronUp,
   Maximize2,
   Minimize2,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  Loader2,
+  FileText,
 } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import DriverAssignmentStatus from '@/components/features/DriverAssignmentStatus.vue'
@@ -442,6 +751,92 @@ import DriverAssignmentStatus from '@/components/features/DriverAssignmentStatus
 function formatDate(dateStr) {
   const d = new Date(dateStr)
   return d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+}
+
+function formatDateRange(startDate, endDate) {
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+  const startStr = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  const endStr = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  return `${startStr} - ${endStr}`
+}
+
+function getRefundStatusClasses(status) {
+  switch (status) {
+    case 'pending':
+      return 'bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950/40 dark:to-yellow-900/20 border-yellow-300 dark:border-yellow-700'
+    case 'processed':
+      return 'bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/40 dark:to-green-900/20 border-green-300 dark:border-green-700'
+    case 'failed':
+      return 'bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/40 dark:to-red-900/20 border-red-300 dark:border-red-700'
+    default:
+      return 'bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950/40 dark:to-gray-900/20 border-gray-300 dark:border-gray-700'
+  }
+}
+
+function getRefundStatusIconBg(status) {
+  switch (status) {
+    case 'pending':
+      return 'bg-yellow-200 dark:bg-yellow-800/50'
+    case 'processed':
+      return 'bg-green-200 dark:bg-green-800/50'
+    case 'failed':
+      return 'bg-red-200 dark:bg-red-800/50'
+    default:
+      return 'bg-gray-200 dark:bg-gray-800/50'
+  }
+}
+
+function getRefundStatusIconColor(status) {
+  switch (status) {
+    case 'pending':
+      return 'text-yellow-600 dark:text-yellow-400'
+    case 'processed':
+      return 'text-green-600 dark:text-green-400'
+    case 'failed':
+      return 'text-red-600 dark:text-red-400'
+    default:
+      return 'text-gray-600 dark:text-gray-400'
+  }
+}
+
+function getRefundStatusTextColor(status) {
+  switch (status) {
+    case 'pending':
+      return 'text-yellow-800 dark:text-yellow-200'
+    case 'processed':
+      return 'text-green-800 dark:text-green-200'
+    case 'failed':
+      return 'text-red-800 dark:text-red-200'
+    default:
+      return 'text-gray-800 dark:text-gray-200'
+  }
+}
+
+function getRefundStatusIcon(status) {
+  switch (status) {
+    case 'pending':
+      return Clock
+    case 'processed':
+      return CheckCircle
+    case 'failed':
+      return AlertTriangle
+    default:
+      return Clock
+  }
+}
+
+function getRefundStatusText(status) {
+  switch (status) {
+    case 'pending':
+      return 'Refund Pending'
+    case 'processed':
+      return 'Refund Processed'
+    case 'failed':
+      return 'Refund Failed'
+    default:
+      return 'Refund Status Unknown'
+  }
 }
 
 const { data, error, isLoading, refetch } = useMyBookings()
@@ -487,9 +882,17 @@ const paymentDialogOpen = ref(false)
 const paymentProofDialogOpen = ref(false)
 const selectedPaymentProof = ref(null)
 
+// Refund proof dialog state
+const refundProofDialogOpen = ref(false)
+const selectedRefundProof = ref(null)
+
 // Contract dialog state
 const contractDialogOpen = ref(false)
 const selectedBooking = ref(null)
+
+// Return dialog state
+const returnDialogOpen = ref(false)
+const selectedReturnBooking = ref(null)
 
 function openPaymentDialog(bookingId, type = 'deposit') {
   paymentDialogBookingId.value = bookingId
@@ -513,6 +916,18 @@ function closeContractDialog() {
   contractDialogOpen.value = false
 }
 
+function openReturnDialog(booking) {
+  selectedReturnBooking.value = booking
+  returnDialogOpen.value = true
+}
+
+function onReturnSubmitted() {
+  returnDialogOpen.value = false
+  selectedReturnBooking.value = null
+  toast.success('Vehicle return submitted successfully!')
+  refetch()
+}
+
 // Edit dialog state
 const editDialogOpen = ref(false)
 const editBooking = ref(null)
@@ -533,8 +948,8 @@ function shouldShowEditButton(booking) {
 }
 
 function shouldShowCancelButton(booking) {
-  // Allow cancellation only if the booking is pending and hasn't started yet
-  if (!booking || booking.status !== 'pending') return false
+  // Allow cancellation for bookings that haven't been released yet
+  if (!booking || ['cancelled', 'completed', 'released', 'pending_return'].includes(booking.status)) return false
   const now = new Date()
   const start = new Date(booking.start_date)
   const timeUntilStart = start.getTime() - now.getTime()
@@ -566,34 +981,118 @@ function shouldShowRentalButton(booking) {
 }
 
 const cancelBooking = useCancelBooking()
-const cancelLoading = ref({})
 
 function openPaymentProofDialog(payment) {
   selectedPaymentProof.value = payment
   paymentProofDialogOpen.value = true
 }
 
-async function handleCancelBooking(booking) {
-  cancelLoading.value[booking.id] = true
+function openRefundProofDialog(booking) {
+  selectedRefundProof.value = booking
+  refundProofDialogOpen.value = true
+}
+
+function isImageFile(data) {
+  // Check if it's a base64 image
+  if (typeof data === 'string' && data.startsWith('data:image/')) {
+    return true
+  }
+  // Fallback for file extensions (legacy)
+  return /\.(jpg|jpeg|png|gif|webp)$/i.test(data)
+}
+
+function hasApprovedPayments(booking) {
+  if (!booking || !booking.payments) return false
+  return booking.payments.some(payment => payment.status === 'approved')
+}
+
+// Cancellation Dialog
+const cancelDialog = ref({
+  open: false,
+  booking: null
+})
+
+const cancelForm = reactive({
+  reason: '',
+  processing: false,
+  // Refund account information
+  refund_method: '',
+  account_number: '',
+  account_name: '',
+  bank_name: '',
+  refund_notes: ''
+})
+
+function openCancelDialog(booking) {
+  cancelDialog.value.booking = booking
+  cancelDialog.value.open = true
+  cancelForm.reason = ''
+  cancelForm.processing = false
+  // Reset refund fields
+  cancelForm.refund_method = ''
+  cancelForm.account_number = ''
+  cancelForm.account_name = ''
+  cancelForm.bank_name = ''
+  cancelForm.refund_notes = ''
+}
+
+async function handleCancelBooking() {
+  if (!cancelForm.reason.trim()) {
+    toast.error('Please provide a cancellation reason')
+    return
+  }
+
+  // Validate refund information if has approved payments
+  if (hasApprovedPayments(cancelDialog.value.booking)) {
+    if (!cancelForm.refund_method) {
+      toast.error('Please select a refund method')
+      return
+    }
+
+    if (cancelForm.refund_method === 'gcash') {
+      if (!cancelForm.account_number || !cancelForm.account_name) {
+        toast.error('Please provide your GCash number and account holder name')
+        return
+      }
+    } else if (cancelForm.refund_method === 'bank_transfer') {
+      if (!cancelForm.bank_name || !cancelForm.account_number || !cancelForm.account_name) {
+        toast.error('Please provide complete bank account details')
+        return
+      }
+    }
+  }
+
+  cancelForm.processing = true
   try {
-    await cancelBooking.mutateAsync(booking.id)
-    toast.success('Booking cancelled')
+    const payload = {
+      bookingId: cancelDialog.value.booking.id,
+      cancellation_reason: cancelForm.reason
+    }
+
+    // Include refund account information if has approved payments
+    if (hasApprovedPayments(cancelDialog.value.booking)) {
+      payload.refund_method = cancelForm.refund_method
+      payload.account_number = cancelForm.account_number
+      payload.account_name = cancelForm.account_name
+      payload.bank_name = cancelForm.bank_name
+      payload.refund_notes = cancelForm.refund_notes
+    }
+
+    await cancelBooking.mutateAsync(payload)
+    toast.success('Booking cancelled successfully')
+    cancelDialog.value.open = false
     // Optionally refetch bookings
     data.refetch && data.refetch()
   } catch (e) {
     toast.error(e.response?.data?.message || 'Cancellation failed')
   } finally {
-    cancelLoading.value[booking.id] = false
+    cancelForm.processing = false
   }
 }
 </script>
 
 <style scoped>
-/* Cancelled booking styles */
-.cancelled-overlay {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
-}
-
+/* Enhanced cancelled booking styles */
 .cancelled-card {
   position: relative;
 }
@@ -609,8 +1108,8 @@ async function handleCancelBooking(booking) {
     45deg,
     transparent,
     transparent 10px,
-    rgba(239, 68, 68, 0.05) 10px,
-    rgba(239, 68, 68, 0.05) 20px
+    rgba(239, 68, 68, 0.03) 10px,
+    rgba(239, 68, 68, 0.03) 20px
   );
   pointer-events: none;
   border-radius: inherit;
@@ -621,14 +1120,6 @@ async function handleCancelBooking(booking) {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.card-minimized {
-  max-height: auto;
-}
-
-.card-expanded {
-  max-height: none;
-}
-
 /* Smooth hover effects for minimize button */
 .minimize-button {
   transition: all 0.2s ease-in-out;
@@ -637,6 +1128,27 @@ async function handleCancelBooking(booking) {
 .minimize-button:hover {
   background-color: rgba(0, 0, 0, 0.05);
   transform: scale(1.05);
+}
+
+/* Enhanced gradient animations */
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.refund-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    transparent 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 3s infinite;
 }
 
 /* Modal styles */
@@ -674,5 +1186,17 @@ async function handleCancelBooking(booking) {
   color: #888;
   cursor: pointer;
   z-index: 1002;
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  .modal-content {
+    background: #1f2937;
+    color: #f3f4f6;
+  }
+  
+  .modal-close {
+    color: #9ca3af;
+  }
 }
 </style>

@@ -271,7 +271,18 @@ const getStatusVariant = (status) => {
 }
 
 const getNotificationType = (type) => {
-  return type
+  const typeMap = {
+    'booking_created': 'Booking Created',
+    'payment_submitted': 'Payment Submitted',
+    'payment_status_updated': 'Payment Status Updated',
+    'vehicle_released': 'Vehicle Released',
+    'vehicle_return_submitted': 'Return Submitted',
+    'vehicle_return_completed': 'Return Completed',
+    'deposit_refund_processed': 'Deposit Refund Processed',
+    'booking_cancelled_by_admin': 'Booking Cancelled'
+  }
+  
+  return typeMap[type] || type
     .split('_')
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')

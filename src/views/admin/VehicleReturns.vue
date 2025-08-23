@@ -58,7 +58,32 @@
                 >
                   Process Return
                 </Button>
-                <Badge v-else variant="success">Returned</Badge>
+                <Button
+                  v-else-if="booking.vehicle_return.status === 'customer_submitted'"
+                  variant="default"
+                  @click="openReturnDialog(booking)"
+                  class="bg-blue-600 hover:bg-blue-700"
+                >
+                  Review Customer Return
+                </Button>
+                <Badge v-else-if="booking.vehicle_return.status === 'completed'" variant="success">
+                  Return Completed
+                </Badge>
+                <div v-if="booking.status === 'pending_return'" class="flex items-center gap-2">
+                  <Badge variant="secondary">Pending Admin Review</Badge>
+                  <span class="text-xs text-muted-foreground">
+                    Customer submitted: {{ formatDate(booking.vehicle_return?.customer_submitted_at) }}
+                  </span>
+                </div>
+                <div v-if="booking.vehicle_return?.deposit_status" class="flex items-center gap-2 mt-2">
+                  <span class="text-sm font-semibold">Deposit:</span>
+                  <Badge :variant="getDepositStatusVariant(booking.vehicle_return.deposit_status)">
+                    {{ getDepositStatusLabel(booking.vehicle_return.deposit_status) }}
+                  </Badge>
+                  <span v-if="booking.vehicle_return.deposit_status === 'refunded'" class="text-sm text-green-600 font-medium">
+                    ₱{{ booking.vehicle_return.deposit_refund_amount || 0 }} refunded
+                  </span>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -102,5 +127,29 @@ function openReturnDialog(booking) {
 function onReturned() {
   returnDialogOpen.value = false
   refetch()
+}
+
+function getDepositStatusVariant(status) {
+  switch (status) {
+    case 'refunded':
+      return 'success'
+    case 'withheld':
+      return 'destructive'
+    case 'pending':
+    default:
+      return 'secondary'
+  }
+}
+
+function getDepositStatusLabel(status) {
+  switch (status) {
+    case 'refunded':
+      return 'Refunded'
+    case 'withheld':
+      return 'Withheld'
+    case 'pending':
+    default:
+      return 'Pending Refund'
+  }
 }
 </script>
