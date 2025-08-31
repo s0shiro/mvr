@@ -18,7 +18,7 @@
           >
             <!-- Floating Edit Button for Admins -->
             <RouterLink
-              v-if="userAuth.isAdmin()"
+              v-if="userAuth.isAdmin() || userAuth.isManager()"
               :to="{ name: 'vehicle-edit', params: { id: vehicle.id } }"
               class="absolute top-4 right-4 z-10"
               title="Edit Vehicle"
@@ -126,7 +126,7 @@
               v-if="vehicle.status !== 'maintenance'"
               class="w-full py-4 rounded-xl bg-gradient-to-r from-primary to-primary/80 text-primary-foreground font-bold text-xl shadow-lg hover:from-primary/90 hover:to-primary/80 transition-all border border-primary/30 opacity-90 hover:opacity-100 disabled:cursor-not-allowed disabled:opacity-50"
               @click.prevent="router.push({ path: `/book/${vehicleId}` })"
-              :disabled="userAuth.isAdmin() || booking?.status === 'pending' || booking?.status === 'paid'"
+              :disabled="userAuth.isAdmin() || userAuth.isManager() || booking?.status === 'pending' || booking?.status === 'paid'"
             >
               Book Now
             </button>

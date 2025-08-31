@@ -53,6 +53,7 @@ export function useUserAuth() {
     // Permission check methods from the auth store (only hasRole for now)
     hasRole: (role) => authStore.hasRole(role),
     isAdmin: () => authStore.hasRole('admin'),
+    isManager: () => authStore.hasRole('manager'),
 
     // Auth store getters
     isAuthenticated: () => authStore.isAuthenticated,

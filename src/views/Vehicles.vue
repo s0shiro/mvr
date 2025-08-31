@@ -5,8 +5,8 @@
         <h1 class="text-3xl font-bold">Vehicles</h1>
         <p class="text-muted-foreground">Browse our available vehicles</p>
       </div>
-      <!-- Add Vehicle Button (admin only) -->
-      <template v-if="userAuth.isAdmin()">
+      <!-- Add Vehicle Button (admin and manager only) -->
+      <template v-if="userAuth.isAdmin() || userAuth.isManager()">
         <RouterLink :to="{ name: 'add-vehicle' }">
           <Button class="cursor-pointer" variant="default">Add Vehicle</Button>
         </RouterLink>
