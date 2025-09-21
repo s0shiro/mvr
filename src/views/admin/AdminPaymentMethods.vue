@@ -25,6 +25,7 @@
       :paymentMethod="selectedMethod"
       :loading="dialogLoading"
       :error="dialogError"
+      :isCash="selectedMethod?.key === 'cash' || (!isEdit && form.key === 'cash')" 
       @close="closeDialog"
       @submit="handleDialogSubmit"
     />
@@ -86,6 +87,7 @@ function openAddDialog() {
   selectedMethod.value = null
   isEdit.value = false
   dialogError.value = ''
+  form.value.key = ''  // Reset key - fixed to use .value for ref
   showDialog.value = true
 }
 function openEditDialog(method) {
@@ -102,6 +104,12 @@ async function handleDialogSubmit(data) {
   dialogLoading.value = true
   dialogError.value = ''
   try {
+    // For cash, ensure account fields are optional (backend should handle this)
+    if (data.key === 'cash') {
+      data.account_name = data.account_name || null
+      data.account_number = data.account_number || null
+      data.bank_name = data.bank_name || null
+    }
     if (isEdit.value && data.id) {
       await mutationUpdate.mutateAsync({ ...data })
     } else {

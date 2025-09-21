@@ -27,7 +27,7 @@
             </Select>
           </div>
           <Accordion
-            v-if="form.method && paymentMethods[form.method]"
+            v-if="form.method && paymentMethods[form.method] && form.method !== 'cash'" 
             type="single"
             collapsible
             class="mb-2"
@@ -133,7 +133,10 @@
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-          <div class="space-y-2">
+          <div v-if="form.method === 'cash'" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-2">
+            <p class="text-sm text-yellow-800">For cash payments, please pay in person at our office.</p>
+          </div>
+          <div v-if="form.method !== 'cash'" class="space-y-2">  <!-- Hide for cash -->
             <Label for="reference_number">Reference Number</Label>
             <Input
               v-model="form.reference_number"
@@ -144,7 +147,7 @@
             />
             <p v-if="referenceNumberError" class="text-sm text-red-500">{{ referenceNumberError }}</p>
           </div>
-          <div class="space-y-2">
+          <div v-if="form.method !== 'cash'" class="space-y-2">  <!-- Hide for cash -->
             <Label for="proof_image">Proof of Payment</Label>
             <div class="grid w-full max-w-sm items-center gap-1.5">
               <Label
@@ -223,6 +226,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { useQueryClient } from '@tanstack/vue-query'
 
 const props = defineProps({
   bookingId: { type: [String, Number], required: true },
@@ -234,19 +238,22 @@ const props = defineProps({
 const emit = defineEmits(['paid'])
 
 const paymentMethodsQuery = usePaymentMethods()
+const queryClient = useQueryClient()
 
 const paymentMethods = computed(() => {
   // If the API returns an array, convert to object keyed by method key for compatibility
   const arr = paymentMethodsQuery.data?.value
+  let obj = {}
   if (Array.isArray(arr)) {
-    const obj = {}
     for (const method of arr) {
       obj[method.key] = method
     }
-    return obj
+  } else {
+    // If already object (legacy), just return
+    obj = arr || {}
   }
-  // If already object (legacy), just return
-  return arr || {}
+  // Removed hardcoded Cash - now seeded in DB
+  return obj
 })
 
 const form = ref({
@@ -281,6 +288,19 @@ async function onSubmit() {
   error.value = ''
   referenceNumberError.value = ''
   
+  // Skip validation for optional fields if cash
+  const isCash = form.value.method === 'cash'
+  if (!isCash && !form.value.reference_number.trim()) {
+    referenceNumberError.value = 'Reference number is required'
+    loading.value = false
+    return
+  }
+  if (!isCash && !form.value.proof_image) {
+    error.value = 'Proof of payment is required'
+    loading.value = false
+    return
+  }
+  
   try {
     await submitPayment.mutateAsync({
       bookingId: props.bookingId,
@@ -288,6 +308,7 @@ async function onSubmit() {
       type: props.type,
     })
     emit('paid')
+    queryClient.invalidateQueries(['my-bookings'])  // Invalidate my-bookings query
     props.onClose()
   } catch (e) {
     const response = e.response?.data
@@ -307,3 +328,4 @@ async function onSubmit() {
   }
 }
 </script>
+

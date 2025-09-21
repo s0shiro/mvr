@@ -437,7 +437,7 @@
                           <span class="text-muted-foreground">Method</span>
                           <span class="font-medium">{{ payment.method }}</span>
                         </div>
-                        <div class="flex justify-between">
+                        <div v-if="payment.method !== 'cash'" class="flex justify-between">  <!-- Hide for cash -->
                           <span class="text-muted-foreground">Reference #</span>
                           <span class="font-medium">{{ payment.reference_number }}</span>
                         </div>
@@ -445,7 +445,7 @@
                           <span>Submitted</span>
                           <span>{{ new Date(payment.created_at).toLocaleString() }}</span>
                         </div>
-                        <div v-if="payment.proof_image" class="mt-3">
+                        <div v-if="payment.proof_image && payment.method !== 'cash'" class="mt-3">  <!-- Optional for cash -->
                           <Button
                             variant="outline"
                             class="w-full"
