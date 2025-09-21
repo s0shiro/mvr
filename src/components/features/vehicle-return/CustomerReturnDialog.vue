@@ -8,8 +8,8 @@
         </DialogDescription>
       </DialogHeader>
       
-      <div class="flex-1 overflow-y-auto pr-2">
-        <form @submit.prevent="handleSubmit">
+      <form @submit.prevent="handleSubmit">
+        <div class="flex-1 overflow-y-auto pr-2">
           <div class="space-y-4 pb-4">
           <div class="flex flex-col gap-2">
             <Label>Return Photos *</Label>
@@ -178,23 +178,22 @@
               </div>
             </div>
           </div>
-        </form>
-      </div>
-      
-      <DialogFooter class="flex-shrink-0 mt-4">
-        <Button type="button" variant="outline" @click="$emit('update:open', false)">
-          Cancel
-        </Button>
-        <Button 
-          type="submit" 
-          :disabled="isLoading || form.customer_images.length === 0"
-          class="min-w-[120px]"
-          @click="handleSubmit"
-        >
-          <Loader2 v-if="isLoading" class="w-4 h-4 animate-spin mr-2" />
-          Submit Return
-        </Button>
-      </DialogFooter>
+        </div>
+        
+        <DialogFooter class="flex-shrink-0 mt-4">
+          <Button type="button" variant="outline" @click="$emit('update:open', false)">
+            Cancel
+          </Button>
+          <Button 
+            type="submit" 
+            :disabled="isSubmitting || form.customer_images.length === 0"
+            class="min-w-[120px]"
+          >
+            <Loader2 v-if="isSubmitting" class="w-4 h-4 animate-spin mr-2" />
+            {{ isSubmitting ? 'Submitting...' : 'Submit Return' }}
+          </Button>
+        </DialogFooter>
+      </form>
     </DialogContent>
   </Dialog>
 </template>
@@ -239,6 +238,7 @@ const form = ref({
 const isDragging = ref(false)
 const fileInput = ref(null)
 const imageError = ref('')
+const isSubmitting = ref(false)
 
 watch(
   () => props.open,
@@ -261,7 +261,7 @@ watch(
   },
 )
 
-const { mutate: submitReturn, isLoading } = useSubmitVehicleReturn()
+const { mutate: submitReturn } = useSubmitVehicleReturn()
 
 function handleDrop(e) {
   isDragging.value = false
@@ -339,15 +339,18 @@ function handleSubmit() {
   }
 
   imageError.value = ''
+  isSubmitting.value = true
 
   submitReturn(
     { bookingId: props.booking.id, ...form.value },
     {
       onSuccess: () => {
+        isSubmitting.value = false
         emit('update:open', false)
         emit('submitted')
       },
       onError: (error) => {
+        isSubmitting.value = false
         console.error('Return submission failed:', error)
         imageError.value = error?.response?.data?.message || 'Failed to submit return. Please try again.'
       }
@@ -355,3 +358,4 @@ function handleSubmit() {
   )
 }
 </script>
+
