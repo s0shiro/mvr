@@ -44,10 +44,19 @@ export function useUpdateBooking() {
 
 export function useCancelBooking() {
   return useMutation({
-    mutationFn: async ({ bookingId, cancellation_reason }) => {
-      const res = await axiosInstance.post(`/api/bookings/${bookingId}/cancel`, {
-        cancellation_reason
-      })
+    mutationFn: async ({ bookingId, cancellation_reason, refund_method, account_number, account_name, bank_name, refund_notes }) => {
+      const payload = { cancellation_reason }
+      
+      // Include refund information if provided
+      if (refund_method) {
+        payload.refund_method = refund_method
+        payload.account_number = account_number
+        payload.account_name = account_name
+        payload.bank_name = bank_name
+        payload.refund_notes = refund_notes
+      }
+      
+      const res = await axiosInstance.post(`/api/bookings/${bookingId}/cancel`, payload)
       return res.data
     },
   })
