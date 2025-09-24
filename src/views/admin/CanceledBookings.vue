@@ -2,6 +2,45 @@
   <div class="container space-y-6">
     <div class="flex justify-between items-center mb-4">
       <h1 class="text-2xl font-bold">Canceled Bookings History</h1>
+      
+      <!-- Sorting Controls -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
+          <Label for="sort-by" class="text-sm font-medium">Sort by:</Label>
+          <select
+            id="sort-by"
+            v-model="sortBy"
+            class="flex h-9 w-auto rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <option value="created_at">Booking Date</option>
+            <option value="cancelled_at">Cancellation Date</option>
+            <option value="start_date">Rental Start Date</option>
+            <option value="end_date">Rental End Date</option>
+            <option value="total_price">Amount</option>
+          </select>
+        </div>
+        
+        <div class="flex items-center gap-1 border rounded-md">
+          <Button
+            variant="ghost"
+            size="sm"
+            :class="['px-3 py-1 rounded-r-none border-r', sortOrder === 'desc' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted']"
+            @click="sortOrder = 'desc'"
+          >
+            <TrendingDown class="w-4 h-4 mr-1" />
+            Desc
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            :class="['px-3 py-1 rounded-l-none', sortOrder === 'asc' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted']"
+            @click="sortOrder = 'asc'"
+          >
+            <TrendingUp class="w-4 h-4 mr-1" />
+            Asc
+          </Button>
+        </div>
+      </div>
     </div>
     <div v-if="isLoading" class="h-[calc(100vh-10rem)] flex items-center justify-center">
       <Loading text="Loading canceled bookings..." />
@@ -18,7 +57,7 @@
         </div>
         <h3 class="text-xl font-semibold text-foreground">No canceled bookings found</h3>
         <p class="text-muted-foreground max-w-md">
-          Canceled bookings will appear here when reservations have been cancelled by either customers or administrators. Each canceled booking will show the reason and any refund details.
+          Canceled bookings will appear here when reservations have been canceled by either customers or administrators. Each canceled booking will show the reason and any refund details.
         </p>
       </div>
       <div v-else class="space-y-6">
@@ -41,7 +80,7 @@
               <div class="flex items-center gap-3">
                 <Badge variant="destructive" class="text-sm px-3 py-1">
                   <XCircle class="w-4 h-4 mr-1" />
-                  {{ booking.status }}
+                  {{ booking.status === 'cancelled' ? 'Canceled' : booking.status }}
                 </Badge>
                 <div class="text-right">
                   <p class="text-2xl font-bold text-red-600 dark:text-red-400">₱{{ Number(booking.total_price).toLocaleString() }}</p>
@@ -196,7 +235,7 @@
             Process Refund - {{ refundDialog.booking?.vehicle?.name }}
           </DialogTitle>
           <DialogDescription>
-            Process the refund for this cancelled booking. Please provide proof of refund completion.
+            Process the refund for this canceled booking. Please provide proof of refund completion.
           </DialogDescription>
         </DialogHeader>
 
@@ -448,6 +487,7 @@ import {
   CreditCard, 
   DollarSign, 
   TrendingUp, 
+  TrendingDown,
   ChevronRight,
   Loader2,
   CheckCircle,
@@ -456,6 +496,10 @@ import {
 import { RouterLink } from 'vue-router'
 
 const bookingService = useBookingService()
+
+// Sorting controls
+const sortBy = ref('created_at')
+const sortOrder = ref('desc')
 
 // Refund Dialog
 const refundDialog = ref({
@@ -678,6 +722,7 @@ function calculateDailyRate(totalPrice, startDate, endDate) {
   return dailyRate.toLocaleString('en-US', { maximumFractionDigits: 0 })
 }
 
-const { data, error, isLoading } = useAdminCanceledBookings()
+// Use the composable with reactive values directly
+const { data, error, isLoading } = useAdminCanceledBookings(sortBy, sortOrder)
 const bookings = computed(() => data.value || [])
 </script>

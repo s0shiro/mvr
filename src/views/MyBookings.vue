@@ -1,49 +1,144 @@
 <template>
-  <div class="container">
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-bold flex items-center gap-2">
-        <ClipboardList class="w-6 h-6" /> My Bookings
-      </h1>
-      <div v-if="bookings.length > 0" class="flex items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          @click="toggleAllCards"
-          class="flex items-center gap-2"
-        >
-          <Minimize2 v-if="!globalMinimized" class="w-4 h-4" />
-          <Maximize2 v-else class="w-4 h-4" />
-          {{ globalMinimized ? 'Expand All' : 'Minimize All' }}
-        </Button>
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <!-- Header Section -->
+    <div class="flex flex-col space-y-6">
+      <!-- Page Title -->
+      <div class="flex items-center justify-between">
+        <h1 class="text-2xl sm:text-3xl font-bold flex items-center gap-3">
+          <ClipboardList class="w-7 h-7 text-primary" />
+          My Bookings
+        </h1>
+      </div>
+
+      <!-- Controls Section -->
+      <div class="bg-card border rounded-lg p-4 sm:p-6 shadow-sm">
+        <div class="flex flex-col xl:flex-row gap-6 xl:items-end xl:justify-between">
+          <!-- Sorting and Filtering Controls -->
+          <div class="flex flex-col lg:flex-row gap-6 items-start lg:items-end flex-1">
+            <!-- Sorting Controls -->
+            <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+              <div class="flex flex-col gap-2 min-w-0">
+                <Label for="sort-by" class="text-sm font-medium text-muted-foreground">Sort by:</Label>
+                <select
+                  id="sort-by"
+                  v-model="sortBy"
+                  class="flex h-10 w-full sm:w-48 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="created_at">Booking Date</option>
+                  <option value="start_date">Rental Start Date</option>
+                  <option value="end_date">Rental End Date</option>
+                  <option value="total_price">Amount</option>
+                </select>
+              </div>
+
+              <div class="flex flex-col gap-2">
+                <Label class="text-sm font-medium text-muted-foreground">Order:</Label>
+                <div class="flex items-center gap-0 border rounded-md overflow-hidden">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    :class="['px-4 py-2 rounded-none border-r h-10', sortOrder === 'desc' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted']"
+                    @click="sortOrder = 'desc'"
+                  >
+                    <TrendingDown class="w-4 h-4 mr-2" />
+                    Desc
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    :class="['px-4 py-2 rounded-none h-10', sortOrder === 'asc' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted']"
+                    @click="sortOrder = 'asc'"
+                  >
+                    <TrendingUp class="w-4 h-4 mr-2" />
+                    Asc
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="flex flex-col gap-2 flex-1 min-w-0">
+              <Label class="text-sm font-medium text-muted-foreground">Filter by Status:</Label>
+              <Tabs v-model="statusFilter" class="w-full">
+                <TabsList class="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-10">
+                  <TabsTrigger value="" class="text-xs sm:text-sm">All</TabsTrigger>
+                  <TabsTrigger value="pending" class="text-xs sm:text-sm">Pending</TabsTrigger>
+                  <TabsTrigger value="confirmed" class="text-xs sm:text-sm">Confirmed</TabsTrigger>
+                  <TabsTrigger value="for_release" class="text-xs sm:text-sm">For Release</TabsTrigger>
+                  <TabsTrigger value="released" class="text-xs sm:text-sm">Released</TabsTrigger>
+                  <TabsTrigger value="cancelled" class="text-xs sm:text-sm">Canceled</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div v-if="bookings.length > 0" class="flex items-center justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              @click="toggleAllCards"
+              class="flex items-center gap-2 h-10 px-4"
+            >
+              <Minimize2 v-if="!globalMinimized" class="w-4 h-4" />
+              <Maximize2 v-else class="w-4 h-4" />
+              {{ globalMinimized ? 'Expand All' : 'Minimize All' }}
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
-    <div v-if="isLoading" class="h-[calc(100vh-10rem)] flex items-center justify-center">
-      <Loading text="bookings..." />
+    <!-- Main Content -->
+    <div v-if="isLoading" class="flex items-center justify-center py-12">
+      <Loading text="Loading your bookings..." />
     </div>
-    <div v-else-if="error" class="text-center text-red-600">{{ error.message }}</div>
+    <div v-else-if="error" class="text-center py-12">
+      <div class="text-red-600 font-medium">{{ error.message }}</div>
+    </div>
     <div v-else>
+      <!-- Empty State -->
       <div
         v-if="!bookings.length"
-        class="text-center text-muted-foreground py-12 flex flex-col items-center gap-4"
+        class="text-center py-16"
       >
-        <span>You have no bookings yet.</span>
-        <Button as-child variant="default" size="lg" class="mt-2 px-6 py-3 text-base font-semibold">
-          <RouterLink to="/vehicles" class="flex items-center justify-center gap-2">
-            Add Booking
+        <div class="w-16 h-16 mx-auto mb-6 opacity-50">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full text-muted-foreground">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14,2 14,8 20,8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10,9 9,9 8,9"></polyline>
+          </svg>
+        </div>
+        <h3 class="text-xl font-semibold text-foreground mb-2">
+          {{ statusFilter ? `No ${formatStatusText(statusFilter)} bookings` : 'No bookings yet' }}
+        </h3>
+        <p class="text-muted-foreground max-w-md mx-auto mb-6">
+          {{ statusFilter
+            ? `You don't have any bookings with ${formatStatusText(statusFilter)} status.`
+            : 'Start your journey by browsing our available vehicles and creating your first booking.'
+          }}
+        </p>
+        <Button as-child variant="default" size="lg">
+          <RouterLink to="/vehicles" class="flex items-center gap-2">
+            <Car class="w-4 h-4" />
+            Browse Vehicles
           </RouterLink>
         </Button>
       </div>
-      <div v-else class="space-y-6">
-        <Card 
-          v-for="booking in bookings" 
-          :key="booking.id" 
-          :class="[
-            'border transition-all duration-300 hover:shadow-lg',
-            booking.status === 'cancelled' 
-              ? 'border-red-300 dark:border-red-700 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/40 dark:to-red-900/20 relative overflow-hidden' 
-              : 'border-border bg-card hover:shadow-md'
-          ]"
-        >
+
+      <!-- Bookings List -->
+                <!-- Bookings List -->
+          <div v-else class="space-y-6">
+            <template v-for="booking in bookings" :key="booking.id">
+              <Card
+                :class="[
+                  'border transition-all duration-300 hover:shadow-lg overflow-hidden',
+                  booking.status === 'cancelled'
+                    ? 'border-red-300 dark:border-red-700 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/40 dark:to-red-900/20 relative'
+                    : 'border-border bg-card hover:shadow-md'
+                ]"
+              >
           <CardHeader class="flex flex-row items-center justify-between gap-4">
             <div :class="booking.status === 'cancelled' ? 'line-through text-muted-foreground' : ''" class="flex-1">
               <CardTitle 
@@ -96,7 +191,7 @@
               </div>
             </div>
             <div class="flex items-center gap-2">
-              <Badge :variant="getStatusVariant(booking.status)">{{ booking.status }}</Badge>
+              <Badge :variant="getStatusVariant(booking.status)">{{ booking.status === 'cancelled' ? 'Canceled' : booking.status }}</Badge>
               <Button
                 variant="ghost"
                 size="sm"
@@ -131,7 +226,7 @@
                 class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-red-900/30 to-red-800/20 rounded-xl backdrop-blur-[1px]"
               >
                 <div class="bg-red-600/90 dark:bg-red-700/90 text-white px-3 py-1 rounded-lg shadow-lg border border-red-400 dark:border-red-500">
-                  <span class="font-bold text-sm tracking-wide">CANCELLED</span>
+                  <span class="font-bold text-sm tracking-wide">CANCELED</span>
                 </div>
               </div>
             </div>
@@ -224,14 +319,14 @@
                         <X class="w-5 h-5 text-red-600 dark:text-red-400" />
                       </div>
                       <div class="flex-1">
-                        <h4 class="font-semibold text-red-900 dark:text-red-100 mb-1">Booking Cancelled</h4>
+                        <h4 class="font-semibold text-red-900 dark:text-red-100 mb-1">Booking Canceled</h4>
                         <p class="text-red-700 dark:text-red-300 text-sm leading-relaxed">
-                          This booking has been cancelled.
+                          This booking has been canceled.
                           <span v-if="booking.cancellation_reason" class="block mt-1">
                             <strong>Reason:</strong> {{ booking.cancellation_reason }}
                           </span>
                           <span v-if="booking.cancelled_at" class="block mt-1 text-red-600 dark:text-red-400 text-xs">
-                            Cancelled on {{ formatDate(booking.cancelled_at) }}
+                            Canceled on {{ formatDate(booking.cancelled_at) }}
                           </span>
                         </p>
                       </div>
@@ -304,7 +399,7 @@
 
               <div class="flex gap-2 mb-4">
                 <div v-if="booking.status === 'cancelled'" class="text-sm text-muted-foreground italic">
-                  No actions available for cancelled bookings
+                  No actions available for canceled bookings
                 </div>
                 <template v-else-if="!['cancelled', 'completed', 'released', 'pending_return'].includes(booking.status)">
                   <Button
@@ -366,9 +461,9 @@
                   <Badge variant="secondary">
                     Return Submitted - Admin Review
                   </Badge>
-                  <div class="text-xs text-muted-foreground">
+                  <!-- <div class="text-xs text-muted-foreground">
                     Submitted: {{ formatDate(booking.vehicle_return?.customer_submitted_at) }}
-                  </div>
+                  </div> -->
                 </template>
                 
                 <Button
@@ -429,7 +524,7 @@
                           {{ payment.type === 'deposit' ? 'Security Deposit' : 'Rental Payment' }}
                         </div>
                         <Badge :variant="getStatusVariant(payment.status)">
-                          {{ payment.status }}
+                          {{ payment.status === 'cancelled' ? 'Canceled' : payment.status }}
                         </Badge>
                       </div>
                       <div class="space-y-2 text-sm">
@@ -463,6 +558,7 @@
             </div>
           </CardContent>
         </Card>
+            </template>
         <PaymentDialog
           v-if="paymentDialogBookingId"
           :bookingId="paymentDialogBookingId"
@@ -568,7 +664,7 @@
             Cancel Booking
           </DialogTitle>
           <DialogDescription>
-            Please provide a reason for cancelling this booking and your refund account details if eligible for a refund.
+            Please provide a reason for canceling this booking and your refund account details if eligible for a refund.
           </DialogDescription>
         </DialogHeader>
 
@@ -593,7 +689,7 @@
               <Textarea
                 id="cancellation-reason"
                 v-model="cancelForm.reason"
-                placeholder="Please explain why you're cancelling this booking..."
+                placeholder="Please explain why you're canceling this booking..."
                 rows="3"
                 class="resize-none"
                 required
@@ -692,7 +788,7 @@
               >
                 <Loader2 v-if="cancelForm.processing" class="w-4 h-4 mr-2 animate-spin" />
                 <Ban v-else class="w-4 h-4 mr-2" />
-                {{ cancelForm.processing ? 'Cancelling...' : 'Cancel Booking' }}
+                {{ cancelForm.processing ? 'Canceling...' : 'Cancel Booking' }}
               </Button>
             </div>
           </form>
@@ -703,8 +799,9 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { computed, ref, reactive, watch } from 'vue'
 import { useMyBookings } from '@/services/booking-service'
+import { useQueryClient } from '@tanstack/vue-query'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -712,6 +809,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { getStatusVariant } from '@/lib/utils'
 import PaymentDialog from '@/components/features/bookings/PaymentDialog.vue'
 import EditBookingDialog from '@/components/features/bookings/EditBookingDialog.vue'
@@ -744,9 +842,10 @@ import {
   AlertTriangle,
   Loader2,
   FileText,
+  TrendingUp,
+  TrendingDown,
 } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
-import DriverAssignmentStatus from '@/components/features/DriverAssignmentStatus.vue'
 
 function formatDate(dateStr) {
   const d = new Date(dateStr)
@@ -756,9 +855,34 @@ function formatDate(dateStr) {
 function formatDateRange(startDate, endDate) {
   const start = new Date(startDate)
   const end = new Date(endDate)
-  const startStr = start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-  const endStr = end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-  return `${startStr} - ${endStr}`
+  const startFormatted = start.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric', 
+    year: 'numeric' 
+  })
+  const endFormatted = end.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric', 
+    year: 'numeric' 
+  })
+  return `${startFormatted} - ${endFormatted}`
+}
+
+function formatStatusText(status) {
+  switch (status) {
+    case 'pending':
+      return 'pending'
+    case 'confirmed':
+      return 'confirmed'
+    case 'for_release':
+      return 'for release'
+    case 'released':
+      return 'released'
+    case 'cancelled':
+      return 'cancelled'
+    default:
+      return status
+  }
 }
 
 function getRefundStatusClasses(status) {
@@ -839,7 +963,16 @@ function getRefundStatusText(status) {
   }
 }
 
-const { data, error, isLoading, refetch } = useMyBookings()
+const queryClient = useQueryClient()
+
+// Sorting controls
+const sortBy = ref('created_at')
+const sortOrder = ref('desc')
+
+// Status filter
+const statusFilter = ref('')
+
+const { data, error, isLoading, refetch } = useMyBookings(sortBy, sortOrder, statusFilter)
 const bookings = computed(() => data.value || [])
 
 // Card minimization state
@@ -1079,10 +1212,12 @@ async function handleCancelBooking() {
     }
 
     await cancelBooking.mutateAsync(payload)
-    toast.success('Booking cancelled successfully')
+    toast.success('Booking canceled successfully')
     cancelDialog.value.open = false
-    // Optionally refetch bookings
-    data.refetch && data.refetch()
+    
+    // Invalidate the my-bookings query to refresh the data
+    await queryClient.invalidateQueries({ queryKey: ['my-bookings'] })
+    
   } catch (e) {
     toast.error(e.response?.data?.message || 'Cancellation failed')
   } finally {

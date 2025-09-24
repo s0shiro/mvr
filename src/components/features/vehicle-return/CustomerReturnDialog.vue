@@ -1,6 +1,6 @@
 <template>
   <Dialog :open="open" @update:open="$emit('update:open', $event)">
-    <DialogContent class="max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+    <DialogContent class="max-w-2xl w-full max-h-[90vh] flex flex-col">
       <DialogHeader class="flex-shrink-0">
         <DialogTitle>Submit Vehicle Return</DialogTitle>
         <DialogDescription>
@@ -8,9 +8,9 @@
         </DialogDescription>
       </DialogHeader>
       
-      <form @submit.prevent="handleSubmit">
-        <div class="flex-1 overflow-y-auto pr-2">
-          <div class="space-y-4 pb-4">
+      <div class="flex-1 overflow-y-auto pr-2">
+        <form @submit.prevent="handleSubmit" class="h-full flex flex-col">
+          <div class="flex-1 space-y-4 pb-4">
           <div class="flex flex-col gap-2">
             <Label>Return Photos *</Label>
             <div
@@ -178,22 +178,23 @@
               </div>
             </div>
           </div>
-        </div>
-        
-        <DialogFooter class="flex-shrink-0 mt-4">
-          <Button type="button" variant="outline" @click="$emit('update:open', false)">
-            Cancel
-          </Button>
-          <Button 
-            type="submit" 
-            :disabled="isSubmitting || form.customer_images.length === 0"
-            class="min-w-[120px]"
-          >
-            <Loader2 v-if="isSubmitting" class="w-4 h-4 animate-spin mr-2" />
-            {{ isSubmitting ? 'Submitting...' : 'Submit Return' }}
-          </Button>
-        </DialogFooter>
-      </form>
+        </form>
+      </div>
+      
+      <DialogFooter class="flex-shrink-0 border-t pt-4">
+        <Button type="button" variant="outline" @click="$emit('update:open', false)">
+          Cancel
+        </Button>
+        <Button 
+          type="button"
+          @click="handleSubmit"
+          :disabled="isSubmitting || form.customer_images.length === 0"
+          class="min-w-[120px]"
+        >
+          <Loader2 v-if="isSubmitting" class="w-4 h-4 animate-spin mr-2" />
+          {{ isSubmitting ? 'Submitting...' : 'Submit Return' }}
+        </Button>
+      </DialogFooter>
     </DialogContent>
   </Dialog>
 </template>

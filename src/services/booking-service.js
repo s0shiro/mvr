@@ -1,4 +1,5 @@
 import { useMutation, useQuery } from '@tanstack/vue-query'
+import { computed, unref } from 'vue'
 import axiosInstance from '@/lib/axiosInstance'
 
 export function useBookingSummary() {
@@ -106,11 +107,26 @@ export function useUpdatePaymentStatus() {
   })
 }
 
-export function useMyBookings() {
+export function useMyBookings(sortBy = 'created_at', sortOrder = 'desc', statusFilter = '') {
+  // Create computed values that properly unwrap refs
+  const sortByValue = computed(() => unref(sortBy))
+  const sortOrderValue = computed(() => unref(sortOrder))
+  const statusFilterValue = computed(() => unref(statusFilter))
+  
   return useQuery({
-    queryKey: ['my-bookings'],
+    queryKey: ['my-bookings', sortByValue, sortOrderValue, statusFilterValue],
     queryFn: async () => {
-      const res = await axiosInstance.get('/api/mybookings')
+      const params = new URLSearchParams({
+        sort_by: sortByValue.value,
+        sort_order: sortOrderValue.value,
+      })
+      
+      // Only add status filter if it's not empty
+      if (statusFilterValue.value) {
+        params.append('status', statusFilterValue.value)
+      }
+      
+      const res = await axiosInstance.get(`/api/mybookings?${params}`)
       return res.data.bookings
     },
   })

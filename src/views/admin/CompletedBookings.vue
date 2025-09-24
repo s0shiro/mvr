@@ -2,6 +2,45 @@
   <div class="container space-y-6">
     <div class="flex justify-between items-center mb-4">
       <h1 class="text-2xl font-bold">Completed Bookings History</h1>
+      
+      <!-- Sorting Controls -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2">
+          <Label for="sort-by" class="text-sm font-medium">Sort by:</Label>
+          <select
+            id="sort-by"
+            v-model="sortBy"
+            class="flex h-9 w-auto rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          >
+            <option value="created_at">Booking Date</option>
+            <option value="updated_at">Completion Date</option>
+            <option value="start_date">Rental Start Date</option>
+            <option value="end_date">Rental End Date</option>
+            <option value="total_price">Amount</option>
+          </select>
+        </div>
+        
+        <div class="flex items-center gap-1 border rounded-md">
+          <Button
+            variant="ghost"
+            size="sm"
+            :class="['px-3 py-1 rounded-r-none border-r', sortOrder === 'desc' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted']"
+            @click="sortOrder = 'desc'"
+          >
+            <TrendingDown class="w-4 h-4 mr-1" />
+            Desc
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            :class="['px-3 py-1 rounded-l-none', sortOrder === 'asc' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted']"
+            @click="sortOrder = 'asc'"
+          >
+            <TrendingUp class="w-4 h-4 mr-1" />
+            Asc
+          </Button>
+        </div>
+      </div>
     </div>
     <div v-if="isLoading" class="h-[calc(100vh-10rem)] flex items-center justify-center">
       <Loading text="Loading bookings..." />
@@ -158,11 +197,12 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useAdminCompletedBookings } from '@/services/admin/completed-bookings-service'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import Loading from '@/components/features/Loading.vue'
 import { getStatusVariant } from '@/lib/utils'
 import { 
@@ -178,6 +218,7 @@ import {
   CreditCard, 
   DollarSign, 
   TrendingUp, 
+  TrendingDown, 
   ChevronRight 
 } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
@@ -216,6 +257,10 @@ function calculateDailyRate(totalPrice, startDate, endDate) {
   return dailyRate.toLocaleString('en-US', { maximumFractionDigits: 0 })
 }
 
-const { data, error, isLoading } = useAdminCompletedBookings()
+// Sorting controls
+const sortBy = ref('created_at')
+const sortOrder = ref('desc')
+
+const { data, error, isLoading } = useAdminCompletedBookings(sortBy, sortOrder)
 const bookings = computed(() => data.value || [])
 </script>
