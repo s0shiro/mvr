@@ -345,30 +345,30 @@ const bookingId = computed(
 const { data: summary, isLoading, isError } = useBookingSummaryDetails(bookingId.value)
 
 // Fallbacks for demo/preview
-const contractNo = computed(() => (bookingId.value ? `MVR-${bookingId.value}` : '2025-001'))
-const contractDay = computed(() => summary.value?.executed_at?.split('/')[0] || '25')
+const contractNo = computed(() => (bookingId.value ? `MVR-${bookingId.value}` : '_________'))
+const contractDay = computed(() => summary.value?.executed_at?.split('/')[0] || '___')
 const contractMonth = computed(() => {
   const m = summary.value?.executed_at?.split('/')[1]
-  return m ? new Date(2000, parseInt(m) - 1, 1).toLocaleString('default', { month: 'long' }) : 'May'
+  return m ? new Date(2000, parseInt(m) - 1, 1).toLocaleString('default', { month: 'long' }) : '__________'
 })
-const contractYear = computed(() => summary.value?.executed_at?.split('/')[2] || '2025')
-const lesseeName = computed(() => summary.value?.customer_name || 'JUAN DELA CRUZ')
+const contractYear = computed(() => summary.value?.executed_at?.split('/')[2] || '______')
+const lesseeName = computed(() => summary.value?.customer_name || '_________________________________')
 const lesseeAddress = computed(
-  () => summary.value?.customer_address || '123 Main St, Boac, Marinduque',
+  () => summary.value?.customer_address || '________________________________________',
 )
 const vehicleDetails = computed(() =>
   summary.value?.vehicle
     ? `${summary.value.vehicle.brand} ${summary.value.vehicle.name} ${summary.value.vehicle.year}, Model: ${summary.value.vehicle.model}`
-    : 'Toyota Vios 2022, Plate ABC-1234',
+    : '',
 )
-const leasePeriod = computed(() => summary.value?.period?.toUpperCase() || '7 DAYS')
-const leaseStart = computed(() => summary.value?.executed_at || 'May 25, 2025')
+const leasePeriod = computed(() => summary.value?.period?.toUpperCase() || '__________')
+const leaseStart = computed(() => summary.value?.executed_at || '')
 const rentalAmount = computed(() =>
   summary.value?.rental_amount
     ? Number(summary.value.rental_amount).toLocaleString(undefined, { minimumFractionDigits: 2 })
-    : '2,000.00',
+    : '_________',
 )
-const rentalAmountWords = computed(() => summary.value?.rental_amount_words || 'TWO THOUSAND PESOS')
+const rentalAmountWords = computed(() => summary.value?.rental_amount_words || '__________________________')
 
 const securityDeposit = computed(() =>
   summary.value?.security_deposit
@@ -376,16 +376,16 @@ const securityDeposit = computed(() =>
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
       })
-    : '5,000',
+    : '________',
 )
 const securityDepositWords = computed(
-  () => summary.value?.security_deposit_words || 'FIVE THOUSAND PESOS',
+  () => summary.value?.security_deposit_words || '_______________________',
 )
 
 const hourlyRate = computed(() =>
   summary.value?.hourly_rate
     ? Number(summary.value.hourly_rate).toLocaleString(undefined, { minimumFractionDigits: 2 })
-    : '',
+    : '________',
 )
 const dailyRate = computed(() =>
   summary.value?.daily_rate
@@ -393,9 +393,9 @@ const dailyRate = computed(() =>
         minimumFractionDigits: 0,
         maximumFractionDigits: 0,
       })
-    : '',
+    : '________',
 )
-const dailyRateWords = computed(() => summary.value?.daily_rate_words || 'FIVE THOUSAND PESOS')
+const dailyRateWords = computed(() => summary.value?.daily_rate_words || '________________________')
 
 function printContract() {
   const printContent = document.querySelector('.contract-print').innerHTML
@@ -439,8 +439,8 @@ function printContract() {
   min-width: 793px;
   min-height: 1122px;
   margin: 0 auto;
-  background: transparent;
-  color: #222;
+  background: #ffffff;
+  color: #222222;
   padding: 2.5rem 2.2rem;
   border-radius: 8px;
   box-shadow: none;
@@ -464,15 +464,17 @@ function printContract() {
   font-size: 1.5em;
   margin: 0.5em 0 0.2em 0;
   font-weight: bold;
+  color: #222222;
 }
 .contract-no-line {
   font-weight: bold;
   margin-bottom: 0.5em;
+  color: #222222;
 }
 .underline {
   display: inline-block;
   min-width: 80px;
-  border-bottom: 1px solid #222;
+  border-bottom: 1px solid #222222;
   margin: 0 2px 2px 2px;
   padding: 0 0.5em;
   height: 1.2em;
@@ -483,12 +485,21 @@ function printContract() {
   font-size: 1.1em;
   font-weight: bold;
   margin: 1em 0 0.5em 0;
+  color: #222222;
+}
+.section-title.center {
+  text-align: center;
+  font-size: 1.1em;
+  font-weight: bold;
+  margin: 1em 0 0.5em 0;
+  color: #222222;
 }
 .contract-body {
   margin-bottom: 1em;
   font-size: 1em;
   text-align: left;
   text-indent: 0;
+  color: #222222;
 }
 .uppercase {
   text-transform: uppercase;
@@ -521,19 +532,57 @@ function printContract() {
   margin-bottom: 1.5em;
   padding: 0.5em 1.2em;
   font-size: 1em;
-  background: #222;
-  color: #fff;
+  background: #222222;
+  color: #ffffff;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 
+.print-btn:hover {
+  background: #333333;
+}
+
+.stub-table {
+  border: 1px solid #222222;
+  background: #ffffff;
+}
+
+.stub-table td {
+  border: 1px solid #222222;
+  color: #222222;
+}
+
+.signatures,
+.signature-block {
+  color: #222222;
+}
+
+.vehicle-stub {
+  background: #ffffff;
+  color: #222222;
+}
+
 .no-print {
   display: none;
 }
+
 @media print {
   .print-btn {
     display: none !important;
+  }
+  
+  .contract-print {
+    background: #ffffff !important;
+    color: #222222 !important;
+  }
+  
+  table,
+  table td,
+  table th {
+    border: 1px solid #000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }
 </style>

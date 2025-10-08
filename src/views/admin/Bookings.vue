@@ -76,22 +76,21 @@
                 </div>
 
                 <CardHeader class="pb-3">
-                  <div class="flex items-start justify-between gap-3">
-                    <div class="flex-1 min-w-0">
-                      <CardTitle class="text-lg font-semibold truncate">{{
-                        booking.vehicle?.name || 'Vehicle'
-                      }}</CardTitle>
-                      <CardDescription class="truncate">
-                        {{ booking.vehicle?.brand }} {{ booking.vehicle?.model }} ({{ booking.vehicle?.year }})
-                      </CardDescription>
+                  <div class="flex flex-col gap-2">
+                    <div class="flex items-start justify-between gap-3">
+                      <div class="flex-1 min-w-0">
+                        <CardTitle class="text-lg font-semibold truncate">{{
+                          booking.vehicle?.name || 'Vehicle'
+                        }}</CardTitle>
+                        <CardDescription class="truncate">
+                          {{ booking.vehicle?.brand }} {{ booking.vehicle?.model }} ({{ booking.vehicle?.year }})
+                        </CardDescription>
+                      </div>
                     </div>
-                    <div class="flex flex-col items-end gap-2">
+                    <div>
                       <Badge :variant="getStatusVariant(booking.status)" size="sm">
                         {{ booking.status.replace('_', ' ') }}
                       </Badge>
-                      <div class="text-xs text-muted-foreground">
-                        ID: {{ booking.id }}
-                      </div>
                     </div>
                   </div>
                 </CardHeader>
@@ -135,27 +134,29 @@
                     </div>
                   </div>
 
-                  <div class="flex gap-2 pt-2">
-                    <Button
-                      v-if="shouldShowCancelButton(booking)"
-                      size="sm"
-                      variant="destructive"
-                      @click="openCancelDialog(booking)"
-                      class="flex-1"
-                    >
-                      <Ban class="w-4 h-4 mr-2" />
-                      Cancel
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      @click="openContractDialog(booking)"
-                      class="flex-1"
-                    >
-                      <FileText class="w-4 h-4 mr-2" />
-                      Contract
-                    </Button>
-                    <RouterLink :to="`/admin/bookings/${booking.id}`" class="flex-1">
+                  <div class="flex flex-col gap-2 pt-2">
+                    <div class="flex gap-2">
+                      <Button
+                        v-if="shouldShowCancelButton(booking)"
+                        size="sm"
+                        variant="destructive"
+                        @click="openCancelDialog(booking)"
+                        class="flex-1"
+                      >
+                        <Ban class="w-4 h-4 mr-2" />
+                        Cancel
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        @click="openContractDialog(booking)"
+                        class="flex-1"
+                      >
+                        <FileText class="w-4 h-4 mr-2" />
+                        Contract
+                      </Button>
+                    </div>
+                    <RouterLink :to="`/admin/bookings/${booking.id}`" class="w-full">
                       <Button size="sm" variant="default" class="w-full">
                         Details
                       </Button>

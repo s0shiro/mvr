@@ -162,8 +162,36 @@
         v-if="summary"
         :summary="summary"
         :form="form"
+        :loading="loading"
         v-model:minimized="minimizedSummary"
+        @book-now="onSubmit"
       />
+
+      <!-- Contract Preview -->
+      <div v-if="summary" class="bg-gradient-to-br from-muted/40 to-muted/60 rounded-xl border border-border overflow-hidden">
+        <div class="bg-primary/5 px-6 py-4 border-b border-border/50">
+          <div class="flex items-center gap-3">
+            <div class="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-foreground">Rental Contract Preview</h2>
+              <p class="text-sm text-muted-foreground">
+                Review the contract template below.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-border/50 overflow-hidden">
+            <div class="max-h-[600px] overflow-y-auto custom-scrollbar">
+              <ContractPrint :booking="null" :showPrintButton="false" />
+            </div>
+          </div>
+        </div>
+      </div>
 
       <!-- ID Upload Section -->
       <div
@@ -212,26 +240,6 @@
         </div>
         <div v-if="idUploadError" class="text-red-500 text-xs mt-1">{{ idUploadError }}</div>
       </div>
-      <!-- Submit -->
-      <div class="flex flex-row gap-2 justify-end mt-4">
-        <Button type="submit" :disabled="!summary?.available || loading" size="lg" class="px-8">
-          <span v-if="loading">
-            <svg class="animate-spin h-5 w-5 mr-2 inline-block" viewBox="0 0 24 24">
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-                fill="none"
-              ></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
-            </svg>
-          </span>
-          Book Now
-        </Button>
-      </div>
     </form>
   </div>
 </template>
@@ -270,6 +278,8 @@ import { DateTime } from 'luxon'
 import { isDateDisabled } from '@/lib/utils'
 import BookingSummaryReceipt from '@/components/features/BookingSummaryReceipt.vue'
 import DriverUnavailableAlert from '@/components/features/DriverUnavailableAlert.vue'
+import ContractPrint from '@/components/features/ContractPrint.vue'
+import { toast } from 'vue-sonner'
 
 const df = new DateFormatter('en-US', { dateStyle: 'long' })
 const startDate = ref(null)
@@ -409,6 +419,9 @@ async function onSubmit() {
   try {
     if (!idFiles.value[0] || !idFiles.value[1]) {
       idUploadError.value = 'Please upload exactly two valid ID images.'
+      toast.error('Valid IDs Required', {
+        description: 'Please upload exactly two valid ID images to proceed with your booking.',
+      })
       loading.value = false
       // Scroll to ID upload section
       nextTick(() => {
@@ -488,5 +501,29 @@ async function onSubmit() {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--primary) / 0.3) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: hsl(var(--primary) / 0.3);
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--primary) / 0.5);
 }
 </style>
