@@ -89,6 +89,10 @@
     <div class="mt-6 flex gap-2">
       <Button variant="secondary" @click="goBack">Back</Button>
       <Button variant="outline" @click="resetFilters">Clear</Button>
+      <Button variant="default" @click="downloadReport" :disabled="isLoading || !data">
+        <Download class="mr-2 h-4 w-4" />
+        Download Report
+      </Button>
     </div>
   </div>
 </template>
@@ -111,7 +115,7 @@ import {
 } from '@/components/ui/select'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover'
-import { Calendar as CalendarIcon } from 'lucide-vue-next'
+import { Calendar as CalendarIcon, Download } from 'lucide-vue-next'
 import { DateFormatter, getLocalTimeZone, today as intlToday } from '@internationalized/date'
 import Chart from 'chart.js/auto'
 import { useDebounce } from '@/stores/useDebounce'
@@ -174,6 +178,111 @@ function resetFilters() {
   grouping.value = 'day'
   toDate.value = today
   fromDate.value = today.subtract({ days: 6 })
+}
+
+async function downloadReport() {
+  if (!data.value || !chartRef.value) return
+
+  try {
+    // Create a temporary canvas for the full report
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    
+    // Set canvas dimensions
+    const width = 1200
+    const height = 800 + (data.value.length * 40) // Dynamic height based on data rows
+    canvas.width = width
+    canvas.height = height
+    
+    // Fill background
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, width, height)
+    
+    // Add title
+    ctx.fillStyle = '#1f2937'
+    ctx.font = 'bold 24px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText('Rental Sales Report', width / 2, 40)
+    
+    // Add date range info
+    ctx.font = '16px sans-serif'
+    const dateRange = `${fromDate.value ? df.format(fromDate.value.toDate(getLocalTimeZone())) : 'All time'} - ${toDate.value ? df.format(toDate.value.toDate(getLocalTimeZone())) : 'Present'}`
+    ctx.fillText(`Period: ${dateRange} | Grouped by: ${grouping.value}`, width / 2, 70)
+    
+    // Draw the chart
+    const chartCanvas = chartRef.value
+    const chartWidth = 800
+    const chartHeight = 300
+    const chartX = (width - chartWidth) / 2
+    const chartY = 100
+    
+    ctx.drawImage(chartCanvas, chartX, chartY, chartWidth, chartHeight)
+    
+    // Draw table header
+    const tableY = chartY + chartHeight + 50
+    const colWidths = [200, 150, 120, 120, 150]
+    const colX = [50, 250, 400, 520, 640]
+    
+    ctx.fillStyle = '#f3f4f6'
+    ctx.fillRect(40, tableY - 10, 750, 40)
+    
+    ctx.fillStyle = '#1f2937'
+    ctx.font = 'bold 14px sans-serif'
+    ctx.textAlign = 'left'
+    
+    const headers = ['Period', 'Total Revenue', 'Deposits', 'Rentals', 'Approved Payments']
+    headers.forEach((header, i) => {
+      ctx.fillText(header, colX[i], tableY + 15)
+    })
+    
+    // Draw table rows
+    ctx.font = '12px sans-serif'
+    data.value.forEach((row, index) => {
+      const rowY = tableY + 50 + (index * 30)
+      
+      // Alternating row background
+      if (index % 2 === 0) {
+        ctx.fillStyle = '#fafafa'
+        ctx.fillRect(40, rowY - 15, 750, 30)
+      }
+      
+      ctx.fillStyle = '#1f2937'
+      
+      const period = grouping.value === 'week' ? `${row.period_start} to ${row.period_end}` : row.date
+      const totalRevenue = `₱${Number(row.total_sales).toLocaleString()}`
+      const deposits = `₱${Number(row.deposit_sales || 0).toLocaleString()}`
+      const rentals = `₱${Number(row.rental_sales || 0).toLocaleString()}`
+      const payments = (row.payment_count || 0).toString()
+      
+      const rowData = [period, totalRevenue, deposits, rentals, payments]
+      rowData.forEach((cell, i) => {
+        if (i === 1) { // Total revenue column - make it green
+          ctx.fillStyle = '#059669'
+          ctx.font = 'bold 12px sans-serif'
+        } else {
+          ctx.fillStyle = '#1f2937'
+          ctx.font = '12px sans-serif'
+        }
+        ctx.fillText(cell, colX[i], rowY)
+      })
+    })
+    
+    // Add footer with generation time
+    ctx.fillStyle = '#6b7280'
+    ctx.font = '10px sans-serif'
+    ctx.textAlign = 'center'
+    ctx.fillText(`Generated on ${new Date().toLocaleString()}`, width / 2, height - 20)
+    
+    // Download the image
+    const link = document.createElement('a')
+    link.download = `rental-sales-report-${grouping.value}-${new Date().toISOString().split('T')[0]}.png`
+    link.href = canvas.toDataURL('image/png')
+    link.click()
+    
+  } catch (error) {
+    console.error('Error generating report image:', error)
+    // You might want to show a toast notification here
+  }
 }
 
 watchEffect(() => {

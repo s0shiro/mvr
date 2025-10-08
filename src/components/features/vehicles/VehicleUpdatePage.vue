@@ -259,7 +259,6 @@
                 class="w-full h-full object-cover transition-transform group-hover:scale-105"
               />
               <Button
-                v-if="!img.isNew"
                 type="button"
                 variant="destructive"
                 size="icon"
@@ -269,7 +268,7 @@
                 <XIcon class="h-4 w-4" />
               </Button>
               <Button
-                v-if="!img.isNew && !img.is_primary"
+                v-if="!img.is_primary"
                 type="button"
                 variant="outline"
                 size="icon"
@@ -354,6 +353,7 @@ import {
 } from '@/components/ui/number-field'
 import { Check, ChevronDown, XIcon, UploadIcon, StarIcon } from 'lucide-vue-next'
 import { cn, getActiveLabel } from '@/lib/utils'
+import { toast } from 'vue-sonner'
 import Loading from '../Loading.vue'
 
 const vehicleTypes = [
@@ -377,16 +377,19 @@ const form = ref({})
 const imageList = ref([])
 const errors = ref({})
 const isImagePending = ref(false)
+const fileInput = ref(null)
 const maxYear = new Date().getFullYear()
+const isInitialized = ref(false)
 
 watch(
   () => vehicleData?.value,
   (val) => {
-    if (val) {
+    if (val && !isInitialized.value) {
       // Defensive: prefer val.data if present (like in VehicleDetails.vue), else val
       const vehicle = val.data || val
       form.value = { ...vehicle }
       imageList.value = (vehicle.images || []).map((img) => ({ ...img, isNew: false }))
+      isInitialized.value = true
     }
   },
   { immediate: true },
@@ -417,11 +420,24 @@ function handleImageChange(event) {
 }
 
 function removeImage(idx) {
+  const removedImage = imageList.value[idx]
+  console.log('Removing image at index:', idx)
+  console.log('Before removal:', imageList.value.length)
   imageList.value.splice(idx, 1)
+  console.log('After removal:', imageList.value.length)
+  
+  toast.success('Image removed', {
+    description: removedImage.isNew 
+      ? 'Image removed from upload queue.' 
+      : 'Image will be deleted when you save changes.',
+  })
 }
 
 function setPrimary(idx) {
   imageList.value.forEach((img, i) => (img.is_primary = i === idx))
+  toast.success('Primary image set', {
+    description: 'This image will be set as the primary image.',
+  })
 }
 
 async function onSubmit() {
@@ -434,6 +450,12 @@ async function onSubmit() {
     deposit: form.value.deposit ? Number(form.value.deposit) : '',
   }
   isImagePending.value = true
+  
+  // Show loading toast
+  const loadingToast = toast.loading('Updating vehicle...', {
+    description: 'Please wait while we update your vehicle information.',
+  })
+  
   try {
     await new Promise((resolve, reject) => {
       updateVehicle(
@@ -444,9 +466,16 @@ async function onSubmit() {
         },
       )
     })
-    const originalIds = (vehicleData.value.images || []).map((img) => img.id)
+    // Get original vehicle data safely
+    const vehicleDataValue = vehicleData.value?.data || vehicleData.value || {}
+    const originalIds = (vehicleDataValue.images || []).map((img) => img.id)
     const currentIds = imageList.value.filter((img) => !img.isNew).map((img) => img.id)
     const toDelete = originalIds.filter((id) => !currentIds.includes(id))
+    
+    console.log('Original image IDs:', originalIds)
+    console.log('Current image IDs:', currentIds)
+    console.log('Images to delete:', toDelete)
+    
     for (const id of toDelete) {
       await deleteImage({ vehicleId: vehicleId, imageId: id })
     }
@@ -465,12 +494,28 @@ async function onSubmit() {
     if (orderedIds.length > 1) {
       await reorderImages({ vehicleId: vehicleId, imageIds: orderedIds })
     }
+    
+    // Dismiss loading toast and show success
+    toast.dismiss(loadingToast)
+    toast.success('Vehicle updated successfully!', {
+      description: 'Your vehicle information has been updated.',
+    })
+    
     router.replace({ name: 'vehicles' })
   } catch (error) {
+    // Dismiss loading toast and show error
+    toast.dismiss(loadingToast)
+    
     if (error.response && error.response.status === 422) {
       errors.value = error.response.data.errors || {}
+      toast.error('Validation Error', {
+        description: 'Please check the form for validation errors.',
+      })
     } else {
       errors.value = { general: 'Failed to update vehicle.' }
+      toast.error('Update Failed', {
+        description: 'Failed to update vehicle. Please try again.',
+      })
     }
   } finally {
     isImagePending.value = false

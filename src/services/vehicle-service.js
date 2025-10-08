@@ -96,12 +96,19 @@ export function useDeleteVehicleImage() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ vehicleId, imageId }) => {
+      console.log(`Deleting image ${imageId} for vehicle ${vehicleId}`)
       const response = await axiosInstance.delete(`/api/vehicles/${vehicleId}/images/${imageId}`)
+      console.log('Image deletion response:', response.data)
       return response.data
     },
     onSuccess: (_, { vehicleId }) => {
-      queryClient.invalidateQueries({ queryKey: vehicleKeys.detail(vehicleId) })
-      queryClient.invalidateQueries({ queryKey: vehicleKeys.lists() })
+      console.log('Image deleted successfully, invalidating queries')
+      // Don't invalidate queries immediately to prevent race conditions
+      // queryClient.invalidateQueries({ queryKey: vehicleKeys.detail(vehicleId) })
+      // queryClient.invalidateQueries({ queryKey: vehicleKeys.lists() })
+    },
+    onError: (error, { vehicleId, imageId }) => {
+      console.error(`Failed to delete image ${imageId} for vehicle ${vehicleId}:`, error)
     },
   })
 }
