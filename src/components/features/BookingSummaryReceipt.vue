@@ -74,9 +74,9 @@
         <span>Total</span>
         <span class="text-primary">Php {{ summary.total_price }}</span>
       </div>
-      <div v-if="!summary.available" class="text-red-500 font-semibold mt-2 text-center text-sm">
+      <!-- <div v-if="!summary.available" class="text-red-500 font-semibold mt-2 text-center text-sm">
         (Not available for selected dates)
-      </div>
+      </div> -->
       <div
         v-if="summary.with_driver && summary.driver_available === false"
         class="text-red-500 font-semibold mt-2 text-center text-sm mb-3"
@@ -85,7 +85,7 @@
       </div>
       <Button 
         @click.stop="$emit('book-now')" 
-        :disabled="!summary?.available || loading"
+        :disabled="loading || (summary.with_driver && !summary.driver_available) /* || !summary.available */"
         class="w-full mt-2"
         size="lg"
       >

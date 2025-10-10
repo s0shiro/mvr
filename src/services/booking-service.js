@@ -132,13 +132,13 @@ export function useMyBookings(sortBy = 'created_at', sortOrder = 'desc', statusF
   })
 }
 
-export function useBookingService() {
-  return {
-    processRefund: async (bookingId, data) => {
-      const res = await axiosInstance.post(`/api/admin/bookings/${bookingId}/process-refund`, data, {
-        headers: { 'Content-Type': 'application/json' },
-      })
-      return res.data
-    }
-  }
+export function useBlockedDates(vehicleId) {
+  return useQuery({
+    queryKey: ['blocked-dates', vehicleId],
+    queryFn: async () => {
+      const { data } = await axiosInstance.get(`/api/vehicles/${unref(vehicleId)}/blocked-dates`)
+      return data
+    },
+    enabled: !!unref(vehicleId),
+  })
 }

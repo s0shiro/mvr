@@ -48,13 +48,14 @@
           </Label>
           <Popover>
             <PopoverTrigger as-child>
-              <Button variant="outline" class="w-full justify-start text-left font-medium">
+              <Button variant="outline" class="w-full justify-start text-left font-medium" :disabled="blockedDatesLoading">
                 <CalendarIcon class="mr-2 h-5 w-5" />
                 {{ startDate ? df.format(startDate.toDate(getLocalTimeZone())) : 'Pick a date' }}
+                <span v-if="blockedDatesLoading" class="ml-2 text-sm text-muted-foreground">Loading...</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent class="w-auto p-0">
-              <Calendar v-model="startDate" initial-focus :is-date-disabled="isDateDisabled" />
+              <Calendar v-model="startDate" initial-focus :is-date-disabled="customIsDateDisabled" />
             </PopoverContent>
           </Popover>
           <Input type="time" v-model="form.start_time" id="start_time" class="rounded-lg" />
@@ -68,13 +69,14 @@
           </Label>
           <Popover>
             <PopoverTrigger as-child>
-              <Button variant="outline" class="w-full justify-start text-left font-medium">
+              <Button variant="outline" class="w-full justify-start text-left font-medium" :disabled="blockedDatesLoading">
                 <CalendarIcon class="mr-2 h-5 w-5" />
                 {{ endDate ? df.format(endDate.toDate(getLocalTimeZone())) : 'Pick a date' }}
+                <span v-if="blockedDatesLoading" class="ml-2 text-sm text-muted-foreground">Loading...</span>
               </Button>
             </PopoverTrigger>
             <PopoverContent class="w-auto p-0">
-              <Calendar v-model="endDate" initial-focus :is-date-disabled="isDateDisabled" />
+              <Calendar v-model="endDate" initial-focus :is-date-disabled="customIsDateDisabled" />
             </PopoverContent>
           </Popover>
           <Input type="time" v-model="form.end_time" id="end_time" class="rounded-lg" />
@@ -262,7 +264,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useBookingSummary, useCreateBooking } from '@/services/booking-service'
+import { useBookingSummary, useCreateBooking, useBlockedDates } from '@/services/booking-service'
 import {
   Calendar as CalendarIcon,
   XIcon,
@@ -273,7 +275,7 @@ import {
 } from 'lucide-vue-next'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { DateFormatter, getLocalTimeZone, today } from '@internationalized/date'
+import { DateFormatter, getLocalTimeZone, today, parseDate } from '@internationalized/date'
 import { DateTime } from 'luxon'
 import { isDateDisabled } from '@/lib/utils'
 import BookingSummaryReceipt from '@/components/features/BookingSummaryReceipt.vue'
@@ -318,6 +320,7 @@ const fieldErrors = ref({})
 
 const bookingSummary = useBookingSummary()
 const createBooking = useCreateBooking()
+const { data: blockedDatesData, isLoading: blockedDatesLoading } = useBlockedDates(vehicleId)
 
 watch(
   () => [
@@ -407,8 +410,16 @@ function removeIdImage(idx) {
   idPreviews.value[idx] = null
 }
 
-function goBack() {
-  router.push({ name: 'vehicle-details', params: { id: vehicleId.value } })
+function isBlocked(date) {
+  return (blockedDatesData.value || []).some(range => {
+    const start = parseDate(range.start_date.split('T')[0])
+    const end = parseDate(range.end_date.split('T')[0])
+    return date.compare(start) >= 0 && date.compare(end) <= 0
+  })
+}
+
+function customIsDateDisabled(date) {
+  return isDateDisabled(date) || blockedDatesLoading.value || isBlocked(date)
 }
 
 const minimizedSummary = ref(false)
