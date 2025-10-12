@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query'
 import { computed, unref } from 'vue'
 import axiosInstance from '@/lib/axiosInstance'
+import { vehicleKeys } from './vehicle-service'
 
 export const vehicleMaintenanceKeys = {
   all: ['vehicle-maintenance'],
@@ -58,6 +59,7 @@ export function useCreateVehicleMaintenance() {
     },
     onSuccess: (_, { vehicleId }) => {
       queryClient.invalidateQueries({ queryKey: vehicleMaintenanceKeys.lists(vehicleId) })
+      queryClient.invalidateQueries({ queryKey: vehicleKeys.lists() })
     },
   })
 }

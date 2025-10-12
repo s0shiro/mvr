@@ -33,6 +33,10 @@
         <p v-if="vehicle.description" class="text-sm text-muted-foreground line-clamp-2">
           {{ vehicle.description }}
         </p>
+        <div class="mt-1 flex items-center justify-between rounded-md bg-muted/40 px-3 py-2 text-sm">
+          <span class="text-muted-foreground">Total maintenance</span>
+          <span class="font-semibold text-primary">{{ maintenanceTotal }}</span>
+        </div>
       </div>
     </div>
 
@@ -70,6 +74,17 @@ defineEmits(['add-maintenance', 'view-history'])
 const router = useRouter()
 const vehicle = computed(() => props.vehicle)
 const statusVariant = computed(() => getStatusVariant(vehicle.value.status))
+const maintenanceTotal = computed(() => {
+  const fallback = vehicle.value.maintenance_total ?? vehicle.value.maintenances_sum_amount ?? 0
+  const numericValue = Number(fallback)
+  if (Number.isNaN(numericValue)) return '₱0.00'
+  return new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(numericValue)
+})
 
 function navigateToDetails() {
   router.push({ name: 'vehicle-details', params: { id: vehicle.value.id } })
