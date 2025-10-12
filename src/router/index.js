@@ -244,6 +244,16 @@ const router = createRouter({
         requiredRoles: ['admin', 'manager'],
       },
     }),
+      createDashboardRoute({
+        path: '/admin/vehicle-maintenance',
+        name: 'admin-vehicle-maintenance',
+        view: () => import('../views/admin/VehicleMaintenance.vue'),
+        meta: {
+          title: 'Vehicle Maintenance',
+          requiresAuth: true,
+          requiredRoles: ['admin', 'manager'],
+        },
+      }),
     createDashboardRoute({
       path: '/vehicles/:id/edit',
       name: 'vehicle-edit',

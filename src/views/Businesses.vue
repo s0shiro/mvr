@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-8">
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-bold">Businesses & Services</h1>
-      <!-- <Button @click="openAddModal">Add Business/Service</Button> -->
+      <Button @click="openAddModal">Add Business/Service</Button>
     </div>
     <div v-if="isLoading" class="h-[calc(100vh-10rem)] flex items-center justify-center">
       <Loading text="Loading businesses..." />

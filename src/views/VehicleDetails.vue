@@ -94,7 +94,7 @@
                 <span>•</span>
                 <span class="font-semibold text-primary text-lg">Php {{ Number(vehicle.rental_rate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}/day</span>
               </div>
-              <template v-if="vehicle.rental_rate_with_driver">
+              <template v-if="canRequestDriver && vehicle.rental_rate_with_driver">
                 <div class="flex items-center gap-2 pl-1">
                   <span class="inline-block w-4 h-4 bg-primary/10 rounded-full flex items-center justify-center mr-1">
                     <User2 class="w-3 h-3 text-primary" />
@@ -215,7 +215,7 @@
                         >
                         <span class="text-xs text-muted-foreground">per day</span>
                       </div>
-                      <template v-if="vehicle.rental_rate_with_driver">
+                      <template v-if="canRequestDriver && vehicle.rental_rate_with_driver">
                         <div class="flex items-center gap-2">
                           <span class="font-semibold text-primary"
                             >Php
@@ -296,33 +296,46 @@
             <div v-else-if="feedbackList.length === 0" class="text-muted-foreground text-sm">
               No feedback yet for this vehicle.
             </div>
-            <div v-else class="space-y-3 mt-2">
+            <div v-else class="space-y-4 mt-2">
               <div
                 v-for="fb in feedbackList"
                 :key="fb.id"
-                class="bg-muted rounded-lg p-3 border border-border"
+                class="bg-muted/60 rounded-xl p-4 sm:p-5 border border-border shadow-sm hover:shadow-md transition-shadow duration-200"
               >
-                <div class="flex items-center gap-2 mb-1">
-                  <span class="flex items-center">
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                  <div class="flex items-start gap-3">
+                    <div class="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                      <UserCircle class="w-7 h-7" />
+                    </div>
+                    <div class="space-y-1">
+                      <p class="font-semibold text-sm sm:text-base text-foreground">{{ fb.user?.name || 'Customer' }}</p>
+                      <div class="flex items-center gap-2 text-xs text-muted-foreground">
+                        <CalendarClock class="w-4 h-4" />
+                        <span>{{
+                          new Date(fb.created_at).toLocaleDateString('en-PH', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })
+                        }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-1 bg-background/70 px-3 py-1.5 rounded-full border border-border/60">
                     <Star
                       v-for="n in 5"
                       :key="n"
-                      :class="
-                        n <= fb.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'
-                      "
+                      :class="n <= fb.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'"
                       class="w-4 h-4"
                     />
-                  </span>
-                  <span class="text-xs text-muted-foreground ml-2">{{
-                    new Date(fb.created_at).toLocaleDateString('en-PH', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                    })
-                  }}</span>
+                    <span class="text-xs font-semibold text-muted-foreground ml-1">{{ typeof fb.rating === 'number' ? fb.rating.toFixed(1) : fb.rating || '—' }}</span>
+                  </div>
                 </div>
-                <div class="text-base text-foreground">
-                  {{ fb.comment || 'No comment provided.' }}
+                <div class="mt-3 text-sm sm:text-base text-foreground leading-relaxed border-t border-border/50 pt-3">
+                  <div class="flex items-start gap-2">
+                    <MessageCircle class="w-5 h-5 mt-0.5 text-muted-foreground" />
+                    <p class="flex-1">{{ fb.comment || 'No comment provided.' }}</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -345,7 +358,7 @@ import { Button } from '@/components/ui/button'
 import { getStatusVariant } from '@/lib/utils'
 import { useUserAuth } from '@/services/useUserAuth'
 import { useVehicleFeedbackQuery } from '@/services/feedback-api'
-import { Star, User2, SquarePen } from 'lucide-vue-next'
+import { Star, User2, SquarePen, UserCircle, CalendarClock, MessageCircle } from 'lucide-vue-next'
 
 const route = useRoute()
 const router = useRouter()
@@ -354,6 +367,10 @@ const { data, error, isLoading } = useVehicleDetails(vehicleId)
 
 const vehicle = computed(() => data.value?.data || null)
 const badgeVariant = computed(() => getStatusVariant(vehicle.value?.status || ''))
+const canRequestDriver = computed(() => {
+  const type = vehicle.value?.type
+  return (type ? type.toLowerCase() : '') !== 'motorcycle'
+})
 
 // For gallery selection
 const selectedImage = ref(null)

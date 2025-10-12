@@ -48,8 +48,16 @@
         <div class="flex justify-between">
           <span>Daily Rate</span>
           <span class="font-semibold text-green-700 dark:text-green-300"
-            >Php {{ summary.rental_rate }}</span
+            >Php {{ formatCurrency(summary.rental_rate) }}</span
           >
+        </div>
+        <div class="flex justify-between" v-if="rentalDays">
+          <span>Rental Duration</span>
+          <span>{{ rentalDays }} day{{ rentalDays > 1 ? 's' : '' }}</span>
+        </div>
+        <div class="flex justify-between" v-if="rentalSubtotal !== null">
+          <span>Rental Subtotal</span>
+          <span class="font-semibold">Php {{ formatCurrency(rentalSubtotal) }}</span>
         </div>
         <div
           class="flex justify-between"
@@ -57,9 +65,12 @@
         >
           <span>Delivery Fee</span>
           <span class="font-semibold text-blue-700 dark:text-blue-300"
-            >Php {{ summary.delivery_options?.delivery_fee || 0 }}</span
+            >Php {{ formatCurrency(deliveryFee) }}</span
           >
         </div>
+      </div>
+      <div class="border-b border-dashed border-border my-3"></div>
+      <div class="flex flex-col gap-2 text-sm mb-3">
         <div class="flex justify-between">
           <span>Driver</span>
           <span>{{ summary.with_driver ? 'With Driver' : 'No Driver' }}</span>
@@ -69,10 +80,9 @@
           <span class="capitalize">{{ form.pickup_type }}</span>
         </div>
       </div>
-      <div class="border-b border-dashed border-border my-3"></div>
       <div class="flex justify-between items-center text-lg font-extrabold mb-3">
         <span>Total</span>
-        <span class="text-primary">Php {{ summary.total_price }}</span>
+        <span class="text-primary">Php {{ formatCurrency(summary.total_price) }}</span>
       </div>
       <!-- <div v-if="!summary.available" class="text-red-500 font-semibold mt-2 text-center text-sm">
         (Not available for selected dates)
@@ -111,7 +121,8 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
+import { DateTime } from 'luxon'
 import { Button } from '@/components/ui/button'
 
 const props = defineProps({
@@ -122,7 +133,53 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:minimized', 'book-now'])
 const minimized = ref(props.minimized)
+
+const rentalDays = computed(() => {
+  const start = props.form?.start_date
+  const end = props.form?.end_date
+  if (!start || !end) {
+    return null
+  }
+  const startDate = DateTime.fromISO(start)
+  const endDate = DateTime.fromISO(end)
+  if (!startDate.isValid || !endDate.isValid) {
+    return null
+  }
+  const diff = endDate.diff(startDate, 'days').days
+  return Math.max(1, Math.ceil(diff))
+})
+
+const deliveryFee = computed(() => Number(props.summary?.delivery_options?.delivery_fee ?? 0))
+
+const rentalSubtotal = computed(() => {
+  const rate = Number(props.summary?.rental_rate ?? 0)
+  if (!rate || !rentalDays.value) {
+    return null
+  }
+  return rate * rentalDays.value
+})
+
+const formatCurrency = (value) => {
+  const amount = Number(value ?? 0)
+  if (!Number.isFinite(amount)) {
+    return '0.00'
+  }
+  return amount.toLocaleString('en-PH', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+}
+
 watch(minimized, (v) => emit('update:minimized', v))
+
+watch(
+  () => props.minimized,
+  (value) => {
+    if (value !== minimized.value) {
+      minimized.value = value
+    }
+  },
+)
 </script>
 
 <style scoped>

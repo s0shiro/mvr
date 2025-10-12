@@ -10,15 +10,22 @@ export function useBookingSummary() {
     driver_requested,
     pickup_type,
     delivery_location,
+    booking_id,
   }) => {
-    const res = await axiosInstance.post('/api/bookings/summary', {
+    const payload = {
       vehicle_id,
       start_date,
       end_date,
       driver_requested,
       pickup_type,
       delivery_location,
-    })
+    }
+
+    if (booking_id) {
+      payload.booking_id = booking_id
+    }
+
+    const res = await axiosInstance.post('/api/bookings/summary', payload)
     return res.data
   }
 }

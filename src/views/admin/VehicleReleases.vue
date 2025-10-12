@@ -151,6 +151,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import Loading from '@/components/features/Loading.vue'
 import VehicleReleaseDialog from '@/components/features/vehicle-release/VehicleReleaseDialog.vue'
+import { toast } from 'vue-sonner'
 
 function formatDate(dateStr) {
   const d = new Date(dateStr)
@@ -267,7 +268,12 @@ function openReleaseDialog(booking) {
   releaseDialogOpen.value = true
 }
 function onReleased() {
+  const releasedName = selectedBooking.value?.vehicle?.name || 'Vehicle'
   releaseDialogOpen.value = false
+  toast.success('Vehicle released', {
+    description: `${releasedName} released.`,
+  })
+  selectedBooking.value = null
   refetch()
 }
 </script>

@@ -140,7 +140,7 @@
                      :class="getRefundStatusClasses(booking.refund_status)">
                   <component :is="getRefundStatusIcon(booking.refund_status)" class="w-5 h-5" />
                   <div class="flex-1">
-                    <p class="font-semibold">{{ getRefundStatusText(booking.refund_status) }}</p>
+                    <p class="font-semibold">{{ getRefundStatusText(booking.refund_status, booking) }}</p>
                     <p v-if="booking.refund_processed_at" class="text-sm opacity-75">
                       Processed {{ formatDate(booking.refund_processed_at) }}
                     </p>
@@ -199,7 +199,7 @@
               
               <!-- Refund Processing Button -->
               <Button 
-                v-if="booking.refund_status === 'pending'" 
+                v-if="booking.refund_status === 'pending' && getApprovedPayments(booking).length > 0" 
                 @click="openRefundDialog(booking)"
                 variant="default" 
                 size="sm" 
@@ -464,7 +464,7 @@
 <script setup>
 import { computed, ref, reactive } from 'vue'
 import { useAdminCanceledBookings } from '@/services/admin/canceled-bookings-service'
-import { useBookingService } from '@/services/booking-service'
+import { useProcessRefund } from '@/services/admin/booking-service'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -495,7 +495,7 @@ import {
 } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 
-const bookingService = useBookingService()
+const { mutateAsync: processRefundMutation } = useProcessRefund()
 
 // Sorting controls
 const sortBy = ref('created_at')
@@ -562,7 +562,12 @@ async function processRefund() {
       refund_proof: refundForm.proof
     }
 
-    await bookingService.processRefund(refundDialog.value.booking.id, data)
+    await processRefundMutation({
+      bookingId: refundDialog.value.booking.id,
+      amount: data.amount,
+      notes: data.notes,
+      refund_proof: data.refund_proof
+    })
     
     toast.success("Refund has been processed successfully")
     
@@ -606,7 +611,7 @@ function getRefundStatusClasses(status) {
     case 'failed':
       return 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
     default:
-      return 'bg-gray-50 dark:bg-gray-950/30 border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300'
+      return 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800 text-green-700 dark:text-green-300'
   }
 }
 
@@ -619,11 +624,14 @@ function getRefundStatusIcon(status) {
     case 'failed':
       return AlertTriangle
     default:
-      return Clock
+      return AlertTriangle
   }
 }
 
-function getRefundStatusText(status) {
+function getRefundStatusText(status, booking = null) {
+  if (booking && status === 'pending' && getApprovedPayments(booking).length === 0) {
+    return 'No approved payments found'
+  }
   switch (status) {
     case 'pending':
       return 'Refund Pending'

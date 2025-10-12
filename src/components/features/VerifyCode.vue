@@ -21,10 +21,11 @@
             A verification code has been sent to <b>{{ email }}</b
             >.
           </p>
-          <p class="text-sm text-muted-foreground">Enter the code below to verify your account.</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Don't see the email? Check your spam folder.
+          </p>
         </div>
         <div class="mb-6">
-          <Label for="verification_code" class="block mb-1 font-medium">Verification Code</Label>
           <Input
             v-model="verificationCode"
             id="verification_code"

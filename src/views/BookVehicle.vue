@@ -154,9 +154,18 @@
             class="rounded-lg"
           />
         </div>
-        <div class="flex items-center gap-3 mt-6 md:mt-0">
+        <div
+          v-if="isDriverOptionAvailable"
+          class="flex items-center gap-3 mt-6 md:mt-0"
+        >
           <Checkbox v-model="form.driver_requested" id="driver_requested" />
           <Label for="driver_requested">Request a Driver</Label>
+        </div>
+        <div
+          v-else
+          class="flex items-center mt-6 md:mt-0 text-sm text-muted-foreground"
+        >
+          Driver service isn't available for motorcycles.
         </div>
       </div>
       <!-- Price Summary -->
@@ -265,6 +274,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useBookingSummary, useCreateBooking, useBlockedDates } from '@/services/booking-service'
+import { useVehicleDetails } from '@/services/vehicle-service'
 import {
   Calendar as CalendarIcon,
   XIcon,
@@ -283,13 +293,13 @@ import DriverUnavailableAlert from '@/components/features/DriverUnavailableAlert
 import ContractPrint from '@/components/features/ContractPrint.vue'
 import { toast } from 'vue-sonner'
 
+const route = useRoute()
+const router = useRouter()
+const vehicleId = route.params.id
+
 const df = new DateFormatter('en-US', { dateStyle: 'long' })
 const startDate = ref(null)
 const endDate = ref(null)
-
-const route = useRoute()
-const router = useRouter()
-const vehicleId = computed(() => route.params.id)
 
 const deliveryLocations = [
   { name: 'Boac', fee: 300 },
@@ -321,6 +331,19 @@ const fieldErrors = ref({})
 const bookingSummary = useBookingSummary()
 const createBooking = useCreateBooking()
 const { data: blockedDatesData, isLoading: blockedDatesLoading } = useBlockedDates(vehicleId)
+const { data: vehicleData } = useVehicleDetails(vehicleId)
+
+const vehicle = computed(() => vehicleData.value?.data || null)
+const isDriverOptionAvailable = computed(() => {
+  const type = vehicle.value?.type
+  return (type ? type.toLowerCase() : '') !== 'motorcycle'
+})
+
+watch(isDriverOptionAvailable, (available) => {
+  if (!available && form.value.driver_requested) {
+    form.value.driver_requested = false
+  }
+})
 
 watch(
   () => [
@@ -334,7 +357,7 @@ watch(
     if (start && end) {
       try {
         summary.value = await bookingSummary({
-          vehicle_id: vehicleId.value,
+          vehicle_id: vehicleId,
           start_date: start,
           end_date: end,
           driver_requested: driverRequested,
@@ -449,7 +472,7 @@ async function onSubmit() {
       })
     const [id1, id2] = await Promise.all([toBase64(idFiles.value[0]), toBase64(idFiles.value[1])])
     const payload = {
-      vehicle_id: vehicleId.value,
+      vehicle_id: vehicleId,
       start_date: form.value.start_date,
       end_date: form.value.end_date,
       notes: form.value.notes,

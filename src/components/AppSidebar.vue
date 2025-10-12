@@ -25,6 +25,7 @@ import {
   UserCircle,
   Clock3,
   X,
+  Wrench,
 } from 'lucide-vue-next'
 import { RouterLink, useRoute } from 'vue-router'
 
@@ -47,6 +48,12 @@ const data = {
       items: [
         { title: 'Overview', url: '/overview', icon: ClipboardList },
         { title: 'Vehicles', url: '/vehicles', icon: Car },
+        {
+          title: 'Maintenance',
+          url: '/admin/vehicle-maintenance',
+          icon: Wrench,
+          roleRequired: ['admin', 'manager'],
+        },
       ],
     },
     {

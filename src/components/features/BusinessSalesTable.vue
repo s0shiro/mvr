@@ -1,9 +1,9 @@
 <template>
   <div class="bg-card text-card-foreground rounded-xl shadow-md">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-bold">Sales & Notes</h2>
-      <Button @click="openAddModal">Add Sale/Note</Button>
-    </div>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-xl font-bold">Sales & Notes</h2>
+          <Button v-if="canManageSales" @click="openAddModal">Add Sale/Note</Button>
+        </div>
     <div v-if="isLoading" class="h-[calc(100vh-10rem)] flex items-center justify-center">
       <Loading text="Loading sales..." />
     </div>
@@ -90,7 +90,8 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { fetchBusinessSales, deleteBusinessSale } from '@/services/businessSalesService'
 import BusinessSaleModal from '@/components/features/BusinessSaleModal.vue'
@@ -104,6 +105,7 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu'
 import { Ellipsis } from 'lucide-vue-next'
+import { useAuthStore } from '@/stores/authStore'
 
 const props = defineProps({
   businessId: { type: [String, Number], required: true },
@@ -116,6 +118,10 @@ const selectedSale = ref(null)
 const showDetailsModal = ref(false)
 const selectedDetailsSale = ref(null)
 const queryClient = useQueryClient()
+
+const authStore = useAuthStore()
+const { role } = storeToRefs(authStore)
+const canManageSales = computed(() => role.value === 'manager')
 
 const currentPage = ref(1)
 const perPage = ref(5)

@@ -43,3 +43,16 @@ export function useAdminCancelBooking() {
     },
   })
 }
+
+export function useProcessRefund() {
+  return useMutation({
+    mutationFn: (data) =>
+      axiosInstance
+        .post(`/api/admin/bookings/${data.bookingId}/process-refund`, {
+          amount: data.amount,
+          notes: data.notes,
+          refund_proof: data.refund_proof
+        })
+        .then((res) => res.data),
+  })
+}

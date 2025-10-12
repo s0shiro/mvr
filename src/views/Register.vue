@@ -49,27 +49,47 @@
           class="w-full"
         />
 
-        <div>
+        <div class="relative">
           <Input
             v-model="form.password"
-            type="password"
+            :type="showPassword ? 'text' : 'password'"
             placeholder="Password"
             required
-            class="w-full"
+            class="w-full pr-10"
             @input="checkPasswordStrength"
           />
+          <button
+            type="button"
+            @click="showPassword = !showPassword"
+            tabindex="-1"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none"
+          >
+            <EyeOff v-if="showPassword" class="w-5 h-5" />
+            <Eye v-else class="w-5 h-5" />
+          </button>
+        </div>
           <div v-if="passwordStrength" class="mt-1 text-xs" :class="passwordStrengthColor">
             {{ passwordStrength }}
           </div>
-        </div>
 
-        <Input
-          v-model="form.password_confirmation"
-          type="password"
-          placeholder="Confirm Password"
-          required
-          class="w-full"
-        />
+        <div class="relative">
+          <Input
+            v-model="form.password_confirmation"
+            :type="showConfirmPassword ? 'text' : 'password'"
+            placeholder="Confirm Password"
+            required
+            class="w-full pr-10"
+          />
+          <button
+            type="button"
+            @click="showConfirmPassword = !showConfirmPassword"
+            tabindex="-1"
+            class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none"
+          >
+            <EyeOff v-if="showConfirmPassword" class="w-5 h-5" />
+            <Eye v-else class="w-5 h-5" />
+          </button>
+        </div>
 
         <Button
           type="submit"
@@ -102,11 +122,10 @@
 <script setup>
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/authStore'
-import { authApi } from '@/services/auth-api'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
 import { useRouter } from 'vue-router'
+import { Eye, EyeOff } from 'lucide-vue-next'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -123,6 +142,8 @@ const isLoading = ref(false)
 const error = ref(null)
 const passwordStrength = ref('')
 const passwordStrengthColor = ref('')
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
 
 function checkPasswordStrength() {
   const val = form.value.password

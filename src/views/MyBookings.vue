@@ -252,13 +252,15 @@
                     <span class="font-medium text-primary"
                       >₱{{ Number(booking.total_price).toLocaleString() }}</span
                     >
-                    <ShieldCheck class="w-4 h-4 text-muted-foreground" />
-                    <span class="font-semibold text-sm text-muted-foreground">
-                      Security Deposit:</span
-                    >
-                    <span class="font-medium text-primary"
-                      >₱{{ Number(booking.vehicle.deposit).toLocaleString() }}</span
-                    >
+                    <template v-if="requiresDeposit(booking)">
+                      <ShieldCheck class="w-4 h-4 text-muted-foreground" />
+                      <span class="font-semibold text-sm text-muted-foreground">
+                        Security Deposit:</span
+                      >
+                      <span class="font-medium text-primary"
+                        >₱{{ Number(booking.vehicle.deposit).toLocaleString() }}</span
+                      >
+                    </template>
                   </div>
                   <div v-if="booking.pickup_type === 'delivery'" class="flex items-center gap-2">
                     <Truck class="w-4 h-4 text-muted-foreground" />
@@ -484,7 +486,7 @@
                     : 'before:bg-border'
                 ]"
               >
-                <template v-for="payment in booking.payments" :key="payment.id">
+                <template v-for="payment in getDisplayPayments(booking)" :key="payment.id">
                   <div class="relative pl-8">
                     <!-- Timeline dot -->
                     <div
@@ -959,7 +961,7 @@ function getRefundStatusText(status) {
     case 'failed':
       return 'Refund Failed'
     default:
-      return 'Refund Status Unknown'
+      return 'No Payment Found'
   }
 }
 
@@ -1100,7 +1102,18 @@ function getLatestPaymentOfType(booking, type) {
   )
 }
 
+function requiresDeposit(booking) {
+  const type = booking?.vehicle?.type
+  if (!type) return false
+  const normalizedType = type.toLowerCase()
+  if (normalizedType === 'motorcycle') {
+    return true
+  }
+  return normalizedType === 'car' && !booking?.driver_requested
+}
+
 function shouldShowDepositButton(booking) {
+  if (!requiresDeposit(booking)) return false
   const latestDeposit = getLatestPaymentOfType(booking, 'deposit')
   return !latestDeposit || latestDeposit.status === 'rejected'
 }
@@ -1108,6 +1121,9 @@ function shouldShowDepositButton(booking) {
 function shouldShowRentalButton(booking) {
   const latestDeposit = getLatestPaymentOfType(booking, 'deposit')
   const latestRental = getLatestPaymentOfType(booking, 'rental')
+  if (!requiresDeposit(booking)) {
+    return !latestRental || latestRental.status === 'rejected'
+  }
   return (
     latestDeposit?.status === 'approved' && (!latestRental || latestRental.status === 'rejected')
   )
@@ -1137,6 +1153,14 @@ function isImageFile(data) {
 function hasApprovedPayments(booking) {
   if (!booking || !booking.payments) return false
   return booking.payments.some(payment => payment.status === 'approved')
+}
+
+function getDisplayPayments(booking) {
+  if (!booking || !booking.payments) return []
+  if (!requiresDeposit(booking)) {
+    return booking.payments.filter(payment => payment.type !== 'deposit')
+  }
+  return booking.payments
 }
 
 // Cancellation Dialog
