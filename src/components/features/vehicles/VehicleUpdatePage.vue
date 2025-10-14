@@ -73,6 +73,7 @@
                 v-model="form.year"
                 :min="1900"
                 :max="maxYear"
+                :format-options="{ useGrouping: false }"
                 class="max-w-[9rem]"
               >
                 <NumberFieldContent>
@@ -95,6 +96,45 @@
             <p v-if="errors.plate_number" class="text-destructive text-xs mt-1">
               {{ errors.plate_number }}
             </p>
+          </div>
+          <div class="flex flex-col gap-2">
+            <Label for="fuel_capacity">Fuel Capacity (L)</Label>
+            <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
+              <NumberField
+                id="fuel_capacity"
+                v-model="form.fuel_capacity"
+                :min="0"
+                :step="1"
+                :default-value="0"
+                class="max-w-[9rem]"
+              >
+                <NumberFieldContent>
+                  <NumberFieldDecrement />
+                  <NumberFieldInput />
+                  <NumberFieldIncrement />
+                </NumberFieldContent>
+              </NumberField>
+            </div>
+            <p v-if="errors.fuel_capacity" class="text-destructive text-xs mt-1">
+              {{ errors.fuel_capacity }}
+            </p>
+          </div>
+          <div class="flex flex-col gap-2">
+            <Label for="fuel_type">Fuel Type</Label>
+            <Input
+              id="fuel_type"
+              v-model="form.fuel_type"
+              placeholder="Fuel type"
+              class="w-full"
+            />
+            <p v-if="errors.fuel_type" class="text-destructive text-xs mt-1">
+              {{ errors.fuel_type }}
+            </p>
+          </div>
+          <div class="flex flex-col gap-2">
+            <Label for="color">Color</Label>
+            <Input id="color" v-model="form.color" placeholder="Vehicle color" class="w-full" />
+            <p v-if="errors.color" class="text-destructive text-xs mt-1">{{ errors.color }}</p>
           </div>
         </div>
       </div>
@@ -173,7 +213,7 @@
             </p>
           </div>
           <div class="flex flex-col gap-2">
-            <Label for="deposit">Deposit</Label>
+            <Label for="deposit">Deposit <span class="text-red-500">*</span></Label>
             <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
               <NumberField
                 id="deposit"
@@ -191,6 +231,102 @@
               </NumberField>
             </div>
             <p v-if="errors.deposit" class="text-destructive text-xs mt-1">{{ errors.deposit }}</p>
+          </div>
+          <div class="flex flex-col gap-2">
+            <Label for="fee_per_kilometer"
+              >Fee per Kilometer <span class="text-red-500">*</span></Label
+            >
+            <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
+              <NumberField
+                id="fee_per_kilometer"
+                v-model="form.fee_per_kilometer"
+                :min="0"
+                :step="0.01"
+                :default-value="0"
+                class="max-w-[9rem]"
+              >
+                <NumberFieldContent>
+                  <NumberFieldDecrement />
+                  <NumberFieldInput />
+                  <NumberFieldIncrement />
+                </NumberFieldContent>
+              </NumberField>
+            </div>
+            <p v-if="errors.fee_per_kilometer" class="text-destructive text-xs mt-1">
+              {{ errors.fee_per_kilometer }}
+            </p>
+          </div>
+          <div class="flex flex-col gap-2">
+            <Label for="late_fee_per_hour"
+              >Late Fee per Hour <span class="text-red-500">*</span></Label
+            >
+            <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
+              <NumberField
+                id="late_fee_per_hour"
+                v-model="form.late_fee_per_hour"
+                :min="0"
+                :step="0.01"
+                :default-value="0"
+                class="max-w-[9rem]"
+              >
+                <NumberFieldContent>
+                  <NumberFieldDecrement />
+                  <NumberFieldInput />
+                  <NumberFieldIncrement />
+                </NumberFieldContent>
+              </NumberField>
+            </div>
+            <p v-if="errors.late_fee_per_hour" class="text-destructive text-xs mt-1">
+              {{ errors.late_fee_per_hour }}
+            </p>
+          </div>
+          <div class="flex flex-col gap-2">
+            <Label for="late_fee_per_day"
+              >Late Fee per Day <span class="text-red-500">*</span></Label
+            >
+            <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
+              <NumberField
+                id="late_fee_per_day"
+                v-model="form.late_fee_per_day"
+                :min="0"
+                :step="0.01"
+                :default-value="0"
+                class="max-w-[9rem]"
+              >
+                <NumberFieldContent>
+                  <NumberFieldDecrement />
+                  <NumberFieldInput />
+                  <NumberFieldIncrement />
+                </NumberFieldContent>
+              </NumberField>
+            </div>
+            <p v-if="errors.late_fee_per_day" class="text-destructive text-xs mt-1">
+              {{ errors.late_fee_per_day }}
+            </p>
+          </div>
+          <div class="flex flex-col gap-2">
+            <Label for="gasoline_late_fee_per_liter"
+              >Gasoline Late Fee per Liter <span class="text-red-500">*</span></Label
+            >
+            <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
+              <NumberField
+                id="gasoline_late_fee_per_liter"
+                v-model="form.gasoline_late_fee_per_liter"
+                :min="0"
+                :step="0.01"
+                :default-value="0"
+                class="max-w-[9rem]"
+              >
+                <NumberFieldContent>
+                  <NumberFieldDecrement />
+                  <NumberFieldInput />
+                  <NumberFieldIncrement />
+                </NumberFieldContent>
+              </NumberField>
+            </div>
+            <p v-if="errors.gasoline_late_fee_per_liter" class="text-destructive text-xs mt-1">
+              {{ errors.gasoline_late_fee_per_liter }}
+            </p>
           </div>
         </div>
       </div>
@@ -323,7 +459,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   useUpdateVehicle,
@@ -356,6 +492,29 @@ import { cn, getActiveLabel } from '@/lib/utils'
 import { toast } from 'vue-sonner'
 import Loading from '../Loading.vue'
 
+const requiredTextFields = {
+  name: 'Name',
+  type: 'Type',
+  brand: 'Brand',
+  model: 'Model',
+  plate_number: 'Plate Number',
+  status: 'Status',
+}
+
+const maxYearUpperBound = new Date().getFullYear() + 1
+
+const requiredNumericFields = {
+  year: { label: 'Year', min: 1900, max: maxYearUpperBound },
+  capacity: { label: 'Capacity', min: 1 },
+  rental_rate: { label: 'Rental Rate (Without Driver)', min: 0 },
+  rental_rate_with_driver: { label: 'Rental Rate (With Driver)', min: 0 },
+  deposit: { label: 'Deposit', min: 0 },
+  fee_per_kilometer: { label: 'Fee per Kilometer', min: 0 },
+  late_fee_per_hour: { label: 'Late Fee per Hour', min: 0 },
+  late_fee_per_day: { label: 'Late Fee per Day', min: 0 },
+  gasoline_late_fee_per_liter: { label: 'Gasoline Late Fee per Liter', min: 0 },
+}
+
 const vehicleTypes = [
   { label: 'Select type', value: '' },
   { label: 'Car', value: 'car' },
@@ -378,7 +537,7 @@ const imageList = ref([])
 const errors = ref({})
 const isImagePending = ref(false)
 const fileInput = ref(null)
-const maxYear = new Date().getFullYear()
+const maxYear = maxYearUpperBound
 const isInitialized = ref(false)
 
 watch(
@@ -387,7 +546,18 @@ watch(
     if (val && !isInitialized.value) {
       // Defensive: prefer val.data if present (like in VehicleDetails.vue), else val
       const vehicle = val.data || val
-      form.value = { ...vehicle }
+      form.value = {
+        ...vehicle,
+        deposit: vehicle.deposit ?? 0,
+        fee_per_kilometer: vehicle.fee_per_kilometer ?? 0,
+        late_fee_per_hour: vehicle.late_fee_per_hour ?? 0,
+        late_fee_per_day: vehicle.late_fee_per_day ?? 0,
+        gasoline_late_fee_per_liter: vehicle.gasoline_late_fee_per_liter ?? 0,
+        fuel_capacity: vehicle.fuel_capacity ?? 0,
+        fuel_type: vehicle.fuel_type ?? '',
+        color: vehicle.color ?? '',
+        description: vehicle.description ?? '',
+      }
       imageList.value = (vehicle.images || []).map((img) => ({ ...img, isNew: false }))
       isInitialized.value = true
     }
@@ -442,13 +612,77 @@ function setPrimary(idx) {
 
 async function onSubmit() {
   errors.value = {}
-  const payload = {
-    ...form.value,
-    year: form.value.year ? Number(form.value.year) : '',
-    capacity: form.value.capacity ? Number(form.value.capacity) : '',
-    rental_rate: form.value.rental_rate ? Number(form.value.rental_rate) : '',
-    deposit: form.value.deposit ? Number(form.value.deposit) : '',
+  const clientErrors = {}
+
+  Object.entries(requiredTextFields).forEach(([field, label]) => {
+    const value = form.value[field]
+    if (typeof value !== 'string' || value.trim() === '') {
+      clientErrors[field] = `${label} is required.`
+    }
+  })
+
+  Object.entries(requiredNumericFields).forEach(([field, rules]) => {
+    const value = form.value[field]
+    if (value === null || value === '' || Number.isNaN(Number(value))) {
+      clientErrors[field] = `${rules.label} is required.`
+      return
+    }
+
+    const numericValue = Number(value)
+    if (rules.min !== undefined && numericValue < rules.min) {
+      clientErrors[field] = `${rules.label} must be at least ${rules.min}.`
+    }
+    if (rules.max !== undefined && numericValue > rules.max) {
+      clientErrors[field] = `${rules.label} must be at most ${rules.max}.`
+    }
+  })
+
+  const fuelCapacityValue = form.value.fuel_capacity
+  if (
+    fuelCapacityValue !== null &&
+    fuelCapacityValue !== '' &&
+    Number(fuelCapacityValue) < 0
+  ) {
+    clientErrors.fuel_capacity = 'Fuel Capacity cannot be negative.'
   }
+
+  if (Object.keys(clientErrors).length > 0) {
+    errors.value = clientErrors
+    return
+  }
+
+  const trimmedDescription =
+    typeof form.value.description === 'string' ? form.value.description.trim() : ''
+  const trimmedFuelType =
+    typeof form.value.fuel_type === 'string' ? form.value.fuel_type.trim() : ''
+  const trimmedColor =
+    typeof form.value.color === 'string' ? form.value.color.trim() : ''
+
+  const payload = {
+    name: form.value.name.trim(),
+    type: form.value.type,
+    brand: form.value.brand.trim(),
+    model: form.value.model.trim(),
+    year: Number(form.value.year),
+    plate_number: form.value.plate_number.trim(),
+    capacity: Number(form.value.capacity),
+    rental_rate: Number(form.value.rental_rate),
+    rental_rate_with_driver: Number(form.value.rental_rate_with_driver),
+    deposit: Number(form.value.deposit),
+    fee_per_kilometer: Number(form.value.fee_per_kilometer),
+    late_fee_per_hour: Number(form.value.late_fee_per_hour),
+    late_fee_per_day: Number(form.value.late_fee_per_day),
+    gasoline_late_fee_per_liter: Number(form.value.gasoline_late_fee_per_liter),
+    fuel_capacity:
+      form.value.fuel_capacity !== null && form.value.fuel_capacity !== ''
+        ? Number(form.value.fuel_capacity)
+        : null,
+    fuel_type: trimmedFuelType !== '' ? trimmedFuelType : null,
+    color: trimmedColor !== '' ? trimmedColor : null,
+    description: trimmedDescription !== '' ? trimmedDescription : null,
+    status: form.value.status,
+  }
+
   isImagePending.value = true
   
   // Show loading toast

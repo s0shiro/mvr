@@ -56,6 +56,31 @@ export function useCreateVehicle() {
         rental_rate_with_driver: Number(vehicleData.rental_rate_with_driver),
         year: Number(vehicleData.year),
         capacity: Number(vehicleData.capacity),
+        deposit:
+          vehicleData.deposit !== undefined && vehicleData.deposit !== null
+            ? Number(vehicleData.deposit)
+            : null,
+        fuel_capacity:
+          vehicleData.fuel_capacity !== undefined && vehicleData.fuel_capacity !== null
+            ? Number(vehicleData.fuel_capacity)
+            : null,
+        fee_per_kilometer:
+          vehicleData.fee_per_kilometer !== undefined && vehicleData.fee_per_kilometer !== null
+            ? Number(vehicleData.fee_per_kilometer)
+            : null,
+        late_fee_per_hour:
+          vehicleData.late_fee_per_hour !== undefined && vehicleData.late_fee_per_hour !== null
+            ? Number(vehicleData.late_fee_per_hour)
+            : null,
+        late_fee_per_day:
+          vehicleData.late_fee_per_day !== undefined && vehicleData.late_fee_per_day !== null
+            ? Number(vehicleData.late_fee_per_day)
+            : null,
+        gasoline_late_fee_per_liter:
+          vehicleData.gasoline_late_fee_per_liter !== undefined &&
+          vehicleData.gasoline_late_fee_per_liter !== null
+            ? Number(vehicleData.gasoline_late_fee_per_liter)
+            : null,
       }
       const response = await axiosInstance.post('/api/vehicles', payload)
       return response.data
@@ -149,14 +174,54 @@ export function useUpdateVehicle() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ vehicleId, vehicleData }) => {
-      // Ensure numeric values
-      const payload = {
-        ...vehicleData,
-        rental_rate: Number(vehicleData.rental_rate),
-        rental_rate_with_driver: Number(vehicleData.rental_rate_with_driver),
-        year: Number(vehicleData.year),
-        capacity: Number(vehicleData.capacity),
+      const payload = {}
+
+      const trimString = (value) => {
+        if (typeof value !== 'string') return value
+        const trimmed = value.trim()
+        return trimmed === '' ? null : trimmed
       }
+
+      const stringFields = ['name', 'type', 'brand', 'model', 'plate_number', 'status']
+      const nullableStringFields = ['description', 'fuel_type', 'color']
+
+      stringFields.forEach((field) => {
+        if (vehicleData[field] !== undefined) {
+          payload[field] = typeof vehicleData[field] === 'string'
+            ? vehicleData[field].trim()
+            : vehicleData[field]
+        }
+      })
+
+      nullableStringFields.forEach((field) => {
+        if (vehicleData[field] !== undefined) {
+          payload[field] = trimString(vehicleData[field])
+        }
+      })
+
+      const numericFields = [
+        'rental_rate',
+        'rental_rate_with_driver',
+        'year',
+        'capacity',
+        'deposit',
+        'fuel_capacity',
+        'fee_per_kilometer',
+        'late_fee_per_hour',
+        'late_fee_per_day',
+        'gasoline_late_fee_per_liter',
+      ]
+
+      numericFields.forEach((field) => {
+        if (vehicleData[field] !== undefined) {
+          if (vehicleData[field] === null || vehicleData[field] === '') {
+            payload[field] = null
+          } else {
+            payload[field] = Number(vehicleData[field])
+          }
+        }
+      })
+
       const response = await axiosInstance.put(`/api/vehicles/${vehicleId}`, payload)
       return response.data
     },

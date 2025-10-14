@@ -67,6 +67,7 @@
               v-model="addForm.year"
               :min="1900"
               :max="maxYear"
+              :format-options="{ useGrouping: false }"
               class="max-w-[9rem]"
             >
               <NumberFieldContent>
@@ -90,6 +91,42 @@
           />
           <p v-if="addErrors.plate_number" class="text-destructive text-xs mt-1">
             {{ Array.isArray(addErrors.plate_number) ? addErrors.plate_number[0] : addErrors.plate_number }}
+          </p>
+        </div>
+        <div class="flex flex-col gap-2">
+          <Label for="fuel_capacity">Fuel Capacity (L)</Label>
+          <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
+            <NumberField
+              id="fuel_capacity"
+              v-model="addForm.fuel_capacity"
+              :min="0"
+              :step="1"
+              :default-value="0"
+              class="max-w-[9rem]"
+            >
+              <NumberFieldContent>
+                <NumberFieldDecrement />
+                <NumberFieldInput />
+                <NumberFieldIncrement />
+              </NumberFieldContent>
+            </NumberField>
+          </div>
+          <p v-if="addErrors.fuel_capacity" class="text-destructive text-xs mt-1">
+            {{ Array.isArray(addErrors.fuel_capacity) ? addErrors.fuel_capacity[0] : addErrors.fuel_capacity }}
+          </p>
+        </div>
+        <div class="flex flex-col gap-2">
+          <Label for="fuel_type">Fuel Type</Label>
+          <Input id="fuel_type" v-model="addForm.fuel_type" placeholder="Fuel type" class="w-full" />
+          <p v-if="addErrors.fuel_type" class="text-destructive text-xs mt-1">
+            {{ Array.isArray(addErrors.fuel_type) ? addErrors.fuel_type[0] : addErrors.fuel_type }}
+          </p>
+        </div>
+        <div class="flex flex-col gap-2">
+          <Label for="color">Color</Label>
+          <Input id="color" v-model="addForm.color" placeholder="Vehicle color" class="w-full" />
+          <p v-if="addErrors.color" class="text-destructive text-xs mt-1">
+            {{ Array.isArray(addErrors.color) ? addErrors.color[0] : addErrors.color }}
           </p>
         </div>
       </div>
@@ -169,7 +206,7 @@
           </p>
         </div>
         <div class="flex flex-col gap-2">
-          <Label for="deposit">Deposit</Label>
+          <Label for="deposit">Deposit <span class="text-red-500">*</span></Label>
           <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
             <NumberField
               id="deposit"
@@ -188,6 +225,121 @@
           </div>
           <p v-if="addErrors.deposit" class="text-destructive text-xs mt-1">
             {{ Array.isArray(addErrors.deposit) ? addErrors.deposit[0] : addErrors.deposit }}
+          </p>
+        </div>
+        <div class="flex flex-col gap-2">
+          <Label for="fee_per_kilometer"
+            >Fee per Kilometer <span class="text-red-500">*</span></Label
+          >
+          <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
+            <NumberField
+              id="fee_per_kilometer"
+              v-model="addForm.fee_per_kilometer"
+              :min="0"
+              :step="0.01"
+              :default-value="0"
+              class="max-w-[9rem]"
+            >
+              <NumberFieldContent>
+                <NumberFieldDecrement />
+                <NumberFieldInput />
+                <NumberFieldIncrement />
+              </NumberFieldContent>
+            </NumberField>
+          </div>
+          <p v-if="addErrors.fee_per_kilometer" class="text-destructive text-xs mt-1">
+            {{
+              Array.isArray(addErrors.fee_per_kilometer)
+                ? addErrors.fee_per_kilometer[0]
+                : addErrors.fee_per_kilometer
+            }}
+          </p>
+        </div>
+        <div class="flex flex-col gap-2">
+          <Label for="late_fee_per_hour"
+            >Late Fee per Hour <span class="text-red-500">*</span></Label
+          >
+          <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
+            <NumberField
+              id="late_fee_per_hour"
+              v-model="addForm.late_fee_per_hour"
+              :min="0"
+              :step="0.01"
+              :default-value="0"
+              class="max-w-[9rem]"
+            >
+              <NumberFieldContent>
+                <NumberFieldDecrement />
+                <NumberFieldInput />
+                <NumberFieldIncrement />
+              </NumberFieldContent>
+            </NumberField>
+          </div>
+          <p v-if="addErrors.late_fee_per_hour" class="text-destructive text-xs mt-1">
+            {{
+              Array.isArray(addErrors.late_fee_per_hour)
+                ? addErrors.late_fee_per_hour[0]
+                : addErrors.late_fee_per_hour
+            }}
+          </p>
+        </div>
+        <div class="flex flex-col gap-2">
+          <Label for="late_fee_per_day"
+            >Late Fee per Day <span class="text-red-500">*</span></Label
+          >
+          <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
+            <NumberField
+              id="late_fee_per_day"
+              v-model="addForm.late_fee_per_day"
+              :min="0"
+              :step="0.01"
+              :default-value="0"
+              class="max-w-[9rem]"
+            >
+              <NumberFieldContent>
+                <NumberFieldDecrement />
+                <NumberFieldInput />
+                <NumberFieldIncrement />
+              </NumberFieldContent>
+            </NumberField>
+          </div>
+          <p v-if="addErrors.late_fee_per_day" class="text-destructive text-xs mt-1">
+            {{
+              Array.isArray(addErrors.late_fee_per_day)
+                ? addErrors.late_fee_per_day[0]
+                : addErrors.late_fee_per_day
+            }}
+          </p>
+        </div>
+        <div class="flex flex-col gap-2">
+          <Label for="gasoline_late_fee_per_liter"
+            >Gasoline Late Fee per Liter <span class="text-red-500">*</span></Label
+          >
+          <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
+            <NumberField
+              id="gasoline_late_fee_per_liter"
+              v-model="addForm.gasoline_late_fee_per_liter"
+              :min="0"
+              :step="0.01"
+              :default-value="0"
+              class="max-w-[9rem]"
+            >
+              <NumberFieldContent>
+                <NumberFieldDecrement />
+                <NumberFieldInput />
+                <NumberFieldIncrement />
+              </NumberFieldContent>
+            </NumberField>
+          </div>
+          <p
+            v-if="addErrors.gasoline_late_fee_per_liter"
+            class="text-destructive text-xs mt-1"
+          >
+            {{
+              Array.isArray(addErrors.gasoline_late_fee_per_liter)
+                ? addErrors.gasoline_late_fee_per_liter[0]
+                : addErrors.gasoline_late_fee_per_liter
+            }}
           </p>
         </div>
       </div>
@@ -362,7 +514,14 @@ const addForm = ref({
   rental_rate_with_driver: null,
   status: '',
   description: '',
-  deposit: null,
+  deposit: 0,
+  fee_per_kilometer: 0,
+  late_fee_per_hour: 0,
+  late_fee_per_day: 0,
+  gasoline_late_fee_per_liter: 0,
+  fuel_capacity: 0,
+  fuel_type: '',
+  color: '',
 })
 const addErrors = ref({})
 const maxYear = new Date().getFullYear() + 1
@@ -370,6 +529,27 @@ const maxYear = new Date().getFullYear() + 1
 const fileInput = ref(null)
 const selectedFiles = ref([])
 const imagePreviews = ref([])
+
+const requiredTextFields = {
+  name: 'Name',
+  type: 'Type',
+  brand: 'Brand',
+  model: 'Model',
+  plate_number: 'Plate Number',
+  status: 'Status',
+}
+
+const requiredNumericFields = {
+  year: { label: 'Year', min: 1900, max: maxYear },
+  capacity: { label: 'Capacity', min: 1 },
+  rental_rate: { label: 'Rental Rate (Without Driver)', min: 0 },
+  rental_rate_with_driver: { label: 'Rental Rate (With Driver)', min: 0 },
+  deposit: { label: 'Deposit', min: 0 },
+  fee_per_kilometer: { label: 'Fee per Kilometer', min: 0 },
+  late_fee_per_hour: { label: 'Late Fee per Hour', min: 0 },
+  late_fee_per_day: { label: 'Late Fee per Day', min: 0 },
+  gasoline_late_fee_per_liter: { label: 'Gasoline Late Fee per Liter', min: 0 },
+}
 
 const { mutateAsync: createVehicle, isPending: addIsLoading } = useCreateVehicle()
 const { mutateAsync: uploadImages } = useUploadVehicleImages()
@@ -407,17 +587,76 @@ function removeImage(index) {
 async function handleAddVehicle() {
   addErrors.value = {}
   try {
+    const errors = {}
+
+    Object.entries(requiredTextFields).forEach(([field, label]) => {
+      const value = addForm.value[field]
+      if (typeof value !== 'string' || value.trim() === '') {
+        errors[field] = `${label} is required.`
+      }
+    })
+
+    Object.entries(requiredNumericFields).forEach(([field, rules]) => {
+      const value = addForm.value[field]
+      if (value === null || value === '' || Number.isNaN(Number(value))) {
+        errors[field] = `${rules.label} is required.`
+        return
+      }
+
+      const numericValue = Number(value)
+      if (rules.min !== undefined && numericValue < rules.min) {
+        errors[field] = `${rules.label} must be at least ${rules.min}.`
+      }
+      if (rules.max !== undefined && numericValue > rules.max) {
+        errors[field] = `${rules.label} must be at most ${rules.max}.`
+      }
+    })
+
+    const fuelCapacityValue = addForm.value.fuel_capacity
+    if (
+      fuelCapacityValue !== null &&
+      fuelCapacityValue !== '' &&
+      Number(fuelCapacityValue) < 0
+    ) {
+      errors.fuel_capacity = 'Fuel Capacity cannot be negative.'
+    }
+
+    if (Object.keys(errors).length > 0) {
+      addErrors.value = errors
+      return
+    }
+
     // Convert numeric fields
+    const trimmedDescription =
+      typeof addForm.value.description === 'string' ? addForm.value.description.trim() : ''
+    const trimmedFuelType =
+      typeof addForm.value.fuel_type === 'string' ? addForm.value.fuel_type.trim() : ''
+    const trimmedColor =
+      typeof addForm.value.color === 'string' ? addForm.value.color.trim() : ''
+
     const payload = {
-      ...addForm.value,
-      year: addForm.value.year != null ? Number(addForm.value.year) : null,
-      capacity: addForm.value.capacity != null ? Number(addForm.value.capacity) : null,
-      rental_rate: addForm.value.rental_rate != null ? Number(addForm.value.rental_rate) : null,
-      rental_rate_with_driver:
-        addForm.value.rental_rate_with_driver != null
-          ? Number(addForm.value.rental_rate_with_driver)
+      name: addForm.value.name.trim(),
+      type: addForm.value.type,
+      brand: addForm.value.brand.trim(),
+      model: addForm.value.model.trim(),
+      year: Number(addForm.value.year),
+      plate_number: addForm.value.plate_number.trim(),
+      capacity: Number(addForm.value.capacity),
+      rental_rate: Number(addForm.value.rental_rate),
+      rental_rate_with_driver: Number(addForm.value.rental_rate_with_driver),
+      deposit: Number(addForm.value.deposit),
+      fee_per_kilometer: Number(addForm.value.fee_per_kilometer),
+      late_fee_per_hour: Number(addForm.value.late_fee_per_hour),
+      late_fee_per_day: Number(addForm.value.late_fee_per_day),
+      gasoline_late_fee_per_liter: Number(addForm.value.gasoline_late_fee_per_liter),
+      fuel_capacity:
+        addForm.value.fuel_capacity !== null && addForm.value.fuel_capacity !== ''
+          ? Number(addForm.value.fuel_capacity)
           : null,
-      deposit: addForm.value.deposit != null ? Number(addForm.value.deposit) : null,
+      fuel_type: trimmedFuelType !== '' ? trimmedFuelType : null,
+      color: trimmedColor !== '' ? trimmedColor : null,
+      description: trimmedDescription !== '' ? trimmedDescription : null,
+      status: addForm.value.status,
     }
 
     // First create the vehicle
@@ -445,7 +684,14 @@ async function handleAddVehicle() {
       rental_rate_with_driver: null,
       status: '',
       description: '',
-      deposit: null,
+  deposit: 0,
+      fee_per_kilometer: 0,
+      late_fee_per_hour: 0,
+      late_fee_per_day: 0,
+      gasoline_late_fee_per_liter: 0,
+      fuel_capacity: 0,
+      fuel_type: '',
+      color: '',
     }
     selectedFiles.value = []
     imagePreviews.value = []
