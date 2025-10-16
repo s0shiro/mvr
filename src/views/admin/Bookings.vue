@@ -203,7 +203,7 @@ import Loading from '@/components/features/Loading.vue'
 import ConfirmCancelDialog from '@/components/features/ConfirmCancelDialog.vue'
 import ContractPrint from '@/components/features/ContractPrint.vue'
 import { useAdminBookings, useAdminCancelBooking } from '@/services/admin/booking-service'
-import { getStatusVariant } from '@/lib/utils'
+import { getStatusVariant, formatDateTimeUTC } from '@/lib/utils'
 import { CalendarDays, Truck, Ban, FileText, CheckCircle } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 import { toast } from 'vue-sonner'
@@ -319,21 +319,21 @@ async function handleCancelBooking() {
 }
 
 function formatDate(date, pretty = false) {
-  const d = new Date(date)
-  if (pretty) {
-    return d
-      .toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      })
-      .replace(',', '')
-      .replace(/(\d{4}) (\d{1,2}):(\d{2})/, '$1 · $2:$3')
+  if (!date) return ''
+  if (!pretty) {
+    return formatDateTimeUTC(date)
   }
-  return d.toLocaleString()
+  return formatDateTimeUTC(date, 'en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  })
+    .replace(',', '')
+    .replace(',', '')
+    .replace(/(\d{4}) (\d{1,2}):(\d{2})/, '$1 · $2:$3')
 }
 </script>
 

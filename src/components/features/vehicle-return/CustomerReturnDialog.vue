@@ -4,15 +4,15 @@
       <DialogHeader class="flex-shrink-0">
         <DialogTitle>Submit Vehicle Return</DialogTitle>
         <DialogDescription>
-          Please upload photos and provide details about the vehicle condition upon return.
+          Share return details and optionally include photos to help admins verify the vehicle condition.
         </DialogDescription>
       </DialogHeader>
       
       <div class="flex-1 overflow-y-auto pr-2">
         <form @submit.prevent="handleSubmit" class="h-full flex flex-col">
           <div class="flex-1 space-y-4 pb-4">
-          <div class="flex flex-col gap-2">
-            <Label>Return Photos *</Label>
+            <div class="flex flex-col gap-2">
+            <Label>Return Photos (optional)</Label>
             <div
               class="border-2 border-dashed border-primary/40 rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer bg-background hover:border-primary transition relative min-h-[96px]"
               @dragover.prevent="isDragging = true"
@@ -21,7 +21,6 @@
               :class="{ 'border-primary': isDragging }"
             >
               <input
-                ref="fileInput"
                 type="file"
                 multiple
                 accept="image/*"
@@ -33,7 +32,7 @@
                 <Upload class="w-8 h-8 text-muted-foreground mb-2" />
                 <span class="text-muted-foreground text-sm text-center">
                   Drag & drop images here or click to upload<br />
-                  <span class="text-xs">Please upload at least one photo of the vehicle</span>
+                  <span class="text-xs">Photos help admins verify the return condition.</span>
                 </span>
               </div>
               <div v-if="isDragging" class="flex flex-col items-center">
@@ -60,38 +59,21 @@
               </div>
             </div>
             <p v-if="imageError" class="text-sm text-red-600">{{ imageError }}</p>
-          </div>
-          
+            </div>
+
             <!-- Vehicle Condition Information -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 gap-4">
               <div class="flex flex-col gap-2">
-                <Label>Odometer Reading (optional)</Label>
-                <Input 
-                  v-model="form.odometer" 
-                  type="number" 
-                  min="0" 
-                  placeholder="Current odometer reading" 
-                />
-              </div>
-              
-              <div class="flex flex-col gap-2">
-                <Label>Fuel Level (optional)</Label>
-                <Input 
-                  v-model="form.fuel_level" 
-                  placeholder="e.g. Full, 3/4, Half" 
+                <Label>Return Date &amp; Time *</Label>
+                <Input
+                  v-model="form.returned_at"
+                  type="datetime-local"
+                  :max="currentDateTimeLocal"
+                  required
                 />
               </div>
             </div>
-            
-            <div class="flex flex-col gap-2">
-              <Label>Vehicle Condition Notes (optional)</Label>
-              <Textarea
-                v-model="form.customer_condition_notes"
-                placeholder="Describe any issues, damages, or observations..."
-                rows="3"
-              />
-            </div>
-          
+
             <!-- Security Deposit Refund Information -->
             <div class="border border-border rounded-lg p-4 space-y-3">
               <h3 class="font-semibold text-foreground">Security Deposit Refund (₱{{ booking?.vehicle?.deposit || 0 }})</h3>
@@ -188,7 +170,7 @@
         <Button 
           type="button"
           @click="handleSubmit"
-          :disabled="isSubmitting || form.customer_images.length === 0"
+          :disabled="isSubmitting"
           class="min-w-[120px]"
         >
           <Loader2 v-if="isSubmitting" class="w-4 h-4 animate-spin mr-2" />
@@ -200,7 +182,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useSubmitVehicleReturn } from '@/services/customer/vehicle-return-service'
 import {
   Dialog,
@@ -225,9 +207,7 @@ const emit = defineEmits(['update:open', 'submitted'])
 
 const form = ref({
   customer_images: [],
-  customer_condition_notes: '',
-  odometer: '',
-  fuel_level: '',
+  returned_at: '',
   // Customer refund account information
   customer_refund_method: '',
   customer_account_number: '',
@@ -237,9 +217,17 @@ const form = ref({
 })
 
 const isDragging = ref(false)
-const fileInput = ref(null)
 const imageError = ref('')
 const isSubmitting = ref(false)
+
+function formatDateTimeLocal(value) {
+  if (!value) return ''
+  const date = value instanceof Date ? value : new Date(value)
+  if (Number.isNaN(date.getTime())) return ''
+  const offset = date.getTimezoneOffset()
+  const localDate = new Date(date.getTime() - offset * 60000)
+  return localDate.toISOString().slice(0, 16)
+}
 
 watch(
   () => props.open,
@@ -247,9 +235,7 @@ watch(
     if (val) {
       form.value = {
         customer_images: [],
-        customer_condition_notes: '',
-        odometer: '',
-        fuel_level: '',
+        returned_at: formatDateTimeLocal(new Date()),
         // Reset refund fields
         customer_refund_method: '',
         customer_account_number: '',
@@ -264,6 +250,8 @@ watch(
 
 const { mutate: submitReturn } = useSubmitVehicleReturn()
 
+const currentDateTimeLocal = computed(() => formatDateTimeLocal(new Date()))
+
 function handleDrop(e) {
   isDragging.value = false
   const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'))
@@ -276,11 +264,6 @@ function handleFileChange(e) {
 }
 
 function processFiles(files) {
-  if (files.length === 0) {
-    imageError.value = 'Please select at least one image file'
-    return
-  }
-
   const maxSize = 5 * 1024 * 1024 // 5MB
   const validFiles = files.filter(file => {
     if (file.size > maxSize) {
@@ -315,8 +298,8 @@ function removeImage(index) {
 function handleSubmit() {
   if (!props.booking) return
   
-  if (form.value.customer_images.length === 0) {
-    imageError.value = 'Please upload at least one photo of the vehicle'
+  if (!form.value.returned_at) {
+    imageError.value = 'Please provide the return date and time'
     return
   }
 
@@ -342,8 +325,15 @@ function handleSubmit() {
   imageError.value = ''
   isSubmitting.value = true
 
+  const payload = {
+    ...form.value,
+    returned_at: form.value.returned_at
+      ? new Date(form.value.returned_at).toISOString()
+      : null,
+  }
+
   submitReturn(
-    { bookingId: props.booking.id, ...form.value },
+    { bookingId: props.booking.id, ...payload },
     {
       onSuccess: () => {
         isSubmitting.value = false

@@ -226,6 +226,24 @@
               </div>
               <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Additional Fees</h3>
             </div>
+
+            <div
+              v-if="calculatedLateFee > 0"
+              class="mb-4 bg-red-50/80 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg p-4"
+            >
+              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div>
+                  <p class="text-sm font-medium text-red-700 dark:text-red-300">Auto-calculated late fee</p>
+                  <p class="text-2xl font-semibold text-red-600 dark:text-red-400">₱{{ formatCurrency(calculatedLateFee) }}</p>
+                </div>
+                <div v-if="lateFeeSummary" class="text-sm text-red-600 dark:text-red-300">
+                  {{ lateFeeSummary }} late
+                </div>
+              </div>
+              <p class="text-xs text-red-600/80 dark:text-red-300/80 mt-2">
+                You can adjust this amount if further assessment is needed.
+              </p>
+            </div>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div class="space-y-2">
@@ -503,12 +521,39 @@ const customerImages = computed(() => {
   return props.booking?.vehicle_return?.customer_images || []
 })
 
+const calculatedLateFee = computed(() => {
+  const fee = props.booking?.calculated_late_fee
+  const parsed = fee !== undefined && fee !== null ? Number(fee) : 0
+  return Number.isFinite(parsed) ? parsed : 0
+})
+
+const lateFeeDetails = computed(() => props.booking?.late_fee_details ?? null)
+
+const lateFeeSummary = computed(() => {
+  const details = lateFeeDetails.value
+  if (!details || !details.late_minutes_total) return ''
+
+  const segments = []
+  if (details.late_days) {
+    segments.push(`${details.late_days} day${details.late_days === 1 ? '' : 's'}`)
+  }
+  if (details.late_hours) {
+    segments.push(`${details.late_hours} hour${details.late_hours === 1 ? '' : 's'}`)
+  }
+  if (details.half_hour_applied) {
+    segments.push('30+ minutes')
+  }
+
+  return segments.join(', ')
+})
+
 const totalFees = computed(() => {
-  return (form.value.late_fee || 0) + (form.value.damage_fee || 0) + (form.value.cleaning_fee || 0)
+  const { late_fee = 0, damage_fee = 0, cleaning_fee = 0 } = form.value
+  return Number(late_fee || 0) + Number(damage_fee || 0) + Number(cleaning_fee || 0)
 })
 
 const calculatedRefundAmount = computed(() => {
-  const depositAmount = props.booking?.vehicle?.deposit || 0
+  const depositAmount = Number(props.booking?.vehicle?.deposit || 0)
   return Math.max(0, depositAmount - totalFees.value)
 })
 
@@ -525,32 +570,55 @@ function formatDate(dateStr) {
   return d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
 }
 
+function formatCurrency(amount) {
+  const value = Number(amount || 0)
+  return value.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
 function openImageModal(imageSrc) {
   selectedImage.value = imageSrc
   imageModalOpen.value = true
 }
 
+function initializeForm() {
+  if (!props.booking) return
+
+  const vehicleReturn = props.booking.vehicle_return
+  const existingLateFee = vehicleReturn?.late_fee
+  const parsedExistingLateFee = existingLateFee !== undefined && existingLateFee !== null ? Number(existingLateFee) : null
+  const autoLateFee = calculatedLateFee.value
+
+  form.value = {
+    odometer: vehicleReturn?.odometer ?? '',
+    fuel_level: vehicleReturn?.fuel_level ?? '',
+    condition_notes: '',
+    images: [],
+    late_fee: Number.isFinite(parsedExistingLateFee) ? parsedExistingLateFee : autoLateFee,
+    damage_fee: vehicleReturn?.damage_fee ? Number(vehicleReturn.damage_fee) : 0,
+    cleaning_fee: vehicleReturn?.cleaning_fee ? Number(vehicleReturn.cleaning_fee) : 0,
+    // Deposit refund fields
+    deposit_status: vehicleReturn?.deposit_status || 'pending',
+    deposit_refund_amount: vehicleReturn?.deposit_refund_amount ? Number(vehicleReturn.deposit_refund_amount) : 0,
+    deposit_refund_notes: vehicleReturn?.deposit_refund_notes || '',
+    deposit_refund_proof: Array.isArray(vehicleReturn?.deposit_refund_proof) ? [...vehicleReturn.deposit_refund_proof] : [],
+    refund_method: vehicleReturn?.refund_method || '',
+  }
+}
+
 watch(
   () => props.open,
   (val) => {
-    if (val && props.booking) {
-      const vehicleReturn = props.booking.vehicle_return
-      
-      form.value = {
-        odometer: vehicleReturn?.odometer || '',
-        fuel_level: vehicleReturn?.fuel_level || '',
-        condition_notes: '',
-        images: [],
-        late_fee: vehicleReturn?.late_fee || 0,
-        damage_fee: vehicleReturn?.damage_fee || 0,
-        cleaning_fee: vehicleReturn?.cleaning_fee || 0,
-        // Deposit refund fields
-        deposit_status: vehicleReturn?.deposit_status || 'pending',
-        deposit_refund_amount: vehicleReturn?.deposit_refund_amount || calculatedRefundAmount.value,
-        deposit_refund_notes: vehicleReturn?.deposit_refund_notes || '',
-        deposit_refund_proof: vehicleReturn?.deposit_refund_proof || [],
-        refund_method: vehicleReturn?.refund_method || '',
-      }
+    if (val) {
+      initializeForm()
+    }
+  },
+)
+
+watch(
+  () => props.booking,
+  () => {
+    if (props.open) {
+      initializeForm()
     }
   },
 )

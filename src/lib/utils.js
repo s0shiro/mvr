@@ -2,6 +2,23 @@ import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { today, getLocalTimeZone } from '@internationalized/date'
 
+const DEFAULT_DATE_TIME_OPTIONS = {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+  hour12: true,
+  timeZone: 'UTC',
+}
+
+const DEFAULT_DATE_OPTIONS = {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  timeZone: 'UTC',
+}
+
 export function cn(...inputs) {
   return twMerge(clsx(inputs))
 }
@@ -57,4 +74,24 @@ export function getActiveLabel(items, value) {
 export function isDateDisabled(date) {
   const now = today(getLocalTimeZone())
   return date.compare(now) <= 0
+}
+
+export function formatDateTimeUTC(value, locale = 'en-US', options = {}) {
+  if (!value) return ''
+  const formatter = new Intl.DateTimeFormat(locale, {
+    ...DEFAULT_DATE_TIME_OPTIONS,
+    ...options,
+  })
+  return formatter.format(new Date(value))
+}
+
+export function formatDateRangeUTC(start, end, locale = 'en-US', options = {}) {
+  if (!start || !end) return ''
+  const formatter = new Intl.DateTimeFormat(locale, {
+    ...DEFAULT_DATE_OPTIONS,
+    ...options,
+  })
+  const startFormatted = formatter.format(new Date(start))
+  const endFormatted = formatter.format(new Date(end))
+  return `${startFormatted} - ${endFormatted}`
 }

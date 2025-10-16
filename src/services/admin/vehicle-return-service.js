@@ -16,6 +16,17 @@ export function useReturnVehicle() {
   })
 }
 
+export function useAdminVehicleReturn(bookingId) {
+  return useQuery({
+    enabled: !!bookingId,
+    queryKey: ['admin', 'vehicle-return', bookingId],
+    queryFn: () =>
+      axiosInstance
+        .get(`/api/admin/bookings/${bookingId}`)
+        .then((res) => res.data.booking),
+  })
+}
+
 export function useProcessDepositRefund() {
   return useMutation({
     mutationFn: ({ bookingId, ...data }) =>

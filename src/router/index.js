@@ -43,6 +43,12 @@ const router = createRouter({
       meta: { title: 'My Bookings', requiresAuth: true },
     }),
     createDashboardRoute({
+      path: '/my-bookings/:id/security-deposit',
+      name: 'booking-security-deposit',
+      view: () => import('../views/BookingSecurityDeposit.vue'),
+      meta: { title: 'Security Deposit', requiresAuth: true },
+    }),
+    createDashboardRoute({
       path: '/my-completed-bookings',
       name: 'my-completed-bookings',
       view: () => import('../views/MyCompletedBookings.vue'),
@@ -118,6 +124,16 @@ const router = createRouter({
       view: () => import('../views/admin/VehicleReturns.vue'),
       meta: {
         title: 'Vehicle Returns',
+        requiresAuth: true,
+        requiredRoles: ['admin'],
+      },
+    }),
+    createDashboardRoute({
+      path: '/admin/vehicle-returns/:id/process',
+      name: 'admin-vehicle-return-process',
+      view: () => import('../views/admin/VehicleReturnProcess.vue'),
+      meta: {
+        title: 'Process Vehicle Return',
         requiresAuth: true,
         requiredRoles: ['admin'],
       },

@@ -105,6 +105,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Loader2, CheckCircle2, XCircle } from 'lucide-vue-next'
 import FeedbackSection from '@/components/features/feedback/FeedbackSection.vue'
 import DepositRefundCard from '@/components/features/vehicle-return/DepositRefundCard.vue'
+import { formatDateTimeUTC } from '@/lib/utils'
 
 const { data, isLoading, isError, error, refetch } = useMyCompletedBookingsQuery()
 const completedBookings = computed(() => data.value || [])
@@ -117,15 +118,5 @@ function openImageModal(imageSrc) {
   imageModalOpen.value = true
 }
 
-function formatDate(dateStr) {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('en-PH', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  })
-}
+const formatDate = (dateStr) => formatDateTimeUTC(dateStr, 'en-PH', { hour: '2-digit' })
 </script>

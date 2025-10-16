@@ -159,31 +159,28 @@
                          class="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
                       <div>
                         <p class="font-medium text-foreground capitalize">{{ payment.type }} Payment</p>
-                        <p class="text-sm text-muted-foreground">{{ payment.payment_method }}</p>
+                        <p class="text-sm text-muted-foreground">{{ payment.payment_method || payment.method || '—' }}</p>
                       </div>
-                      <div class="text-right">
+                      <div class="flex items-center gap-2">
                         <Badge :variant="getStatusVariant(payment.status)" class="text-xs">
                           {{ payment.status }}
                         </Badge>
+                        <Button
+                          v-if="payment.proof_image"
+                          variant="outline"
+                          size="sm"
+                          class="gap-1 px-2 py-1 text-xs"
+                          @click="viewPaymentProof(payment)"
+                        >
+                          <Eye class="w-3 h-3" />
+                          View Proof
+                        </Button>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <!-- Total Amount -->
-                <div class="flex items-center gap-3 p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-900/50 dark:to-gray-800/50 rounded-lg border">
-                  <DollarSign class="w-5 h-5 text-muted-foreground" />
-                  <div class="flex-1">
-                    <div class="flex justify-between items-center">
-                      <p class="font-semibold text-foreground">Total Amount</p>
-                      <p class="text-lg font-bold text-foreground">₱{{ Number(booking.total_price).toLocaleString() }}</p>
-                    </div>
-                    <div class="flex justify-between items-center text-sm text-muted-foreground">
-                      <span>Daily rate</span>
-                      <span>₱{{ calculateDailyRate(booking.total_price, booking.start_date, booking.end_date) }}/day</span>
-                    </div>
-                  </div>
-                </div>
+               
               </div>
             </div>
 
@@ -199,7 +196,7 @@
               
               <!-- Refund Processing Button -->
               <Button 
-                v-if="booking.refund_status === 'pending' && getApprovedPayments(booking).length > 0" 
+                v-if="booking.refund_status === 'pending' && getRefundablePayments(booking).length > 0" 
                 @click="openRefundDialog(booking)"
                 variant="default" 
                 size="sm" 
@@ -250,9 +247,12 @@
               </div>
 
               <!-- Customer Refund Account Information -->
-              <div v-if="refundDialog.booking.vehicle_return || refundDialog.booking.refund_method" class="border-t border-border pt-3">
+              <div class="border-t border-border pt-3">
                 <p class="font-medium text-muted-foreground mb-2">Customer Refund Account</p>
-                <div class="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                <div
+                  v-if="refundDialog.booking.vehicle_return || refundDialog.booking.refund_method"
+                  class="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3"
+                >
                   <div class="space-y-2">
                     <!-- Get refund info from vehicle_return or booking -->
                     <div class="flex items-center justify-between">
@@ -314,14 +314,20 @@
                     </div>
                   </div>
                 </div>
+                <div
+                  v-else
+                  class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-700 rounded-lg p-3 text-sm text-amber-800 dark:text-amber-200"
+                >
+                  Customer has not provided refund account details yet. Wait for their submission before releasing funds.
+                </div>
               </div>
               
               <!-- Approved Payments Information -->
               <div>
-                <p class="font-medium text-muted-foreground mb-2">Approved Payments</p>
-                <div v-if="getApprovedPayments(refundDialog.booking).length > 0" class="space-y-2">
+                <p class="font-medium text-muted-foreground mb-2">Refundable Payments</p>
+                <div v-if="getRefundablePayments(refundDialog.booking).length > 0" class="space-y-2">
                   <div 
-                    v-for="payment in getApprovedPayments(refundDialog.booking)" 
+                    v-for="payment in getRefundablePayments(refundDialog.booking)" 
                     :key="payment.id"
                     class="flex justify-between items-center p-2 bg-green-50 dark:bg-green-950/30 rounded border border-green-200 dark:border-green-800"
                   >
@@ -333,7 +339,7 @@
                   </div>
                 </div>
                 <div v-else class="p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded border border-yellow-200 dark:border-yellow-800">
-                  <p class="text-yellow-700 dark:text-yellow-300 text-sm">No approved payments found for this booking.</p>
+                  <p class="text-yellow-700 dark:text-yellow-300 text-sm">No payment submissions eligible for refund were found for this booking.</p>
                 </div>
               </div>
             </div>
@@ -366,7 +372,7 @@
               <Textarea
                 id="refund-notes"
                 v-model="refundForm.notes"
-                placeholder="Add any notes about the refund process..."
+                placeholder="If any issues arise, contact 0912-345-6789."
                 rows="3"
                 class="resize-none"
               />
@@ -438,7 +444,7 @@
     <Dialog v-model:open="proofDialog.open">
       <DialogContent class="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Refund Proof</DialogTitle>
+          <DialogTitle>{{ proofDialog.title || 'Supporting Document' }}</DialogTitle>
         </DialogHeader>
         <div v-if="proofDialog.proof" class="text-center">
           <img 
@@ -491,7 +497,8 @@ import {
   ChevronRight,
   Loader2,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  Eye
 } from 'lucide-vue-next'
 import { RouterLink } from 'vue-router'
 
@@ -519,7 +526,8 @@ const refundProofInput = ref(null)
 // Proof Viewer Dialog
 const proofDialog = ref({
   open: false,
-  proof: null
+  proof: null,
+  title: ''
 })
 
 function openRefundDialog(booking) {
@@ -585,7 +593,25 @@ async function processRefund() {
 }
 
 function viewRefundProof(booking) {
+  if (!booking?.refund_proof) {
+    toast.info('No refund proof uploaded yet')
+    return
+  }
+  proofDialog.value.title = 'Refund Proof'
   proofDialog.value.proof = booking.refund_proof
+  proofDialog.value.open = true
+}
+
+function viewPaymentProof(payment) {
+  if (!payment?.proof_image) {
+    toast.info('No payment proof attached for this payment')
+    return
+  }
+  const typeLabel = payment?.type
+    ? payment.type.charAt(0).toUpperCase() + payment.type.slice(1)
+    : 'Payment'
+  proofDialog.value.title = `${typeLabel} Payment Proof`
+  proofDialog.value.proof = payment?.proof_image ?? null
   proofDialog.value.open = true
 }
 
@@ -629,8 +655,8 @@ function getRefundStatusIcon(status) {
 }
 
 function getRefundStatusText(status, booking = null) {
-  if (booking && status === 'pending' && getApprovedPayments(booking).length === 0) {
-    return 'No approved payments found'
+  if (booking && status === 'pending' && getRefundablePayments(booking).length === 0) {
+    return 'No payment submissions found'
   }
   switch (status) {
     case 'pending':
@@ -640,13 +666,13 @@ function getRefundStatusText(status, booking = null) {
     case 'failed':
       return 'Refund Failed'
     default:
-      return 'Unknown Status'
+      return 'No Payments Found'
   }
 }
 
-function getApprovedPayments(booking) {
+function getRefundablePayments(booking) {
   if (!booking || !booking.payments) return []
-  return booking.payments.filter(payment => payment.status === 'approved')
+  return booking.payments.filter(payment => ['approved', 'rejected'].includes(payment.status))
 }
 
 function getPaymentAmount(payment, booking) {

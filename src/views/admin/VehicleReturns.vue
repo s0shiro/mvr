@@ -148,7 +148,7 @@
                         v-if="!booking.vehicle_return"
                         variant="default"
                         size="sm"
-                        @click="openReturnDialog(booking)"
+                        @click="goToReturnPage(booking)"
                         class="flex-1"
                         :class="groupName === 'overdue' ? 'bg-red-600 hover:bg-red-700' : groupName === 'dueToday' ? 'bg-orange-600 hover:bg-orange-700' : ''"
                       >
@@ -159,7 +159,7 @@
                         v-else-if="booking.vehicle_return.status === 'customer_submitted'"
                         variant="default"
                         size="sm"
-                        @click="openReturnDialog(booking)"
+                        @click="goToReturnPage(booking)"
                         class="flex-1 bg-blue-600 hover:bg-blue-700"
                       >
                         <span class="mr-2">👀</span>
@@ -178,35 +178,27 @@
         </div>
       </div>
     </div>
-    <VehicleReturnDialog
-      v-if="returnDialogOpen"
-      :booking="selectedBooking"
-      :open="returnDialogOpen"
-      @update:open="returnDialogOpen = $event"
-      @returned="onReturned"
-    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAdminVehicleReturns } from '@/services/admin/vehicle-return-service'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import VehicleReturnDialog from '@/components/features/vehicle-return/VehicleReturnDialog.vue'
 import Loading from '@/components/features/Loading.vue'
-import { getStatusVariant } from '@/lib/utils'
+import { getStatusVariant, formatDateTimeUTC } from '@/lib/utils'
 
 function formatDate(dateStr) {
-  const d = new Date(dateStr)
-  return d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+  if (!dateStr) return ''
+  return formatDateTimeUTC(dateStr)
 }
 
-const { data, error, isLoading, refetch } = useAdminVehicleReturns()
+const { data, error, isLoading } = useAdminVehicleReturns()
 const bookings = computed(() => data.value || [])
-const returnDialogOpen = ref(false)
-const selectedBooking = ref(null)
+const router = useRouter()
 
 const groupedBookings = computed(() => {
   const groups = {
@@ -251,13 +243,8 @@ const groupedBookings = computed(() => {
   return groups
 })
 
-function openReturnDialog(booking) {
-  selectedBooking.value = booking
-  returnDialogOpen.value = true
-}
-function onReturned() {
-  returnDialogOpen.value = false
-  refetch()
+function goToReturnPage(booking) {
+  router.push({ name: 'admin-vehicle-return-process', params: { id: booking.id } })
 }
 
 function getDepositStatusVariant(status) {

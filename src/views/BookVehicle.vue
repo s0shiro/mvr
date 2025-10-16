@@ -485,7 +485,18 @@ async function onSubmit() {
       payload.delivery_details = form.value.delivery_details
     }
     const res = await createBooking.mutateAsync(payload)
-    router.push({ name: 'my-bookings' })
+    const newBookingId = res?.booking?.id
+    toast.success('Booking reserved!', {
+      description: 'Please pay your security deposit to keep your reservation active. (Step 1 of 2)'
+    })
+    toast.info('Payment', {
+      description: 'Please pay your security deposit to keep your reservation active.'
+    })
+    if (newBookingId) {
+      router.push({ name: 'booking-security-deposit', params: { id: newBookingId } })
+    } else {
+      router.push({ name: 'my-bookings' })
+    }
   } catch (e) {
     // Handle backend validation errors
     if (e.response && e.response.data && e.response.data.errors) {

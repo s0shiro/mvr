@@ -152,10 +152,11 @@ import { Button } from '@/components/ui/button'
 import Loading from '@/components/features/Loading.vue'
 import VehicleReleaseDialog from '@/components/features/vehicle-release/VehicleReleaseDialog.vue'
 import { toast } from 'vue-sonner'
+import { formatDateTimeUTC } from '@/lib/utils'
 
 function formatDate(dateStr) {
-  const d = new Date(dateStr)
-  return d.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
+  if (!dateStr) return ''
+  return formatDateTimeUTC(dateStr)
 }
 
 function getStatusVariant(status) {

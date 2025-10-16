@@ -199,6 +199,7 @@
                 :min="0"
                 :step="0.01"
                 :default-value="0"
+                :disabled="isMotorcycle"
                 class="max-w-[9rem]"
               >
                 <NumberFieldContent>
@@ -210,6 +211,9 @@
             </div>
             <p v-if="errors.rental_rate_with_driver" class="text-destructive text-xs mt-1">
               {{ errors.rental_rate_with_driver }}
+            </p>
+            <p v-else-if="isMotorcycle" class="text-xs text-muted-foreground">
+              Driver service is unavailable for motorcycles.
             </p>
           </div>
           <div class="flex flex-col gap-2">
@@ -232,6 +236,7 @@
             </div>
             <p v-if="errors.deposit" class="text-destructive text-xs mt-1">{{ errors.deposit }}</p>
           </div>
+          <!--
           <div class="flex flex-col gap-2">
             <Label for="fee_per_kilometer"
               >Fee per Kilometer <span class="text-red-500">*</span></Label
@@ -256,6 +261,7 @@
               {{ errors.fee_per_kilometer }}
             </p>
           </div>
+          -->
           <div class="flex flex-col gap-2">
             <Label for="late_fee_per_hour"
               >Late Fee per Hour <span class="text-red-500">*</span></Label
@@ -306,7 +312,7 @@
           </div>
           <div class="flex flex-col gap-2">
             <Label for="gasoline_late_fee_per_liter"
-              >Gasoline Late Fee per Liter <span class="text-red-500">*</span></Label
+              >Fuel Rate (L) <span class="text-red-500">*</span></Label
             >
             <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
               <NumberField
@@ -459,7 +465,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   useUpdateVehicle,
@@ -539,6 +545,7 @@ const isImagePending = ref(false)
 const fileInput = ref(null)
 const maxYear = maxYearUpperBound
 const isInitialized = ref(false)
+const isMotorcycle = computed(() => form.value.type === 'motorcycle')
 
 watch(
   () => vehicleData?.value,
@@ -570,6 +577,15 @@ const { mutateAsync: uploadImages } = useUploadVehicleImages()
 const { mutateAsync: deleteImage } = useDeleteVehicleImage()
 const { mutateAsync: setPrimaryImage } = useSetPrimaryImage()
 const { mutateAsync: reorderImages } = useReorderVehicleImages()
+
+watch(
+  () => form.value.type,
+  (type) => {
+    if (type === 'motorcycle' && form.value) {
+      form.value.rental_rate_with_driver = 0
+    }
+  },
+)
 
 function triggerFileInput() {
   fileInput.value.click()

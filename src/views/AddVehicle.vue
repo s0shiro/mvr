@@ -182,9 +182,10 @@
           </p>
         </div>
         <div class="flex flex-col gap-2">
-          <Label for="rental_rate_with_driver"
-            >Rental Rate (With Driver) <span class="text-red-500">*</span></Label
-          >
+          <Label for="rental_rate_with_driver">
+            Rental Rate (With Driver)
+            <span v-if="addForm.type !== 'motorcycle'" class="text-red-500">*</span>
+          </Label>
           <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
             <NumberField
               id="rental_rate_with_driver"
@@ -192,6 +193,7 @@
               :min="0"
               :step="0.01"
               :default-value="0"
+              :disabled="addForm.type === 'motorcycle'"
               class="max-w-[9rem]"
             >
               <NumberFieldContent>
@@ -227,6 +229,7 @@
             {{ Array.isArray(addErrors.deposit) ? addErrors.deposit[0] : addErrors.deposit }}
           </p>
         </div>
+        <!--
         <div class="flex flex-col gap-2">
           <Label for="fee_per_kilometer"
             >Fee per Kilometer <span class="text-red-500">*</span></Label
@@ -255,6 +258,7 @@
             }}
           </p>
         </div>
+        -->
         <div class="flex flex-col gap-2">
           <Label for="late_fee_per_hour"
             >Late Fee per Hour <span class="text-red-500">*</span></Label
@@ -313,7 +317,7 @@
         </div>
         <div class="flex flex-col gap-2">
           <Label for="gasoline_late_fee_per_liter"
-            >Gasoline Late Fee per Liter <span class="text-red-500">*</span></Label
+            >Fuel Rate (L)<span class="text-red-500">*</span></Label
           >
           <div class="grid grid-cols-[1fr_auto] gap-2 items-center">
             <NumberField
@@ -462,7 +466,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -515,7 +519,7 @@ const addForm = ref({
   status: '',
   description: '',
   deposit: 0,
-  fee_per_kilometer: 0,
+  // fee_per_kilometer: 0,
   late_fee_per_hour: 0,
   late_fee_per_day: 0,
   gasoline_late_fee_per_liter: 0,
@@ -545,14 +549,27 @@ const requiredNumericFields = {
   rental_rate: { label: 'Rental Rate (Without Driver)', min: 0 },
   rental_rate_with_driver: { label: 'Rental Rate (With Driver)', min: 0 },
   deposit: { label: 'Deposit', min: 0 },
-  fee_per_kilometer: { label: 'Fee per Kilometer', min: 0 },
+  // fee_per_kilometer: { label: 'Fee per Kilometer', min: 0 },
   late_fee_per_hour: { label: 'Late Fee per Hour', min: 0 },
   late_fee_per_day: { label: 'Late Fee per Day', min: 0 },
-  gasoline_late_fee_per_liter: { label: 'Gasoline Late Fee per Liter', min: 0 },
+  gasoline_late_fee_per_liter: { label: 'Gasoline Rate per Liter', min: 0 },
 }
 
 const { mutateAsync: createVehicle, isPending: addIsLoading } = useCreateVehicle()
 const { mutateAsync: uploadImages } = useUploadVehicleImages()
+
+watch(
+  () => addForm.value.type,
+  (newType) => {
+    if (newType === 'motorcycle') {
+      addForm.value.rental_rate_with_driver = null
+      if (addErrors.value && addErrors.value.rental_rate_with_driver) {
+        const { rental_rate_with_driver, ...rest } = addErrors.value
+        addErrors.value = rest
+      }
+    }
+  }
+)
 
 function triggerFileInput() {
   fileInput.value.click()
@@ -588,6 +605,7 @@ async function handleAddVehicle() {
   addErrors.value = {}
   try {
     const errors = {}
+    const isMotorcycle = addForm.value.type === 'motorcycle'
 
     Object.entries(requiredTextFields).forEach(([field, label]) => {
       const value = addForm.value[field]
@@ -597,6 +615,9 @@ async function handleAddVehicle() {
     })
 
     Object.entries(requiredNumericFields).forEach(([field, rules]) => {
+      if (field === 'rental_rate_with_driver' && isMotorcycle) {
+        return
+      }
       const value = addForm.value[field]
       if (value === null || value === '' || Number.isNaN(Number(value))) {
         errors[field] = `${rules.label} is required.`
@@ -634,6 +655,8 @@ async function handleAddVehicle() {
     const trimmedColor =
       typeof addForm.value.color === 'string' ? addForm.value.color.trim() : ''
 
+    const rentalRateWithDriverValue = addForm.value.rental_rate_with_driver
+
     const payload = {
       name: addForm.value.name.trim(),
       type: addForm.value.type,
@@ -643,9 +666,12 @@ async function handleAddVehicle() {
       plate_number: addForm.value.plate_number.trim(),
       capacity: Number(addForm.value.capacity),
       rental_rate: Number(addForm.value.rental_rate),
-      rental_rate_with_driver: Number(addForm.value.rental_rate_with_driver),
+      rental_rate_with_driver:
+        rentalRateWithDriverValue === null || rentalRateWithDriverValue === ''
+          ? null
+          : Number(rentalRateWithDriverValue),
       deposit: Number(addForm.value.deposit),
-      fee_per_kilometer: Number(addForm.value.fee_per_kilometer),
+  // fee_per_kilometer: Number(addForm.value.fee_per_kilometer),
       late_fee_per_hour: Number(addForm.value.late_fee_per_hour),
       late_fee_per_day: Number(addForm.value.late_fee_per_day),
       gasoline_late_fee_per_liter: Number(addForm.value.gasoline_late_fee_per_liter),
@@ -685,7 +711,7 @@ async function handleAddVehicle() {
       status: '',
       description: '',
   deposit: 0,
-      fee_per_kilometer: 0,
+  // fee_per_kilometer: 0,
       late_fee_per_hour: 0,
       late_fee_per_day: 0,
       gasoline_late_fee_per_liter: 0,

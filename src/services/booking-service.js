@@ -70,6 +70,21 @@ export function useCancelBooking() {
   })
 }
 
+export function useSubmitRefundDetails() {
+  return useMutation({
+    mutationFn: async ({ bookingId, refund_method, account_number, account_name, bank_name, refund_notes }) => {
+      const res = await axiosInstance.post(`/api/bookings/${bookingId}/refund-details`, {
+        refund_method,
+        account_number,
+        account_name,
+        bank_name,
+        refund_notes,
+      })
+      return res.data
+    },
+  })
+}
+
 export const fetchPaymentMethods = async () => {
   const { data } = await axiosInstance.get('/api/payment-methods')
   return data
