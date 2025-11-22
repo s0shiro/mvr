@@ -117,7 +117,32 @@
         </div>
         <div class="flex flex-col gap-2">
           <Label for="fuel_type">Fuel Type</Label>
-          <Input id="fuel_type" v-model="addForm.fuel_type" placeholder="Fuel type" class="w-full" />
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <Button
+                variant="outline"
+                :class="cn('w-full justify-between font-normal', !addForm.fuel_type && 'text-muted-foreground')"
+              >
+                {{ getActiveLabel(fuelTypes, addForm.fuel_type) }}
+                <ChevronDown class="h-4 w-4 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent class="w-full min-w-[8rem]">
+              <DropdownMenuLabel>Fuel Types</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                v-for="fuel in fuelTypes.filter(f => f.value !== '')"
+                :key="fuel.value"
+                @click="() => (addForm.fuel_type = fuel.value)"
+              >
+                <Check
+                  class="mr-2 h-4 w-4"
+                  :class="cn(addForm.fuel_type === fuel.value ? 'opacity-100' : 'opacity-0')"
+                />
+                {{ fuel.label }}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <p v-if="addErrors.fuel_type" class="text-destructive text-xs mt-1">
             {{ Array.isArray(addErrors.fuel_type) ? addErrors.fuel_type[0] : addErrors.fuel_type }}
           </p>
@@ -502,6 +527,12 @@ const statusTypes = [
   { label: 'Available', value: 'available' },
   { label: 'Maintenance', value: 'maintenance' },
   { label: 'Rented', value: 'rented' },
+]
+
+const fuelTypes = [
+  { label: 'Select fuel type', value: '' },
+  { label: 'Gasoline', value: 'gasoline' },
+  { label: 'Diesel', value: 'diesel' },
 ]
 
 const router = useRouter()
