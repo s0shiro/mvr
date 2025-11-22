@@ -1,14 +1,19 @@
 <template>
-  <div class="dashboard-section">
-    <h2 class="text-2xl font-bold mb-4">Recent Activity</h2>
+  <div class="dashboard-section space-y-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-2xl font-bold tracking-tight">Recent Activity</h2>
+      <span class="text-xs text-muted-foreground font-medium">Latest operational events</span>
+    </div>
     <div class="recent-lists grid grid-cols-1 md:grid-cols-3 gap-6">
       <!-- Recent Bookings -->
       <div
-        class="recent-card flex flex-col p-0 bg-card text-card-foreground rounded-2xl shadow border border-border relative overflow-hidden"
+        class="recent-card group flex flex-col p-0 bg-card text-card-foreground rounded-2xl border relative overflow-hidden hover:shadow-lg transition-all duration-300 border-l-4 border-l-blue-500"
       >
-        <div class="px-6 pt-6 pb-2 flex items-center gap-3 border-b border-border">
-          <i class="i-lucide-calendar-check text-blue-500 text-2xl"></i>
-          <h3 class="font-semibold text-lg">Recent Bookings</h3>
+        <div class="px-6 pt-6 pb-3 flex items-center gap-3 border-b bg-muted/30">
+          <div class="p-2 rounded-lg bg-blue-100 dark:bg-blue-900">
+            <i class="i-lucide-calendar-check text-blue-600 text-xl"></i>
+          </div>
+          <h3 class="font-semibold text-base text-muted-foreground">Recent Bookings</h3>
         </div>
         <ul class="flex-1 divide-y divide-border">
           <li
@@ -39,11 +44,13 @@
       </div>
       <!-- Recent Payments -->
       <div
-        class="recent-card flex flex-col p-0 bg-card text-card-foreground rounded-2xl shadow border border-border relative overflow-hidden"
+        class="recent-card group flex flex-col p-0 bg-card text-card-foreground rounded-2xl border relative overflow-hidden hover:shadow-lg transition-all duration-300 border-l-4 border-l-green-500"
       >
-        <div class="px-6 pt-6 pb-2 flex items-center gap-3 border-b border-border">
-          <i class="i-lucide-credit-card text-green-500 text-2xl"></i>
-          <h3 class="font-semibold text-lg">Recent Payments</h3>
+        <div class="px-6 pt-6 pb-3 flex items-center gap-3 border-b bg-muted/30">
+          <div class="p-2 rounded-lg bg-green-100 dark:bg-green-900">
+            <i class="i-lucide-credit-card text-green-600 text-xl"></i>
+          </div>
+          <h3 class="font-semibold text-base text-muted-foreground">Recent Payments</h3>
         </div>
         <ul class="flex-1 divide-y divide-border">
           <li
@@ -66,11 +73,13 @@
       </div>
       <!-- Recent Feedback -->
       <div
-        class="recent-card flex flex-col p-0 bg-card text-card-foreground rounded-2xl shadow border border-border relative overflow-hidden"
+        class="recent-card group flex flex-col p-0 bg-card text-card-foreground rounded-2xl border relative overflow-hidden hover:shadow-lg transition-all duration-300 border-l-4 border-l-purple-500"
       >
-        <div class="px-6 pt-6 pb-2 flex items-center gap-3 border-b border-border">
-          <i class="i-lucide-message-circle text-purple-500 text-2xl"></i>
-          <h3 class="font-semibold text-lg">Recent Feedback</h3>
+        <div class="px-6 pt-6 pb-3 flex items-center gap-3 border-b bg-muted/30">
+          <div class="p-2 rounded-lg bg-purple-100 dark:bg-purple-900">
+            <i class="i-lucide-message-circle text-purple-600 text-xl"></i>
+          </div>
+          <h3 class="font-semibold text-base text-muted-foreground">Recent Feedback</h3>
         </div>
         <ul class="flex-1 divide-y divide-border">
           <li
@@ -127,28 +136,7 @@ function statusClass(status) {
 </script>
 
 <style scoped>
-.dashboard-section {
-  margin-bottom: 2rem;
-}
-.recent-lists {
-  margin-top: 1rem;
-}
-.recent-card {
-  background: var(--color-card);
-  color: var(--color-card-foreground);
-  border-radius: var(--radius-xl);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  min-width: 220px;
-  transition:
-    background 0.2s,
-    color 0.2s,
-    box-shadow 0.2s;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  border: 1px solid var(--color-border);
-}
-.recent-card h3 {
-  margin-top: 0;
-}
+.dashboard-section { margin-bottom: 2rem; }
+.recent-lists { margin-top: .5rem; }
+.recent-card { min-width: 220px; }
 </style>

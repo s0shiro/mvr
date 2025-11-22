@@ -4,7 +4,7 @@
       class="summary-bento-grid grid grid-cols-1 md:grid-cols-3 grid-rows-3 md:grid-rows-2 gap-6"
     >
       <div
-        class="summary-card bento-vehicles flex flex-col justify-center items-center p-6 bg-card text-card-foreground rounded-2xl shadow border border-border relative overflow-hidden col-span-1 md:col-span-2 row-span-1 md:row-span-2"
+        class="summary-card bento-vehicles flex flex-col justify-center items-center p-6 bg-card text-card-foreground rounded-2xl border relative overflow-hidden col-span-1 md:col-span-2 row-span-1 md:row-span-2 hover:shadow-lg transition-all duration-300 border-l-4 border-l-blue-500"
       >
         <!-- Watermark Icon -->
         <LucideCar
@@ -37,7 +37,7 @@
         </div>
       </div>
       <div
-        class="summary-card bento-bookings flex flex-col p-6 bg-card text-card-foreground rounded-2xl shadow border border-border relative overflow-hidden col-span-1 md:col-span-1 row-span-1"
+        class="summary-card bento-bookings flex flex-col p-6 bg-card text-card-foreground rounded-2xl border relative overflow-hidden col-span-1 md:col-span-1 row-span-1 hover:shadow-lg transition-all duration-300 border-l-4 border-l-green-500"
       >
         <div class="flex items-center gap-3 mb-4">
           <LucideCalendarDays class="text-green-500 w-7 h-7" />
@@ -63,7 +63,7 @@
       </div>
       <div
         v-if="summary.users"
-        class="summary-card bento-users flex flex-col p-6 bg-card text-card-foreground rounded-2xl shadow border border-border relative overflow-hidden col-span-1 md:col-span-1 row-span-1"
+        class="summary-card bento-users flex flex-col p-6 bg-card text-card-foreground rounded-2xl border relative overflow-hidden col-span-1 md:col-span-1 row-span-1 hover:shadow-lg transition-all duration-300 border-l-4 border-l-purple-500"
       >
         <div class="flex items-center gap-3 mb-4">
           <LucideUsers class="text-purple-500 w-7 h-7" />
@@ -88,7 +88,7 @@
         </div>
       </div>
       <div
-        class="summary-card bento-revenue flex flex-col p-6 bg-card text-card-foreground rounded-2xl shadow border border-border relative overflow-hidden col-span-1 md:col-span-1 row-span-1"
+        class="summary-card bento-revenue flex flex-col p-6 bg-card text-card-foreground rounded-2xl border relative overflow-hidden col-span-1 md:col-span-1 row-span-1 hover:shadow-lg transition-all duration-300 border-l-4 border-l-yellow-500"
       >
         <div class="flex items-center gap-3 mb-4">
           <LucideCoins class="text-yellow-500 w-7 h-7" />
@@ -109,7 +109,7 @@
         </div>
       </div>
       <div
-        class="summary-card bento-pending flex flex-col justify-center items-center p-6 bg-card text-card-foreground rounded-2xl shadow border border-border relative overflow-hidden col-span-1 md:col-span-2 row-span-1"
+        class="summary-card bento-pending flex flex-col justify-center items-center p-6 bg-card text-card-foreground rounded-2xl border relative overflow-hidden col-span-1 md:col-span-2 row-span-1 hover:shadow-lg transition-all duration-300 border-l-4 border-l-orange-500"
       >
         <!-- Watermark Icon -->
         <LucideClock
@@ -189,21 +189,7 @@ const props = defineProps({
     grid-column: span 2 / span 2;
   }
 }
-.summary-card {
-  background: var(--color-card);
-  color: var(--color-card-foreground);
-  border-radius: var(--radius-xl);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  min-width: 220px;
-  transition:
-    background 0.2s,
-    color 0.2s,
-    box-shadow 0.2s;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  border: 1px solid var(--color-border);
-}
+.summary-card { min-width: 220px; }
 .summary-card h3 {
   margin-top: 0;
 }

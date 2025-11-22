@@ -64,11 +64,24 @@
             <!-- Vehicle Condition Information -->
             <div class="grid grid-cols-1 gap-4">
               <div class="flex flex-col gap-2">
-                <Label>Return Date &amp; Time *</Label>
+                <Label>Return Date *</Label>
+                <Popover>
+                  <PopoverTrigger as-child>
+                    <Button variant="outline" class="justify-start text-left font-medium">
+                      <CalendarIcon class="mr-2 h-5 w-5" />
+                      {{ returnedDate ? df.format(returnedDate.toDate(getLocalTimeZone())) : 'Select date' }}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent class="w-auto p-0">
+                    <Calendar v-model="returnedDate" initial-focus />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div class="flex flex-col gap-2">
+                <Label>Return Time *</Label>
                 <Input
-                  v-model="form.returned_at"
-                  type="datetime-local"
-                  :max="currentDateTimeLocal"
+                  v-model="form.returned_time"
+                  type="time"
                   required
                 />
               </div>
@@ -80,16 +93,19 @@
               
               <div class="flex flex-col gap-2">
                 <Label>Preferred Refund Method *</Label>
-                <select 
-                  v-model="form.customer_refund_method" 
-                  required
-                  class="w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
-                >
-                  <option value="">Select refund method</option>
-                  <option value="gcash">GCash</option>
-                  <option value="bank_transfer">Bank Transfer</option>
-                  <option value="cash">Cash Pickup</option>
-                </select>
+                <Select v-model="form.customer_refund_method" :required="true">
+                  <SelectTrigger class="w-full">
+                    <SelectValue placeholder="Select refund method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectLabel>Refund Method</SelectLabel>
+                      <SelectItem value="gcash">GCash</SelectItem>
+                      <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                      <SelectItem value="cash">Cash Pickup</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </div>
               
               <!-- GCash Details -->
@@ -182,7 +198,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch } from 'vue'
 import { useSubmitVehicleReturn } from '@/services/customer/vehicle-return-service'
 import {
   Dialog,
@@ -196,7 +212,19 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Upload, Loader2 } from 'lucide-vue-next'
+import { Upload, Loader2, Calendar as CalendarIcon } from 'lucide-vue-next'
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { DateFormatter, getLocalTimeZone, parseDate } from '@internationalized/date'
+import { 
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel
+} from '@/components/ui/select'
 
 const props = defineProps({
   booking: Object,
@@ -207,7 +235,7 @@ const emit = defineEmits(['update:open', 'submitted'])
 
 const form = ref({
   customer_images: [],
-  returned_at: '',
+  returned_time: '',
   // Customer refund account information
   customer_refund_method: '',
   customer_account_number: '',
@@ -216,26 +244,26 @@ const form = ref({
   customer_refund_notes: '',
 })
 
+// Calendar date for returned date
+const returnedDate = ref(null)
+const df = new DateFormatter('en-US', { dateStyle: 'long' })
+
 const isDragging = ref(false)
 const imageError = ref('')
 const isSubmitting = ref(false)
-
-function formatDateTimeLocal(value) {
-  if (!value) return ''
-  const date = value instanceof Date ? value : new Date(value)
-  if (Number.isNaN(date.getTime())) return ''
-  const offset = date.getTimezoneOffset()
-  const localDate = new Date(date.getTime() - offset * 60000)
-  return localDate.toISOString().slice(0, 16)
-}
 
 watch(
   () => props.open,
   (val) => {
     if (val) {
+      const now = new Date()
+      const yyyy = now.getFullYear()
+      const mm = String(now.getMonth() + 1).padStart(2, '0')
+      const dd = String(now.getDate()).padStart(2, '0')
+      returnedDate.value = parseDate(`${yyyy}-${mm}-${dd}`)
       form.value = {
         customer_images: [],
-        returned_at: formatDateTimeLocal(new Date()),
+        returned_time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
         // Reset refund fields
         customer_refund_method: '',
         customer_account_number: '',
@@ -250,7 +278,14 @@ watch(
 
 const { mutate: submitReturn } = useSubmitVehicleReturn()
 
-const currentDateTimeLocal = computed(() => formatDateTimeLocal(new Date()))
+// Helper to compose ISO datetime from calendar + time
+function composeReturnedAtISO() {
+  if (!returnedDate.value || !form.value.returned_time) return null
+  const base = returnedDate.value.toDate(getLocalTimeZone())
+  const [hh, mm] = form.value.returned_time.split(':')
+  base.setHours(Number(hh), Number(mm), 0, 0)
+  return base.toISOString()
+}
 
 function handleDrop(e) {
   isDragging.value = false
@@ -298,7 +333,7 @@ function removeImage(index) {
 function handleSubmit() {
   if (!props.booking) return
   
-  if (!form.value.returned_at) {
+  if (!returnedDate.value || !form.value.returned_time) {
     imageError.value = 'Please provide the return date and time'
     return
   }
@@ -327,9 +362,7 @@ function handleSubmit() {
 
   const payload = {
     ...form.value,
-    returned_at: form.value.returned_at
-      ? new Date(form.value.returned_at).toISOString()
-      : null,
+    returned_at: composeReturnedAtISO(),
   }
 
   submitReturn(
