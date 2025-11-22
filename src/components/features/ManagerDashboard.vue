@@ -1,14 +1,23 @@
 <template>
-  <div>
-    <div v-if="isLoading" class="h-[calc(100vh-10rem)] flex items-center justify-center">
+  <div class="space-y-8">
+    <!-- Header -->
+    <div class="space-y-2">
+      <h1 class="text-3xl font-bold tracking-tight">Manager Dashboard</h1>
+      <p class="text-muted-foreground text-sm">Business performance and recent customer activity</p>
+    </div>
+
+    <!-- States -->
+    <div v-if="isLoading" class="h-40">
       <Loading text="Loading manager dashboard..." />
     </div>
     <div v-else-if="isError">
-      <div class="text-destructive">
-        Error: {{ error?.message || 'Failed to load manager dashboard.' }}
-      </div>
+      <Alert variant="destructive" class="max-w-lg">
+        <AlertCircle class="h-4 w-4" />
+        <AlertTitle>Failed to load</AlertTitle>
+        <AlertDescription>{{ error?.message || 'Could not load manager dashboard.' }}</AlertDescription>
+      </Alert>
     </div>
-    <div v-else-if="data">
+    <div v-else-if="data" class="space-y-8">
       <AdminDashboardAlerts :alerts="data.alerts" />
       <AdminDashboardSummary :summary="data.summary" />
       <AdminDashboardRecent
@@ -26,6 +35,8 @@ import AdminDashboardSummary from './admin-dashboard/AdminDashboardSummary.vue'
 import AdminDashboardRecent from './admin-dashboard/AdminDashboardRecent.vue'
 import AdminDashboardAlerts from './admin-dashboard/AdminDashboardAlerts.vue'
 import Loading from './Loading.vue'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { AlertCircle } from 'lucide-vue-next'
 
 const { data, isLoading, isError, error } = useAdminOverview()
 
