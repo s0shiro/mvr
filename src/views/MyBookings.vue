@@ -1,62 +1,42 @@
 <template>
   <div class="container mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-    <!-- Header Section -->
-    <div class="flex flex-col space-y-6">
-      <!-- Page Title -->
+    <!-- Header & Controls -->
+    <div class="space-y-6">
       <div class="flex items-center justify-between">
-        <h1 class="text-2xl sm:text-3xl font-bold flex items-center gap-3">
+        <h1 id="my-bookings-header" class="text-2xl sm:text-3xl font-bold flex items-center gap-3" data-tour="page-title">
           <ClipboardList class="w-7 h-7 text-primary" />
           My Bookings
         </h1>
+        <Button variant="outline" size="sm" @click="startTour" class="gap-1" data-tour="guide-btn">
+          <Clock class="w-4 h-4" />
+          Guide
+        </Button>
       </div>
-
-      <!-- Controls Section -->
-      <div class="bg-card border rounded-lg p-4 sm:p-6 shadow-sm">
+      <div class="bg-card border rounded-lg p-4 sm:p-6 shadow-sm" data-tour="controls-section">
         <div class="flex flex-col xl:flex-row gap-6 xl:items-end xl:justify-between">
-          <!-- Sorting and Filtering Controls -->
           <div class="flex flex-col lg:flex-row gap-6 items-start lg:items-end flex-1">
-            <!-- Sorting Controls -->
             <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
               <div class="flex flex-col gap-2 min-w-0">
                 <Label for="sort-by" class="text-sm font-medium text-muted-foreground">Sort by:</Label>
-                <select
-                  id="sort-by"
-                  v-model="sortBy"
-                  class="flex h-10 w-full sm:w-48 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                >
+                <select id="sort-by" v-model="sortBy" class="flex h-10 w-full sm:w-48 rounded-md border border-input bg-background px-3 py-2 text-sm">
                   <option value="created_at">Booking Date</option>
                   <option value="start_date">Rental Start Date</option>
                   <option value="end_date">Rental End Date</option>
                   <option value="total_price">Amount</option>
                 </select>
               </div>
-
               <div class="flex flex-col gap-2">
                 <Label class="text-sm font-medium text-muted-foreground">Order:</Label>
                 <div class="flex items-center gap-0 border rounded-md overflow-hidden">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    :class="['px-4 py-2 rounded-none border-r h-10', sortOrder === 'desc' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted']"
-                    @click="sortOrder = 'desc'"
-                  >
-                    <TrendingDown class="w-4 h-4 mr-2" />
-                    Desc
+                  <Button variant="ghost" size="sm" :class="['px-4 py-2 rounded-none border-r h-10', sortOrder === 'desc' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted']" @click="sortOrder = 'desc'">
+                    <TrendingDown class="w-4 h-4 mr-2" /> Desc
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    :class="['px-4 py-2 rounded-none h-10', sortOrder === 'asc' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted']"
-                    @click="sortOrder = 'asc'"
-                  >
-                    <TrendingUp class="w-4 h-4 mr-2" />
-                    Asc
+                  <Button variant="ghost" size="sm" :class="['px-4 py-2 rounded-none h-10', sortOrder === 'asc' ? 'bg-primary text-primary-foreground' : 'hover:bg-muted']" @click="sortOrder = 'asc'">
+                    <TrendingUp class="w-4 h-4 mr-2" /> Asc
                   </Button>
                 </div>
               </div>
             </div>
-
-            <!-- Status Filter -->
             <div class="flex flex-col gap-2 flex-1 min-w-0">
               <Label class="text-sm font-medium text-muted-foreground">Filter by Status:</Label>
               <Tabs v-model="statusFilter" class="w-full">
@@ -71,15 +51,8 @@
               </Tabs>
             </div>
           </div>
-
-          <!-- Action Buttons -->
           <div v-if="bookings.length > 0" class="flex items-center justify-end">
-            <Button
-              variant="outline"
-              size="sm"
-              @click="toggleAllCards"
-              class="flex items-center gap-2 h-10 px-4"
-            >
+            <Button variant="outline" size="sm" @click="toggleAllCards" class="flex items-center gap-2 h-10 px-4">
               <Minimize2 v-if="!globalMinimized" class="w-4 h-4" />
               <Maximize2 v-else class="w-4 h-4" />
               {{ globalMinimized ? 'Expand All' : 'Minimize All' }}
@@ -88,7 +61,8 @@
         </div>
       </div>
     </div>
-    <!-- Main Content -->
+
+    <!-- Content Area -->
     <div v-if="isLoading" class="flex items-center justify-center py-12">
       <Loading text="Loading your bookings..." />
     </div>
@@ -96,569 +70,109 @@
       <div class="text-red-600 font-medium">{{ error.message }}</div>
     </div>
     <div v-else>
-      <div
-        v-if="bookingsNeedingAttention.length"
-        class="mb-6 rounded-xl border border-primary/30 bg-primary/5 p-5 shadow-sm"
-      >
-        <div class="flex flex-col sm:flex-row sm:items-start sm:gap-4">
-          <div class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <ShieldCheck class="h-5 w-5" />
-          </div>
-          <div class="mt-3 sm:mt-0 space-y-2">
-            <h2 class="text-base font-semibold text-primary">
-              Complete your booking steps
-            </h2>
-            <p class="text-sm text-muted-foreground max-w-3xl">
-              {{ bookingsNeedingAttention.length }}
-              {{ bookingsNeedingAttention.length === 1 ? 'booking still needs action.' : 'bookings still need action.' }}
-              Submit your security deposit first, then pay the rental fee whenever you're ready—no need to wait for deposit approval.
-            </p>
-          </div>
-        </div>
-      </div>
-      <div
-        v-if="bookingsNeedingRefundDetails.length"
-        class="mb-6 rounded-xl border border-amber-300 bg-amber-50 dark:border-amber-500/60 dark:bg-amber-950/30 p-5 shadow-sm"
-      >
-        <div class="flex flex-col sm:flex-row sm:items-start sm:gap-4">
-          <div class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-800/40 dark:text-amber-200">
-            <Wallet class="h-5 w-5" />
-          </div>
-          <div class="mt-3 sm:mt-0 space-y-2">
-            <h2 class="text-base font-semibold text-amber-700 dark:text-amber-200">
-              Refund details needed
-            </h2>
-            <p class="text-sm text-muted-foreground max-w-3xl">
-              {{
-                bookingsNeedingRefundDetails.length === 1
-                  ? 'One cancelled booking still needs your refund account details so we can process your refund.'
-                  : `${bookingsNeedingRefundDetails.length} cancelled bookings still need your refund account details so we can process your refunds.`
-              }}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Empty State -->
-      <div
-        v-if="!bookings.length"
-        class="text-center py-16"
-      >
+      <BookingBanners :bookingsNeedingAttention="bookingsNeedingAttention" :bookingsNeedingRefundDetails="bookingsNeedingRefundDetails" class="mb-6" />
+      <div v-if="!bookings.length" class="text-center py-16">
         <div class="w-16 h-16 mx-auto mb-6 opacity-50">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-full h-full text-muted-foreground">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14,2 14,8 20,8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-            <polyline points="10,9 9,9 8,9"></polyline>
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14,2 14,8 20,8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+            <polyline points="10,9 9,9 8,9" />
           </svg>
         </div>
-        <h3 class="text-xl font-semibold text-foreground mb-2">
-          {{ statusFilter ? `No ${formatStatusText(statusFilter)} bookings` : 'No bookings yet' }}
-        </h3>
+        <h3 class="text-xl font-semibold text-foreground mb-2">{{ statusFilter ? `No ${formatStatusText(statusFilter)} bookings` : 'No bookings yet' }}</h3>
         <p class="text-muted-foreground max-w-md mx-auto mb-6">
-          {{ statusFilter
-            ? `You don't have any bookings with ${formatStatusText(statusFilter)} status.`
-            : 'Start your journey by browsing our available vehicles and creating your first booking.'
-          }}
+          {{ statusFilter ? `You don't have any bookings with ${formatStatusText(statusFilter)} status.` : 'Start your journey by browsing our available vehicles and creating your first booking.' }}
         </p>
         <Button as-child variant="default" size="lg">
           <RouterLink to="/vehicles" class="flex items-center gap-2">
-            <Car class="w-4 h-4" />
-            Browse Vehicles
+            <Car class="w-4 h-4" /> Browse Vehicles
           </RouterLink>
         </Button>
       </div>
-
-      <!-- Bookings List -->
-                <!-- Bookings List -->
-          <div v-else class="space-y-6">
-            <template v-for="booking in bookings" :key="booking.id">
-              <Card
-                :class="[
-                  'border transition-all duration-300 hover:shadow-lg overflow-hidden',
-                  booking.status === 'cancelled'
-                    ? 'border-red-300 dark:border-red-700 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/40 dark:to-red-900/20 relative'
-                    : 'border-border bg-card hover:shadow-md',
-                  bookingNeedsAttention(booking) ? 'ring-2 ring-primary/40' : ''
-                ]"
-              >
-          <CardHeader class="flex flex-row items-center justify-between gap-4">
-            <div :class="booking.status === 'cancelled' ? 'line-through text-muted-foreground' : ''" class="flex-1">
-              <CardTitle 
-                :class="[
-                  'text-lg font-semibold',
-                  booking.status === 'cancelled' ? 'text-muted-foreground' : ''
-                ]"
-              >{{
-                booking.vehicle?.name || 'Vehicle'
-              }}</CardTitle>
-              <CardDescription 
-                :class="booking.status === 'cancelled' ? 'text-muted-foreground/70' : ''"
-              >
-                <span class="font-medium">{{ booking.vehicle?.brand }}</span>
-                <span v-if="booking.vehicle"
-                  >• {{ booking.vehicle.model }} ({{ booking.vehicle.year }})</span
-                >
-              </CardDescription>
-              <!-- Minimized view - show key info in header -->
-              <div v-if="isCardMinimized(booking.id)" class="mt-2 flex flex-wrap items-center gap-3 text-sm">
-                <div class="flex items-center gap-1">
-                  <CalendarDays class="w-3 h-3 text-muted-foreground" />
-                  <span>{{ formatDate(booking.start_date) }} - {{ formatDate(booking.end_date) }}</span>
-                </div>
-                <div class="flex items-center gap-1">
-                  <Receipt class="w-3 h-3 text-muted-foreground" />
-                  <span class="font-medium text-primary">₱{{ Number(booking.total_price).toLocaleString() }}</span>
-                </div>
-                <div v-if="booking.payment" class="flex items-center gap-1">
-                  <CreditCard class="w-3 h-3 text-muted-foreground" />
-                  <Badge
-                    v-if="booking.payment.status === 'approved'"
-                    variant="available"
-                    class="text-xs"
-                    >Paid</Badge
-                  >
-                  <Badge
-                    v-else-if="booking.payment.status === 'pending'"
-                    variant="maintenance"
-                    class="text-xs"
-                    >Pending</Badge
-                  >
-                  <Badge
-                    v-else-if="booking.payment.status === 'rejected'"
-                    variant="destructive"
-                    class="text-xs"
-                    >Rejected</Badge
-                  >
-                </div>
-              </div>
-            </div>
-            <div class="flex items-center gap-2">
-              <Badge :variant="getStatusVariant(booking.status)">{{ getBookingStatusLabel(booking.status) }}</Badge>
-              <Button
-                variant="ghost"
-                size="sm"
-                @click="toggleCardMinimized(booking.id)"
-                class="h-8 w-8 p-0 minimize-button"
-              >
-                <ChevronDown v-if="!isCardMinimized(booking.id)" class="w-4 h-4" />
-                <ChevronUp v-else class="w-4 h-4" />
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent 
-            v-if="!isCardMinimized(booking.id)"
-            class="flex flex-col md:flex-row gap-6 items-center md:items-start card-content-transition"
-          >
-            <div 
-              v-if="booking.vehicle?.primary_image_url" 
-              class="relative group"
-            >
-              <img
-                :src="booking.vehicle.primary_image_url"
-                alt="Vehicle"
-                :class="[
-                  'w-40 h-28 object-cover rounded-xl shadow-md border-2 transition-all duration-300',
-                  booking.status === 'cancelled' 
-                    ? 'grayscale opacity-70 border-red-200 dark:border-red-700/50' 
-                    : 'border-border group-hover:shadow-lg'
-                ]"
-              />
-              <div 
-                v-if="booking.status === 'cancelled'"
-                class="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-red-900/30 to-red-800/20 rounded-xl backdrop-blur-[1px]"
-              >
-                <div class="bg-red-600/90 dark:bg-red-700/90 text-white px-3 py-1 rounded-lg shadow-lg border border-red-400 dark:border-red-500">
-                  <span class="font-bold text-sm tracking-wide">CANCELED</span>
-                </div>
-              </div>
-            </div>
-            <div 
-              :class="[
-                'flex-1 space-y-4',
-                booking.status === 'cancelled' ? 'text-muted-foreground/70' : ''
-              ]"
-            >
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="space-y-2">
-                  <div class="flex items-center gap-2">
-                    <CalendarDays class="w-4 h-4 text-muted-foreground" />
-                    <span class="font-semibold text-sm text-muted-foreground">Rental Period:</span>
-                    <span class="font-medium"
-                      >{{ formatDate(booking.start_date) }} -
-                      {{ formatDate(booking.end_date) }}</span
-                    >
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <Receipt class="w-4 h-4 text-muted-foreground" />
-                    <span class="font-semibold text-sm text-muted-foreground">Total Price:</span>
-                    <span class="font-medium text-primary"
-                      >₱{{ Number(booking.total_price).toLocaleString() }}</span
-                    >
-                    <template v-if="requiresDeposit(booking)">
-                      <ShieldCheck class="w-4 h-4 text-muted-foreground" />
-                      <span class="font-semibold text-sm text-muted-foreground">
-                        Security Deposit:</span
-                      >
-                      <span class="font-medium text-primary"
-                        >₱{{ Number(booking.vehicle.deposit).toLocaleString() }}</span
-                      >
-                    </template>
-                  </div>
-                  <div v-if="booking.pickup_type === 'delivery'" class="flex items-center gap-2">
-                    <Truck class="w-4 h-4 text-muted-foreground" />
-                    <span class="font-semibold text-sm text-muted-foreground">Delivery:</span>
-                    <span class="font-medium">{{ booking.delivery_location }}</span>
-                    <span class="text-sm text-muted-foreground">(₱{{ booking.delivery_fee }})</span>
-                  </div>
-                  <div
-                    v-if="booking.pickup_type === 'delivery'"
-                    class="text-sm text-muted-foreground mt-1 ml-6"
-                  >
-                    <span class="font-medium">Delivery Details:</span>
-                    <p class="mt-1">{{ booking.delivery_details }}</p>
-                  </div>
-                  <div v-if="booking.payment" class="flex items-center gap-2">
-                    <CreditCard class="w-4 h-4 text-muted-foreground" />
-                    <span class="font-semibold text-sm text-muted-foreground">Payment Method:</span>
-                    <span class="font-medium">{{ booking.payment.method }}</span>
-                    <Badge
-                      v-if="booking.payment.status === 'approved'"
-                      variant="available"
-                      class="ml-2"
-                      >Paid</Badge
-                    >
-                    <Badge
-                      v-else-if="booking.payment.status === 'pending'"
-                      variant="maintenance"
-                      class="ml-2"
-                      >Pending</Badge
-                    >
-                    <Badge
-                      v-else-if="booking.payment.status === 'rejected'"
-                      variant="destructive"
-                      class="ml-2"
-                      >Rejected</Badge
-                    >
-                  </div>
-                </div>
-
-                <div
-                  v-if="booking.notes"
-                  class="text-sm text-muted-foreground bg-muted p-3 rounded-lg"
-                >
-                  <span class="font-semibold block mb-1 flex items-center gap-2">
-                    <AlertCircle class="w-4 h-4" /> Notes
-                  </span>
-                  {{ booking.notes }}
-                </div>
-
-                <div
-                  v-if="booking.status === 'cancelled'"
-                  class="space-y-3"
-                >
-                  <!-- Cancellation Notice -->
-                  <div class="bg-gradient-to-r from-red-100 to-red-50 dark:from-red-950/60 dark:to-red-900/40 border border-red-300 dark:border-red-700 text-red-800 dark:text-red-200 p-4 rounded-xl shadow-sm">
-                    <div class="flex items-start gap-3">
-                      <div class="flex-shrink-0 w-10 h-10 bg-red-200 dark:bg-red-800/50 rounded-full flex items-center justify-center">
-                        <X class="w-5 h-5 text-red-600 dark:text-red-400" />
-                      </div>
-                      <div class="flex-1">
-                        <h4 class="font-semibold text-red-900 dark:text-red-100 mb-1">Booking Canceled</h4>
-                        <p class="text-red-700 dark:text-red-300 text-sm leading-relaxed">
-                          This booking has been canceled.
-                          <span v-if="booking.cancellation_reason" class="block mt-1">
-                            <strong>Reason:</strong> {{ booking.cancellation_reason }}
-                          </span>
-                          <span v-if="booking.cancelled_at" class="block mt-1 text-red-600 dark:text-red-400 text-xs">
-                            Canceled on {{ formatDate(booking.cancelled_at) }}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Refund Status -->
-                  <div 
-                    v-if="booking.refund_status" 
-                    class="rounded-xl border shadow-sm overflow-hidden"
-                    :class="getRefundStatusClasses(booking.refund_status)"
-                  >
-                    <div class="p-4">
-                      <div class="flex items-center gap-3 mb-3">
-                        <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
-                             :class="getRefundStatusIconBg(booking.refund_status)">
-                          <component :is="getRefundStatusIcon(booking.refund_status)" class="w-5 h-5" 
-                                     :class="getRefundStatusIconColor(booking.refund_status)" />
-                        </div>
-                        <div class="flex-1">
-                          <h4 class="font-semibold text-lg" :class="getRefundStatusTextColor(booking.refund_status)">
-                            {{ getRefundStatusText(booking.refund_status) }}
-                          </h4>
-                        </div>
-                      </div>
-                      
-                      <!-- Refund Amount Display -->
-                      <div v-if="booking.refund_amount && booking.refund_status === 'processed'" 
-                           class="mb-3 p-3 rounded-lg border bg-white/60 dark:bg-white/5 border-green-200 dark:border-green-700/50">
-                        <div class="flex items-center justify-between">
-                          <span class="text-sm font-medium text-green-800 dark:text-green-200">Refund Amount:</span>
-                          <span class="text-xl font-bold text-green-700 dark:text-green-300">₱{{ Number(booking.refund_amount).toLocaleString() }}</span>
-                        </div>
-                      </div>
-                      
-                      <!-- Processing Details -->
-                      <div v-if="booking.refund_processed_at" class="space-y-2 text-sm">
-                        <p class="opacity-75">
-                          <strong>Processed:</strong> {{ formatDate(booking.refund_processed_at) }}
-                        </p>
-                        <p v-if="booking.refund_notes" class="opacity-75 italic bg-white/30 dark:bg-black/20 p-2 rounded border border-white/40 dark:border-white/10">
-                          "{{ booking.refund_notes }}"
-                        </p>
-                      </div>
-                      
-                      <!-- Refund Proof View Button -->
-                      <div v-if="booking.refund_proof && booking.refund_status === 'processed'" class="mt-3">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          class="w-full text-xs bg-white/50 dark:bg-white/5 hover:bg-white/70 dark:hover:bg-white/10 border-green-300 dark:border-green-700 text-green-800 dark:text-green-200 hover:text-green-900 dark:hover:text-green-100"
-                          @click="openRefundProofDialog(booking)"
-                        >
-                          <ImageIcon class="w-3 h-3 mr-1" />
-                          View Refund Proof
-                        </Button>
-                      </div>
-                      
-                      <!-- Expected Refund Timeline for Pending -->
-                      <div v-if="booking.refund_status === 'pending'" class="mt-3 text-xs opacity-75 bg-white/30 dark:bg-black/20 p-2 rounded border border-white/40 dark:border-white/10">
-                        <p class="flex items-center gap-1">
-                          <Clock class="w-3 h-3" />
-                          Refunds are typically processed within 3-5 business days
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="flex flex-wrap gap-2 mb-4">
-                <template v-if="booking.status === 'cancelled'">
-                  <Button
-                    v-if="needsRefundDetails(booking)"
-                    variant="default"
-                    class="bg-amber-500 hover:bg-amber-600 text-white"
-                    @click="openRefundDetailsDialog(booking)"
-                  >
-                    <Wallet class="w-4 h-4 mr-2" />
-                    Request Refund
-                  </Button>
-                  <div v-else class="text-sm text-muted-foreground italic">
-                    No actions available for canceled bookings
-                  </div>
-                </template>
-                <template v-else-if="!['cancelled', 'completed', 'released', 'pending_return'].includes(booking.status)">
-                  <Button
-                    variant="destructive"
-                    @click="openCancelDialog(booking)"
-                    v-if="shouldShowCancelButton(booking)"
-                  >
-                    <Ban class="w-4 h-4 mr-2" />
-                    Cancel Booking
-                  </Button>
-
-                  <Button
-                    v-if="shouldShowEditButton(booking)"
-                    variant="outline"
-                    @click="openEditDialog(booking)"
-                  >
-                    <Edit2 class="w-4 h-4 mr-2" />
-                    Edit Booking
-                  </Button>
-                </template>
-                
-                <template v-else-if="booking.status === 'released'">
-                  <Button
-                    v-if="!booking.vehicle_return"
-                    variant="default"
-                    @click="openReturnDialog(booking)"
-                    class="bg-blue-600 hover:bg-blue-700"
-                  >
-                    <RotateCcw class="w-4 h-4 mr-2" />
-                    Submit Vehicle Return
-                  </Button>
-                  <Badge 
-                    v-else-if="booking.vehicle_return.status === 'customer_submitted'" 
-                    variant="secondary"
-                  >
-                    Return Submitted - Pending Review
-                  </Badge>
-                </template>
-                
-                <template v-else-if="booking.status === 'pending_return'">
-                  <Badge variant="secondary">
-                    Return Submitted - Admin Review
-                  </Badge>
-                  <!-- <div class="text-xs text-muted-foreground">
-                    Submitted: {{ formatDate(booking.vehicle_return?.customer_submitted_at) }}
-                  </div> -->
-                </template>
-                
-                <Button
-                  v-if="booking.status === 'confirmed' || booking.status === 'active'"
-                  variant="outline"
-                  @click="openContractDialog(booking)"
-                >
-                  <Car class="w-4 h-4 mr-2" />
-                  View Contract
-                </Button>
-              </div>
-
-              <div v-if="booking.status !== 'cancelled'" class="mb-6">
-                <div class="rounded-xl border border-dashed border-muted/60 bg-muted/30 p-4">
-                  <p class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    Payment progress
-                  </p>
-                  <div
-                    v-if="getPaymentTimeline(booking).length"
-                    class="mt-5 flex flex-col gap-6"
-                  >
-                    <div class="flex items-center justify-between gap-4">
-                      <template v-for="(step, index) in getPaymentTimeline(booking)" :key="step.key">
-                        <div class="flex items-center gap-4 flex-1">
-                          <div class="relative group flex items-center justify-center">
-                            <div
-                              :class="[
-                                'flex h-12 w-12 items-center justify-center rounded-full border-2 transition-colors duration-200',
-                                'shadow-sm group-hover:shadow-md group-hover:scale-105 group-hover:border-primary/70 duration-200 ease-out',
-                                step.circleClass
-                              ]"
-                            >
-                              <component :is="step.icon" class="h-5 w-5" />
-                              <span class="sr-only">{{ step.label }} ({{ step.statusLabel }})</span>
-                            </div>
-                            <div
-                              class="pointer-events-none absolute left-1/2 top-full z-10 mt-2 w-max -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground opacity-0 shadow-lg transition-all duration-150 group-hover:opacity-100 group-hover:translate-y-1"
-                            >
-                              <span class="text-foreground font-semibold mr-1">{{ step.label }}:</span>{{ step.statusLabel }}
-                              <span
-                                class="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 border-l border-t border-border bg-card"
-                              />
-                            </div>
-                          </div>
-                          <div
-                            v-if="index < getPaymentTimeline(booking).length - 1"
-                            class="h-px flex-1 bg-border"
-                          />
-                        </div>
-                      </template>
-                    </div>
-                    <Button
-                      :variant="getPaymentButtonMeta(booking).variant"
-                      size="sm"
-                      class="w-full sm:w-auto"
-                      @click="viewPayments(booking.id)"
-                    >
-                      <component :is="getPaymentButtonMeta(booking).icon" class="w-4 h-4 mr-2" />
-                      {{ getPaymentButtonMeta(booking).label }}
-                    </Button>
-                  </div>
-                  <div v-else class="mt-5 text-sm text-muted-foreground">
-                    No payment steps required for this booking.
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </CardContent>
-        </Card>
-            </template>
-        <PaymentDialog
-          v-if="paymentDialogBookingId"
-          :bookingId="paymentDialogBookingId"
-          v-model:open="paymentDialogOpen"
-          :onClose="closePaymentDialog"
-          :type="paymentDialogType"
-          @paid="
-            () => {
-              closePaymentDialog()
-              toast.success('Payment submitted!')
-              data.refetch && data.refetch()
-            }
-          "
+      <div v-else class="space-y-6">
+        <BookingCard
+          v-for="(booking, idx) in bookings"
+          :key="booking.id"
+          :booking="booking"
+          :idx="idx"
+          :isCardMinimized="isCardMinimized"
+          :toggleCardMinimized="toggleCardMinimized"
+          :formatDate="formatDate"
+          :getStatusVariant="getStatusVariant"
+          :getBookingStatusLabel="getBookingStatusLabel"
+          :requiresDeposit="requiresDeposit"
+          :shouldShowCancelButton="shouldShowCancelButton"
+          :shouldShowEditButton="shouldShowEditButton"
+          :openEditDialog="openEditDialog"
+          :openCancelDialog="openCancelDialog"
+          :openReturnDialog="openReturnDialog"
+          :openContractDialog="openContractDialog"
+          :needsRefundDetails="needsRefundDetails"
+          :openRefundDetailsDialog="openRefundDetailsDialog"
+          :getPaymentTimeline="getPaymentTimeline"
+          :getPaymentButtonMeta="getPaymentButtonMeta"
+          :viewPayments="viewPayments"
+          :getRefundStatusClasses="getRefundStatusClasses"
+          :getRefundStatusIconBg="getRefundStatusIconBg"
+          :getRefundStatusIcon="getRefundStatusIcon"
+          :getRefundStatusIconColor="getRefundStatusIconColor"
+          :getRefundStatusTextColor="getRefundStatusTextColor"
+          :getRefundStatusText="getRefundStatusText"
+          :openRefundProofDialog="openRefundProofDialog"
         />
-        <EditBookingDialog
-          v-if="editDialogOpen"
-          :booking="editBooking"
-          :open="editDialogOpen"
-          @update:open="editDialogOpen = $event"
-          @updated="() => refetch()"
-        />
-        <CustomerReturnDialog
-          v-if="returnDialogOpen"
-          :booking="selectedReturnBooking"
-          :open="returnDialogOpen"
-          @update:open="returnDialogOpen = $event"
-          @submitted="onReturnSubmitted"
-        />
-        <!-- Refund Proof Dialog -->
-        <Dialog v-model:open="refundProofDialogOpen">
-          <DialogContent class="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle class="flex items-center gap-2">
-                <CheckCircle class="w-5 h-5 text-green-600" />
-                Refund Processing Proof
-              </DialogTitle>
-              <DialogDescription>
-                Official proof that your refund has been processed by our admin team.
-              </DialogDescription>
-            </DialogHeader>
-            <div v-if="selectedRefundProof" class="space-y-4">
-              <!-- Refund Details Summary -->
-              <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div class="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p class="font-medium text-green-800">Refund Amount</p>
-                    <p class="text-xl font-bold text-green-700">₱{{ Number(selectedRefundProof.refund_amount).toLocaleString() }}</p>
-                  </div>
-                  <div>
-                    <p class="font-medium text-green-800">Processed Date</p>
-                    <p class="text-green-700">{{ formatDate(selectedRefundProof.refund_processed_at) }}</p>
-                  </div>
+      </div>
+
+      <PaymentDialog
+        v-if="paymentDialogBookingId"
+        :bookingId="paymentDialogBookingId"
+        v-model:open="paymentDialogOpen"
+        :onClose="closePaymentDialog"
+        :type="paymentDialogType"
+        @paid="() => { closePaymentDialog(); toast.success('Payment submitted!'); data.refetch && data.refetch() }"
+      />
+      <EditBookingDialog v-if="editDialogOpen" :booking="editBooking" :open="editDialogOpen" @update:open="editDialogOpen = $event" @updated="() => refetch()" />
+      <CustomerReturnDialog v-if="returnDialogOpen" :booking="selectedReturnBooking" :open="returnDialogOpen" @update:open="returnDialogOpen = $event" @submitted="onReturnSubmitted" />
+      <Dialog v-model:open="refundProofDialogOpen">
+        <DialogContent class="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle class="flex items-center gap-2"><CheckCircle class="w-5 h-5 text-green-600" /> Refund Processing Proof</DialogTitle>
+            <DialogDescription>Official proof that your refund has been processed by our admin team.</DialogDescription>
+          </DialogHeader>
+          <div v-if="selectedRefundProof" class="space-y-4">
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p class="font-medium text-green-800">Refund Amount</p>
+                  <p class="text-xl font-bold text-green-700">₱{{ Number(selectedRefundProof.refund_amount).toLocaleString() }}</p>
                 </div>
-                <div v-if="selectedRefundProof.refund_notes" class="mt-3 pt-3 border-t border-green-200">
-                  <p class="font-medium text-green-800 text-sm">Admin Notes</p>
-                  <p class="text-green-700 text-sm italic">"{{ selectedRefundProof.refund_notes }}"</p>
+                <div>
+                  <p class="font-medium text-green-800">Processed Date</p>
+                  <p class="text-green-700">{{ formatDate(selectedRefundProof.refund_processed_at) }}</p>
                 </div>
               </div>
-              
-              <!-- Proof Image -->
-              <div class="text-center">
-                <img 
-                  v-if="isImageFile(selectedRefundProof.refund_proof)"
-                  :src="selectedRefundProof.refund_proof" 
-                  alt="Refund processing proof"
-                  class="max-w-full h-auto rounded-lg shadow-lg mx-auto border"
-                />
-                <div v-else class="p-8 border-2 border-dashed border-muted-foreground rounded-lg">
-                  <FileText class="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                  <p class="text-muted-foreground mb-4">PDF document - Click below to view</p>
-                  <Button @click="window.open(selectedRefundProof.refund_proof, '_blank')" variant="outline">
-                    <FileText class="w-4 h-4 mr-2" />
-                    Open Document
-                  </Button>
-                </div>
+              <div v-if="selectedRefundProof.refund_notes" class="mt-3 pt-3 border-t border-green-200">
+                <p class="font-medium text-green-800 text-sm">Admin Notes</p>
+                <p class="text-green-700 text-sm italic">"{{ selectedRefundProof.refund_notes }}"</p>
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
-        <div v-if="contractDialogOpen">
-          <div class="modal-overlay" @click="closeContractDialog"></div>
-          <div class="modal-content">
-            <button class="modal-close" @click="closeContractDialog">&times;</button>
-            <ContractPrint :booking="selectedBooking" />
+            <div class="text-center">
+              <img v-if="isImageFile(selectedRefundProof.refund_proof)" :src="selectedRefundProof.refund_proof" alt="Refund processing proof" class="max-w-full h-auto rounded-lg shadow-lg mx-auto border" />
+              <div v-else class="p-8 border-2 border-dashed border-muted-foreground rounded-lg">
+                <FileText class="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                <p class="text-muted-foreground mb-4">PDF document - Click below to view</p>
+                <Button @click="window.open(selectedRefundProof.refund_proof, '_blank')" variant="outline"><FileText class="w-4 h-4 mr-2" /> Open Document</Button>
+              </div>
+            </div>
           </div>
+        </DialogContent>
+      </Dialog>
+      <div v-if="contractDialogOpen" class="relative z-50">
+        <div class="modal-overlay" @click="closeContractDialog"></div>
+        <div class="modal-content">
+          <button class="modal-close" @click="closeContractDialog">&times;</button>
+          <ContractPrint :booking="selectedBooking" />
         </div>
       </div>
     </div>
@@ -667,107 +181,59 @@
     <Dialog v-model:open="refundDetailsDialog.open">
       <DialogContent class="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle class="flex items-center gap-2">
-            <Wallet class="w-5 h-5 text-amber-500" />
-            Provide Refund Details
-          </DialogTitle>
-          <DialogDescription>
-            We need your refund account information so our team can process the pending refund for this canceled booking.
-          </DialogDescription>
+          <DialogTitle class="flex items-center gap-2"><Wallet class="w-5 h-5 text-amber-500" /> Provide Refund Details</DialogTitle>
+          <DialogDescription>We need your refund account information so our team can process the pending refund for this canceled booking.</DialogDescription>
         </DialogHeader>
-
         <div v-if="refundDetailsDialog.booking" class="space-y-4">
           <div class="bg-muted/30 rounded-lg p-3 text-sm">
             <p class="font-medium">{{ refundDetailsDialog.booking.vehicle?.name }}</p>
-            <p class="text-muted-foreground">
-              {{ formatDateRange(refundDetailsDialog.booking.start_date, refundDetailsDialog.booking.end_date) }}
-            </p>
+            <p class="text-muted-foreground">{{ formatDateRange(refundDetailsDialog.booking.start_date, refundDetailsDialog.booking.end_date) }}</p>
           </div>
-
           <form @submit.prevent="handleSubmitRefundDetails" class="space-y-4">
             <div class="border border-border rounded-lg p-4 space-y-3">
               <div class="flex flex-col gap-2">
                 <Label>Preferred Refund Method *</Label>
-                <select 
-                  v-model="refundDetailsForm.refund_method" 
-                  required
-                  class="w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
-                >
+                <select v-model="refundDetailsForm.refund_method" required class="w-full rounded-md border border-input bg-background px-3 py-2 text-foreground">
                   <option value="">Select refund method</option>
                   <option value="gcash">GCash</option>
                   <option value="bank_transfer">Bank Transfer</option>
                   <option value="cash">Cash Pickup</option>
                 </select>
               </div>
-
               <div v-if="refundDetailsForm.refund_method === 'gcash'" class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div class="flex flex-col gap-2">
                   <Label>GCash Number *</Label>
-                  <Input 
-                    v-model="refundDetailsForm.account_number" 
-                    type="tel" 
-                    placeholder="09XXXXXXXXX"
-                    required
-                  />
+                  <Input v-model="refundDetailsForm.account_number" type="tel" placeholder="09XXXXXXXXX" required />
                 </div>
                 <div class="flex flex-col gap-2">
                   <Label>Account Holder Name *</Label>
-                  <Input 
-                    v-model="refundDetailsForm.account_name" 
-                    placeholder="Full name as registered"
-                    required
-                  />
+                  <Input v-model="refundDetailsForm.account_name" placeholder="Full name as registered" required />
                 </div>
               </div>
-
               <div v-if="refundDetailsForm.refund_method === 'bank_transfer'" class="space-y-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div class="flex flex-col gap-2">
                     <Label>Bank Name *</Label>
-                    <Input 
-                      v-model="refundDetailsForm.bank_name" 
-                      placeholder="e.g. BDO, BPI, Metrobank"
-                      required
-                    />
+                    <Input v-model="refundDetailsForm.bank_name" placeholder="e.g. BDO, BPI, Metrobank" required />
                   </div>
                   <div class="flex flex-col gap-2">
                     <Label>Account Number *</Label>
-                    <Input 
-                      v-model="refundDetailsForm.account_number" 
-                      placeholder="Bank account number"
-                      required
-                    />
+                    <Input v-model="refundDetailsForm.account_number" placeholder="Bank account number" required />
                   </div>
                 </div>
                 <div class="flex flex-col gap-2">
                   <Label>Account Holder Name *</Label>
-                  <Input 
-                    v-model="refundDetailsForm.account_name" 
-                    placeholder="Full name as registered in bank"
-                    required
-                  />
+                  <Input v-model="refundDetailsForm.account_name" placeholder="Full name as registered in bank" required />
                 </div>
               </div>
-
               <div class="flex flex-col gap-2">
                 <Label>{{ refundDetailsForm.refund_method === 'cash' ? 'Pickup Instructions' : 'Additional Notes' }} (optional)</Label>
-                <Textarea 
-                  v-model="refundDetailsForm.refund_notes" 
-                  :placeholder="refundDetailsForm.refund_method === 'cash' ? 'Specify pickup location or special instructions...' : 'Any special instructions for the refund process...'"
-                  rows="2"
-                />
+                <Textarea v-model="refundDetailsForm.refund_notes" :placeholder="refundDetailsForm.refund_method === 'cash' ? 'Specify pickup location or special instructions...' : 'Any special instructions for the refund process...'" rows="2" />
               </div>
             </div>
-
             <div class="flex justify-end gap-3 pt-2">
-              <Button type="button" variant="outline" @click="refundDetailsDialog.open = false">
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                class="bg-amber-500 hover:bg-amber-600"
-                :disabled="refundDetailsForm.processing || !refundDetailsForm.refund_method"
-              >
+              <Button type="button" variant="outline" @click="refundDetailsDialog.open = false">Cancel</Button>
+              <Button type="submit" class="bg-amber-500 hover:bg-amber-600" :disabled="refundDetailsForm.processing || !refundDetailsForm.refund_method">
                 <Loader2 v-if="refundDetailsForm.processing" class="w-4 h-4 mr-2 animate-spin" />
                 <Wallet v-else class="w-4 h-4 mr-2" />
                 {{ refundDetailsForm.processing ? 'Submitting...' : 'Submit Details' }}
@@ -778,137 +244,56 @@
       </DialogContent>
     </Dialog>
 
-    <!-- Cancellation Reason Dialog -->
+    <!-- Cancellation Dialog -->
     <Dialog v-model:open="cancelDialog.open">
       <DialogContent class="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle class="flex items-center gap-2">
-            <AlertTriangle class="w-5 h-5 text-yellow-600" />
-            Cancel Booking
-          </DialogTitle>
-          <DialogDescription>
-            Please provide a reason for canceling this booking and your refund account details if eligible for a refund.
-          </DialogDescription>
+          <DialogTitle class="flex items-center gap-2"><AlertTriangle class="w-5 h-5 text-yellow-600" /> Cancel Booking</DialogTitle>
+          <DialogDescription>Please provide a reason for canceling this booking and your refund account details if eligible for a refund.</DialogDescription>
         </DialogHeader>
-
         <div v-if="cancelDialog.booking" class="space-y-4">
-          <!-- Booking Summary -->
           <div class="bg-muted/30 rounded-lg p-3 text-sm">
             <p class="font-medium">{{ cancelDialog.booking.vehicle?.name }}</p>
             <p class="text-muted-foreground">{{ formatDateRange(cancelDialog.booking.start_date, cancelDialog.booking.end_date) }}</p>
           </div>
-
-          <!-- Refund Eligibility Notice -->
           <div v-if="hasApprovedPayments(cancelDialog.booking)" class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <p class="text-sm text-blue-800">
-              <strong>Refund Information:</strong> You have approved payments for this booking. Please provide your refund account details below for potential refund processing.
-            </p>
+            <p class="text-sm text-blue-800"><strong>Refund Information:</strong> You have approved payments for this booking. Please provide your refund account details below for potential refund processing.</p>
           </div>
-
-          <!-- Cancellation Form -->
           <form @submit.prevent="handleCancelBooking" class="space-y-4">
             <div class="space-y-2">
               <Label for="cancellation-reason">Reason for Cancellation</Label>
-              <Textarea
-                id="cancellation-reason"
-                v-model="cancelForm.reason"
-                placeholder="Please explain why you're canceling this booking..."
-                rows="3"
-                class="resize-none"
-                required
-              />
+              <Textarea id="cancellation-reason" v-model="cancelForm.reason" placeholder="Please explain why you're canceling this booking..." rows="3" class="resize-none" required />
             </div>
-
-            <!-- Refund Account Information (only if has approved payments) -->
             <div v-if="hasApprovedPayments(cancelDialog.booking)" class="border border-border rounded-lg p-4 space-y-3">
               <h3 class="font-semibold text-foreground">Refund Account Details</h3>
-              
               <div class="flex flex-col gap-2">
                 <Label>Preferred Refund Method *</Label>
-                <select 
-                  v-model="cancelForm.refund_method" 
-                  required
-                  class="w-full rounded-md border border-input bg-background px-3 py-2 text-foreground"
-                >
+                <select v-model="cancelForm.refund_method" required class="w-full rounded-md border border-input bg-background px-3 py-2 text-foreground">
                   <option value="">Select refund method</option>
                   <option value="gcash">GCash</option>
                   <option value="bank_transfer">Bank Transfer</option>
                   <option value="cash">Cash Pickup</option>
                 </select>
               </div>
-              
-              <!-- GCash Details -->
               <div v-if="cancelForm.refund_method === 'gcash'" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div class="flex flex-col gap-2">
-                  <Label>GCash Number *</Label>
-                  <Input 
-                    v-model="cancelForm.account_number" 
-                    type="tel" 
-                    placeholder="09XXXXXXXXX"
-                    required
-                  />
-                </div>
-                <div class="flex flex-col gap-2">
-                  <Label>Account Holder Name *</Label>
-                  <Input 
-                    v-model="cancelForm.account_name" 
-                    placeholder="Full name as registered"
-                    required
-                  />
-                </div>
+                <div class="flex flex-col gap-2"><Label>GCash Number *</Label><Input v-model="cancelForm.account_number" type="tel" placeholder="09XXXXXXXXX" required /></div>
+                <div class="flex flex-col gap-2"><Label>Account Holder Name *</Label><Input v-model="cancelForm.account_name" placeholder="Full name as registered" required /></div>
               </div>
-              
-              <!-- Bank Transfer Details -->
               <div v-if="cancelForm.refund_method === 'bank_transfer'" class="space-y-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div class="flex flex-col gap-2">
-                    <Label>Bank Name *</Label>
-                    <Input 
-                      v-model="cancelForm.bank_name" 
-                      placeholder="e.g. BDO, BPI, Metrobank"
-                      required
-                    />
-                  </div>
-                  <div class="flex flex-col gap-2">
-                    <Label>Account Number *</Label>
-                    <Input 
-                      v-model="cancelForm.account_number" 
-                      placeholder="Bank account number"
-                      required
-                    />
-                  </div>
+                  <div class="flex flex-col gap-2"><Label>Bank Name *</Label><Input v-model="cancelForm.bank_name" placeholder="e.g. BDO, BPI, Metrobank" required /></div>
+                  <div class="flex flex-col gap-2"><Label>Account Number *</Label><Input v-model="cancelForm.account_number" placeholder="Bank account number" required /></div>
                 </div>
-                <div class="flex flex-col gap-2">
-                  <Label>Account Holder Name *</Label>
-                  <Input 
-                    v-model="cancelForm.account_name" 
-                    placeholder="Full name as registered in bank"
-                    required
-                  />
-                </div>
+                <div class="flex flex-col gap-2"><Label>Account Holder Name *</Label><Input v-model="cancelForm.account_name" placeholder="Full name as registered in bank" required /></div>
               </div>
-              
-              <!-- Additional Notes -->
               <div class="flex flex-col gap-2">
                 <Label>{{ cancelForm.refund_method === 'cash' ? 'Pickup Instructions' : 'Additional Notes' }} (optional)</Label>
-                <Textarea 
-                  v-model="cancelForm.refund_notes" 
-                  :placeholder="cancelForm.refund_method === 'cash' ? 'Specify pickup location or special instructions...' : 'Any special instructions for the refund process...'"
-                  rows="2"
-                />
+                <Textarea v-model="cancelForm.refund_notes" :placeholder="cancelForm.refund_method === 'cash' ? 'Specify pickup location or special instructions...' : 'Any special instructions for the refund process...'" rows="2" />
               </div>
             </div>
-
-            <!-- Action Buttons -->
             <div class="flex justify-end gap-3 pt-2">
-              <Button type="button" variant="outline" @click="cancelDialog.open = false">
-                Keep Booking
-              </Button>
-              <Button 
-                type="submit" 
-                variant="destructive"
-                :disabled="!cancelForm.reason.trim() || cancelForm.processing"
-              >
+              <Button type="button" variant="outline" @click="cancelDialog.open = false">Keep Booking</Button>
+              <Button type="submit" variant="destructive" :disabled="!cancelForm.reason.trim() || cancelForm.processing">
                 <Loader2 v-if="cancelForm.processing" class="w-4 h-4 mr-2 animate-spin" />
                 <Ban v-else class="w-4 h-4 mr-2" />
                 {{ cancelForm.processing ? 'Canceling...' : 'Cancel Booking' }}
@@ -922,11 +307,11 @@
 </template>
 
 <script setup>
-import { computed, ref, reactive, watch } from 'vue'
+import { computed, ref, reactive, watch, onMounted } from 'vue'
 import { useMyBookings } from '@/services/booking-service'
 import { useQueryClient } from '@tanstack/vue-query'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import BookingCard from '@/components/features/bookings/BookingCard.vue'
+import BookingBanners from '@/components/features/bookings/BookingBanners.vue'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -970,6 +355,8 @@ import {
   Wallet,
 } from 'lucide-vue-next'
 import { RouterLink, useRouter } from 'vue-router'
+import { driver as createDriver } from 'driver.js'
+import 'driver.js/dist/driver.css'
 
 const formatDate = (dateStr) => formatDateTimeUTC(dateStr)
 const formatDateRange = (startDate, endDate) => formatDateRangeUTC(startDate, endDate)
@@ -1616,31 +1003,131 @@ async function handleCancelBooking() {
     cancelForm.processing = false
   }
 }
+
+// ---------------------- Guided Tour (Driver.js) ----------------------
+function startTour() {
+  const steps = buildTourSteps()
+  if (!steps.length) {
+    console.warn('[MyBookings Tour] No steps available.')
+    return
+  }
+  const d = createDriver({
+    showProgress: true,
+    allowClose: true,
+    popoverClass: 'text-sm',
+    nextBtnText: 'Next',
+    prevBtnText: 'Previous',
+    doneBtnText: 'Finish',
+    closeBtnText: 'Skip',
+    steps
+  })
+  console.debug('[MyBookings Tour] Starting; total steps:', steps.length, steps)
+  d.drive()
+  localStorage.setItem('myBookingsTourSeen', '1')
+}
+
+function buildTourSteps() {
+  const steps = []
+
+  const header = document.querySelector('#my-bookings-header')
+  if (header) {
+    steps.push({
+      element: header,
+      popover: {
+        title: 'My Bookings',
+        description: 'Overview of all your vehicle reservations.'
+      }
+    })
+  }
+
+  const guideBtn = document.querySelector('[data-tour="guide-btn"]')
+  if (guideBtn) {
+    steps.push({
+      element: guideBtn,
+      popover: {
+        title: 'Interactive Guide',
+        description: 'Click here anytime to replay this guided tour.'
+      }
+    })
+  }
+
+  const controls = document.querySelector('[data-tour="controls-section"]')
+  if (controls) {
+    steps.push({
+      element: controls,
+      popover: {
+        title: 'Sort & Filter',
+        description: 'Adjust sorting and filter bookings by their status.'
+      }
+    })
+  }
+
+  const attentionBanner = document.querySelector('[data-tour="attention-banner"]')
+  if (attentionBanner) {
+    steps.push({
+      element: attentionBanner,
+      popover: {
+        title: 'Needs Action',
+        description: 'Shows bookings requiring deposit or rental payment.'
+      }
+    })
+  }
+
+  const refundBanner = document.querySelector('[data-tour="refund-banner"]')
+  if (refundBanner) {
+    steps.push({
+      element: refundBanner,
+      popover: {
+        title: 'Refund Details',
+        description: 'Provide account details so pending refunds can be processed.'
+      }
+    })
+  }
+
+  const firstCard = document.querySelector('[data-tour="booking-card"]')
+  if (firstCard) {
+    steps.push({
+      element: firstCard,
+      popover: {
+        title: 'Booking Card',
+        description: 'Each card displays vehicle, period, pricing, status & actions.'
+      }
+    })
+  }
+  else if (!bookings.value.length && header) {
+    steps.push({
+      element: header,
+      popover: {
+        title: 'No Bookings Yet',
+        description: 'Create your first booking from the Vehicles page.'
+      }
+    })
+  }
+
+  const actions = document.querySelector('[data-tour="booking-actions"]')
+  if (actions) {
+    steps.push({
+      element: actions,
+      popover: {
+        title: 'Booking Actions',
+        description: 'Manage, edit, cancel, pay, or submit a return from here.'
+      }
+    })
+  }
+
+  return steps
+}
+
+onMounted(() => {
+  // Auto-start tour only once
+  if (!localStorage.getItem('myBookingsTourSeen')) {
+    setTimeout(() => startTour(), 700)
+  }
+})
 </script>
 
 <style scoped>
-/* Enhanced cancelled booking styles */
-.cancelled-card {
-  position: relative;
-}
-
-.cancelled-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 10px,
-    rgba(239, 68, 68, 0.03) 10px,
-    rgba(239, 68, 68, 0.03) 20px
-  );
-  pointer-events: none;
-  border-radius: inherit;
-}
+/* Removed obsolete cancelled-card styles after refactor */
 
 /* Card minimize/maximize transitions */
 .card-content-transition {
