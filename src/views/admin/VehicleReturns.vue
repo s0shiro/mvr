@@ -1,193 +1,423 @@
 <template>
   <div class="container space-y-6">
     <div class="flex justify-between items-center mb-4">
-      <h1 class="text-2xl font-bold">Vehicle Returns</h1>
+      <h1 id="vehicle-returns-header" class="text-2xl font-bold">Vehicle Returns</h1>
+      <div class="flex items-center gap-2">
+        <Button variant="outline" size="sm" @click="startTour" class="gap-1">
+          <Clock class="w-4 h-4" />
+          Guide
+        </Button>
+      </div>
     </div>
     <div v-if="isLoading" class="h-[calc(100vh-10rem)] flex items-center justify-center">
-      <Loading text="Loading bookings..." />
+      <Loading text="Loading returns..." />
     </div>
     <div v-else-if="error" class="text-center text-red-600">{{ error }}</div>
     <div v-else>
-      <div v-if="!bookings.length" class="text-center text-muted-foreground py-12">
-        <div class="text-4xl mb-4">🔄</div>
-        <p class="text-lg">No vehicles are currently out for return.</p>
-        <p class="text-sm">All rentals are either active or completed.</p>
+      <div v-if="totalCount === 0" class="text-center text-muted-foreground py-12">
+        <p class="text-lg">No vehicles currently due for return.</p>
+        <p class="text-sm">All rentals are either active, processed or completed.</p>
       </div>
-      <div v-else>
-        <!-- Summary Stats -->
-        <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          <div class="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-red-600 dark:text-red-400">{{ groupedBookings.overdue.length }}</div>
-            <div class="text-sm text-red-600 dark:text-red-400">Overdue</div>
-          </div>
-          <div class="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-orange-600 dark:text-orange-400">{{ groupedBookings.dueToday.length }}</div>
-            <div class="text-sm text-orange-600 dark:text-orange-400">Due Today</div>
-          </div>
-          <div class="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ groupedBookings.dueThisWeek.length }}</div>
-            <div class="text-sm text-yellow-600 dark:text-yellow-400">This Week</div>
-          </div>
-          <div class="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ groupedBookings.dueNextWeek.length }}</div>
-            <div class="text-sm text-blue-600 dark:text-blue-400">Next Week</div>
-          </div>
-          <div class="bg-gray-50 dark:bg-gray-950/20 border border-gray-200 dark:border-gray-800 rounded-lg p-4 text-center">
-            <div class="text-2xl font-bold text-gray-600 dark:text-gray-400">{{ groupedBookings.later.length }}</div>
-            <div class="text-sm text-gray-600 dark:text-gray-400">Later</div>
-          </div>
-        </div>
+      <div v-else class="space-y-4">
+        <Tabs v-model="activeGroup" class="w-full">
+          <TabsList data-tour="returns-tabs-list" class="w-full flex gap-2 overflow-x-auto no-scrollbar py-1 md:py-0 md:grid md:grid-cols-5 h-auto md:h-10">
+            <TabsTrigger value="overdue" class="flex items-center gap-2 shrink-0 min-w-[130px] md:min-w-0 px-3 py-2 md:py-0 rounded-md text-xs md:text-sm justify-center transition-colors data-[state=active]:bg-red-50 dark:data-[state=active]:bg-red-950/30 data-[state=active]:border data-[state=active]:border-red-200 dark:data-[state=active]:border-red-800 data-[state=active]:shadow-sm">
+              <AlertTriangle class="w-4 h-4 text-red-600" />
+              <span class="hidden sm:inline">Overdue</span>
+              <Badge variant="destructive" size="sm">{{ groupedBookings.overdue.length }}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="dueToday" class="flex items-center gap-2 shrink-0 min-w-[130px] md:min-w-0 px-3 py-2 md:py-0 rounded-md text-xs md:text-sm justify-center transition-colors data-[state=active]:bg-orange-50 dark:data-[state=active]:bg-orange-950/30 data-[state=active]:border data-[state=active]:border-orange-200 dark:data-[state=active]:border-orange-800 data-[state=active]:shadow-sm">
+              <Clock class="w-4 h-4 text-orange-600" />
+              <span class="hidden sm:inline">Due Today</span>
+              <Badge variant="warning" size="sm">{{ groupedBookings.dueToday.length }}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="dueThisWeek" class="flex items-center gap-2 shrink-0 min-w-[130px] md:min-w-0 px-3 py-2 md:py-0 rounded-md text-xs md:text-sm justify-center transition-colors data-[state=active]:bg-yellow-50 dark:data-[state=active]:bg-yellow-950/30 data-[state=active]:border data-[state=active]:border-yellow-200 dark:data-[state=active]:border-yellow-800 data-[state=active]:shadow-sm">
+              <CalendarDays class="w-4 h-4 text-yellow-600" />
+              <span class="hidden sm:inline">This Week</span>
+              <Badge variant="secondary" size="sm">{{ groupedBookings.dueThisWeek.length }}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="dueNextWeek" class="flex items-center gap-2 shrink-0 min-w-[130px] md:min-w-0 px-3 py-2 md:py-0 rounded-md text-xs md:text-sm justify-center transition-colors data-[state=active]:bg-blue-50 dark:data-[state=active]:bg-blue-950/30 data-[state=active]:border data-[state=active]:border-blue-200 dark:data-[state=active]:border-blue-800 data-[state=active]:shadow-sm">
+              <Calendar class="w-4 h-4 text-blue-600" />
+              <span class="hidden sm:inline">Next Week</span>
+              <Badge variant="outline" size="sm">{{ groupedBookings.dueNextWeek.length }}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="later" class="flex items-center gap-2 shrink-0 min-w-[130px] md:min-w-0 px-3 py-2 md:py-0 rounded-md text-xs md:text-sm justify-center transition-colors data-[state=active]:bg-gray-100 dark:data-[state=active]:bg-gray-800/40 data-[state=active]:border data-[state=active]:border-gray-300 dark:data-[state=active]:border-gray-700 data-[state=active]:shadow-sm">
+              <Timer class="w-4 h-4 text-gray-600" />
+              <span class="hidden sm:inline">Later</span>
+              <Badge variant="outline" size="sm">{{ groupedBookings.later.length }}</Badge>
+            </TabsTrigger>
+          </TabsList>
 
-        <!-- Grouped Bookings -->
-        <div class="space-y-8">
-          <div v-for="(bookingsInGroup, groupName) in groupedBookings" :key="groupName" class="space-y-4">
-            <div class="flex items-center gap-3 pb-2 border-b">
-              <div class="flex items-center gap-2">
-                <span class="text-2xl">{{ getGroupIcon(groupName) }}</span>
-                <h2 class="text-xl font-semibold">
-                  {{ getGroupLabel(groupName) }}
-                </h2>
+          <!-- Overdue -->
+          <TabsContent value="overdue">
+            <div class="space-y-4">
+              <div class="flex items-center gap-3 pb-2 border-b">
+                <div class="flex items-center gap-2">
+                  <AlertTriangle class="w-5 h-5 text-red-600" />
+                  <h2 class="text-xl font-semibold">Overdue Returns</h2>
+                </div>
+                <Badge variant="destructive" class="ml-auto">
+                  {{ groupedBookings.overdue.length }} {{ groupedBookings.overdue.length === 1 ? 'vehicle' : 'vehicles' }}
+                </Badge>
               </div>
-              <Badge :variant="getGroupBadgeVariant(groupName)" class="ml-auto">
-                {{ bookingsInGroup.length }} {{ bookingsInGroup.length === 1 ? 'vehicle' : 'vehicles' }}
-              </Badge>
-            </div>
-
-            <div v-if="!bookingsInGroup.length" class="text-muted-foreground italic text-center py-8 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-              No vehicles in this period.
-            </div>
-
-            <div v-else :class="groupName === 'overdue' ? 'ring-2 ring-red-200 dark:ring-red-800 rounded-lg p-4 bg-red-50/30 dark:bg-red-950/10' : groupName === 'dueToday' ? 'ring-2 ring-orange-200 dark:ring-orange-800 rounded-lg p-4 bg-orange-50/30 dark:bg-orange-950/10' : ''">
-              <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                <Card v-for="booking in bookingsInGroup" :key="booking.id" class="border border-border bg-card hover:shadow-md transition-shadow">
-                  <CardHeader class="pb-3">
-                    <div class="flex items-start justify-between gap-3">
-                      <div class="flex-1 min-w-0">
-                        <CardTitle class="text-lg font-semibold truncate">{{
-                          booking.vehicle?.name || 'Vehicle'
-                        }}</CardTitle>
-                        <CardDescription class="truncate">
-                          {{ booking.vehicle?.brand }} {{ booking.vehicle?.model }} ({{ booking.vehicle?.year }})
-                        </CardDescription>
-                      </div>
-                      <div class="flex flex-col items-end gap-2">
-                        <Badge :variant="getStatusVariant(booking.status)" size="sm">
-                          {{ booking.status.replace('_', ' ') }}
-                        </Badge>
-                        <div class="text-xs text-muted-foreground">
-                          ID: {{ booking.id }}
+              <div v-if="!groupedBookings.overdue.length" class="text-muted-foreground text-center py-6 text-sm">
+                No vehicles overdue.
+              </div>
+              <div v-else class="ring-2 ring-red-200 dark:ring-red-800 rounded-lg p-4 bg-red-50/30 dark:bg-red-950/10">
+                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  <Card v-for="(booking, idx) in groupedBookings.overdue" :key="booking.id" :data-tour="idx===0 ? 'return-card' : null" class="border border-border bg-card shadow-sm hover:shadow-md transition">
+                    <CardHeader class="pb-3">
+                      <div class="flex items-center justify-between gap-3">
+                        <div class="min-w-0 flex-1">
+                          <CardTitle class="text-base font-semibold truncate flex items-center gap-2">
+                            {{ booking.vehicle?.name || 'Vehicle' }}
+                            <Badge :variant="getStatusVariant(booking.status)" size="sm" class="capitalize">
+                              {{ booking.status.replace('_', ' ') }}
+                            </Badge>
+                          </CardTitle>
+                          <CardDescription class="truncate text-xs">
+                            {{ booking.vehicle?.brand }} {{ booking.vehicle?.model }} ({{ booking.vehicle?.year }})
+                          </CardDescription>
                         </div>
                       </div>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent class="space-y-4">
-                    <div v-if="booking.vehicle?.primary_image_url" class="relative">
-                      <img
-                        :src="booking.vehicle.primary_image_url"
-                        alt="Vehicle"
-                        class="w-full h-32 object-cover rounded-lg shadow-sm border"
-                      />
-                      <!-- <div class="absolute top-2 right-2">
-                        <Badge variant="secondary" size="sm" class="bg-black/70 text-white border-0">
-                          {{ booking.vehicle?.transmission || 'N/A' }}
-                        </Badge>
-                      </div> -->
-                      <div v-if="groupName === 'overdue'" class="absolute top-2 left-2">
-                        <Badge variant="destructive" size="sm" class="bg-red-600 text-white border-0">
-                          OVERDUE
-                        </Badge>
-                      </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <span class="font-medium text-muted-foreground">Customer:</span>
-                        <div class="font-medium truncate">{{ booking.user?.name || 'N/A' }}</div>
-                      </div>
-                      <div>
-                        <span class="font-medium text-muted-foreground">Total:</span>
-                        <div class="font-medium text-primary">₱{{ booking.total_price }}</div>
-                      </div>
-                      <div class="col-span-2">
-                        <span class="font-medium text-muted-foreground">Rental Period:</span>
-                        <div class="font-medium">
-                          {{ formatDate(booking.start_date) }} → {{ formatDate(booking.end_date) }}
+                    </CardHeader>
+                    <CardContent class="space-y-4">
+                      <div v-if="booking.vehicle?.primary_image_url" class="relative overflow-hidden rounded-md">
+                        <img :src="booking.vehicle.primary_image_url" alt="Vehicle" class="w-full h-28 md:h-32 object-cover" />
+                        <div class="absolute top-2 left-2">
+                          <Badge variant="destructive" size="sm">OVERDUE</Badge>
                         </div>
                       </div>
-                    </div>
-
-                    <!-- Return Status Section -->
-                    <div v-if="booking.vehicle_return" class="space-y-2 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
-                      <div class="flex items-center justify-between">
-                        <span class="text-sm font-medium">Return Status:</span>
-                        <Badge :variant="getReturnStatusVariant(booking.vehicle_return.status)" size="sm">
-                          {{ getReturnStatusLabel(booking.vehicle_return.status) }}
-                        </Badge>
-                      </div>
-
-                      <div v-if="booking.vehicle_return.status === 'customer_submitted'" class="text-xs text-muted-foreground">
-                        Customer submitted: {{ formatDate(booking.vehicle_return.customer_submitted_at) }}
-                      </div>
-
-                      <div v-if="booking.vehicle_return.deposit_status" class="flex items-center justify-between mt-2">
-                        <span class="text-sm font-medium">Deposit:</span>
-                        <div class="flex items-center gap-2">
-                          <Badge :variant="getDepositStatusVariant(booking.vehicle_return.deposit_status)" size="sm">
-                            {{ getDepositStatusLabel(booking.vehicle_return.deposit_status) }}
-                          </Badge>
-                          <span v-if="booking.vehicle_return.deposit_status === 'refunded'" class="text-sm text-green-600 font-medium">
-                            ₱{{ booking.vehicle_return.deposit_refund_amount || 0 }}
-                          </span>
+                      <div class="grid grid-cols-2 gap-3 text-xs md:text-sm">
+                        <div>
+                          <span class="font-medium text-muted-foreground">Customer</span>
+                          <div class="font-medium truncate">{{ booking.user?.name || 'N/A' }}</div>
+                        </div>
+                        <div>
+                          <span class="font-medium text-muted-foreground">Total</span>
+                          <div class="font-medium text-primary">₱{{ booking.total_price }}</div>
+                        </div>
+                        <div class="col-span-2">
+                          <span class="font-medium text-muted-foreground">Rental Period</span>
+                          <div class="font-medium">{{ formatDate(booking.start_date) }} → {{ formatDate(booking.end_date) }}</div>
                         </div>
                       </div>
-                    </div>
-
-                    <div class="flex gap-2 pt-2">
-                      <Button
-                        v-if="!booking.vehicle_return"
-                        variant="default"
-                        size="sm"
-                        @click="goToReturnPage(booking)"
-                        class="flex-1"
-                        :class="groupName === 'overdue' ? 'bg-red-600 hover:bg-red-700' : groupName === 'dueToday' ? 'bg-orange-600 hover:bg-orange-700' : ''"
-                      >
-                        <span class="mr-2">🔄</span>
-                        Process Return
-                      </Button>
-                      <Button
-                        v-else-if="booking.vehicle_return.status === 'customer_submitted'"
-                        variant="default"
-                        size="sm"
-                        @click="goToReturnPage(booking)"
-                        class="flex-1 bg-blue-600 hover:bg-blue-700"
-                      >
-                        <span class="mr-2">👀</span>
-                        Review Return
-                      </Button>
-                      <Badge v-else-if="booking.vehicle_return.status === 'completed'" variant="success" class="flex-1 justify-center py-2">
-                        <span class="mr-2">✅</span>
-                        Completed
-                      </Badge>
-                    </div>
-                  </CardContent>
-                </Card>
+                      <div v-if="booking.vehicle_return" class="space-y-2 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                        <div class="flex items-center justify-between">
+                          <span class="text-sm font-medium">Return Status:</span>
+                          <Badge :variant="getReturnStatusVariant(booking.vehicle_return.status)" size="sm">{{ getReturnStatusLabel(booking.vehicle_return.status) }}</Badge>
+                        </div>
+                        <div v-if="booking.vehicle_return.status === 'customer_submitted'" class="text-xs text-muted-foreground">
+                          Customer submitted: {{ formatDate(booking.vehicle_return.customer_submitted_at) }}
+                        </div>
+                        <div v-if="booking.vehicle_return.deposit_status" class="flex items-center justify-between mt-2">
+                          <span class="text-sm font-medium">Deposit:</span>
+                          <div class="flex items-center gap-2">
+                            <Badge :variant="getDepositStatusVariant(booking.vehicle_return.deposit_status)" size="sm">{{ getDepositStatusLabel(booking.vehicle_return.deposit_status) }}</Badge>
+                            <span v-if="booking.vehicle_return.deposit_status === 'refunded'" class="text-sm text-green-600 font-medium">
+                              ₱{{ booking.vehicle_return.deposit_refund_amount || 0 }}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex pt-1">
+                        <Button v-if="!booking.vehicle_return" :data-tour="idx===0 ? 'return-btn' : null" variant="default" size="sm" @click="goToReturnPage(booking)" class="w-full bg-red-600 hover:bg-red-700">
+                          <AlertTriangle class="w-4 h-4 mr-2" /> Process Return
+                        </Button>
+                        <Button v-else-if="booking.vehicle_return.status === 'customer_submitted'" variant="default" size="sm" @click="goToReturnPage(booking)" class="w-full bg-blue-600 hover:bg-blue-700">
+                          <Clock class="w-4 h-4 mr-2" /> Review Return
+                        </Button>
+                        <Badge v-else-if="booking.vehicle_return.status === 'completed'" variant="success" class="w-full justify-center py-2">
+                          Completed
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </TabsContent>
+
+          <!-- Due Today -->
+          <TabsContent value="dueToday">
+            <div class="space-y-4">
+              <div class="flex items-center gap-3 pb-2 border-b">
+                <div class="flex items-center gap-2">
+                  <Clock class="w-5 h-5 text-orange-600" />
+                  <h2 class="text-xl font-semibold">Due Today</h2>
+                </div>
+                <Badge variant="warning" class="ml-auto">
+                  {{ groupedBookings.dueToday.length }} {{ groupedBookings.dueToday.length === 1 ? 'vehicle' : 'vehicles' }}
+                </Badge>
+              </div>
+              <div v-if="!groupedBookings.dueToday.length" class="text-muted-foreground text-center py-6 text-sm">No vehicles due today.</div>
+              <div v-else class="ring-2 ring-orange-200 dark:ring-orange-800 rounded-lg p-4 bg-orange-50/30 dark:bg-orange-950/10">
+                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  <Card v-for="(booking, idx) in groupedBookings.dueToday" :key="booking.id" :data-tour="idx===0 ? 'return-card' : null" class="border border-border bg-card shadow-sm hover:shadow-md transition">
+                    <CardHeader class="pb-3">
+                      <div class="flex items-center justify-between gap-3">
+                        <div class="min-w-0 flex-1">
+                          <CardTitle class="text-base font-semibold truncate flex items-center gap-2">
+                            {{ booking.vehicle?.name || 'Vehicle' }}
+                            <Badge :variant="getStatusVariant(booking.status)" size="sm" class="capitalize">{{ booking.status.replace('_', ' ') }}</Badge>
+                          </CardTitle>
+                          <CardDescription class="truncate text-xs">{{ booking.vehicle?.brand }} {{ booking.vehicle?.model }} ({{ booking.vehicle?.year }})</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent class="space-y-4">
+                      <div v-if="booking.vehicle?.primary_image_url" class="relative overflow-hidden rounded-md">
+                        <img :src="booking.vehicle.primary_image_url" alt="Vehicle" class="w-full h-28 md:h-32 object-cover" />
+                      </div>
+                      <div class="grid grid-cols-2 gap-3 text-xs md:text-sm">
+                        <div><span class="font-medium text-muted-foreground">Customer</span><div class="font-medium truncate">{{ booking.user?.name || 'N/A' }}</div></div>
+                        <div><span class="font-medium text-muted-foreground">Total</span><div class="font-medium text-primary">₱{{ booking.total_price }}</div></div>
+                        <div class="col-span-2"><span class="font-medium text-muted-foreground">Rental Period</span><div class="font-medium">{{ formatDate(booking.start_date) }} → {{ formatDate(booking.end_date) }}</div></div>
+                      </div>
+                      <div v-if="booking.vehicle_return" class="space-y-2 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                        <div class="flex items-center justify-between">
+                          <span class="text-sm font-medium">Return Status:</span>
+                          <Badge :variant="getReturnStatusVariant(booking.vehicle_return.status)" size="sm">{{ getReturnStatusLabel(booking.vehicle_return.status) }}</Badge>
+                        </div>
+                        <div v-if="booking.vehicle_return.status === 'customer_submitted'" class="text-xs text-muted-foreground">Customer submitted: {{ formatDate(booking.vehicle_return.customer_submitted_at) }}</div>
+                        <div v-if="booking.vehicle_return.deposit_status" class="flex items-center justify-between mt-2">
+                          <span class="text-sm font-medium">Deposit:</span>
+                          <div class="flex items-center gap-2">
+                            <Badge :variant="getDepositStatusVariant(booking.vehicle_return.deposit_status)" size="sm">{{ getDepositStatusLabel(booking.vehicle_return.deposit_status) }}</Badge>
+                            <span v-if="booking.vehicle_return.deposit_status === 'refunded'" class="text-sm text-green-600 font-medium">₱{{ booking.vehicle_return.deposit_refund_amount || 0 }}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex pt-1">
+                        <Button v-if="!booking.vehicle_return" :data-tour="idx===0 ? 'return-btn' : null" variant="default" size="sm" @click="goToReturnPage(booking)" class="w-full bg-orange-600 hover:bg-orange-700">
+                          <Clock class="w-4 h-4 mr-2" /> Process Return
+                        </Button>
+                        <Button v-else-if="booking.vehicle_return.status === 'customer_submitted'" variant="default" size="sm" @click="goToReturnPage(booking)" class="w-full bg-blue-600 hover:bg-blue-700">
+                          <Clock class="w-4 h-4 mr-2" /> Review Return
+                        </Button>
+                        <Badge v-else-if="booking.vehicle_return.status === 'completed'" variant="success" class="w-full justify-center py-2">Completed</Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <!-- This Week -->
+          <TabsContent value="dueThisWeek">
+            <div class="space-y-4">
+              <div class="flex items-center gap-3 pb-2 border-b">
+                <div class="flex items-center gap-2">
+                  <CalendarDays class="w-5 h-5 text-yellow-600" />
+                  <h2 class="text-xl font-semibold">Due This Week</h2>
+                </div>
+                <Badge variant="secondary" class="ml-auto">
+                  {{ groupedBookings.dueThisWeek.length }} {{ groupedBookings.dueThisWeek.length === 1 ? 'vehicle' : 'vehicles' }}
+                </Badge>
+              </div>
+              <div v-if="!groupedBookings.dueThisWeek.length" class="text-muted-foreground text-center py-6 text-sm">No vehicles due this week.</div>
+              <div v-else>
+                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  <Card v-for="(booking, idx) in groupedBookings.dueThisWeek" :key="booking.id" :data-tour="idx===0 ? 'return-card' : null" class="border border-border bg-card shadow-sm hover:shadow-md transition">
+                    <CardHeader class="pb-3">
+                      <div class="flex items-center justify-between gap-3">
+                        <div class="min-w-0 flex-1">
+                          <CardTitle class="text-base font-semibold truncate flex items-center gap-2">
+                            {{ booking.vehicle?.name || 'Vehicle' }}
+                            <Badge :variant="getStatusVariant(booking.status)" size="sm" class="capitalize">{{ booking.status.replace('_', ' ') }}</Badge>
+                          </CardTitle>
+                          <CardDescription class="truncate text-xs">{{ booking.vehicle?.brand }} {{ booking.vehicle?.model }} ({{ booking.vehicle?.year }})</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent class="space-y-4">
+                      <div v-if="booking.vehicle?.primary_image_url" class="relative overflow-hidden rounded-md">
+                        <img :src="booking.vehicle.primary_image_url" alt="Vehicle" class="w-full h-28 md:h-32 object-cover" />
+                      </div>
+                      <div class="grid grid-cols-2 gap-3 text-xs md:text-sm">
+                        <div><span class="font-medium text-muted-foreground">Customer</span><div class="font-medium truncate">{{ booking.user?.name || 'N/A' }}</div></div>
+                        <div><span class="font-medium text-muted-foreground">Total</span><div class="font-medium text-primary">₱{{ booking.total_price }}</div></div>
+                        <div class="col-span-2"><span class="font-medium text-muted-foreground">Rental Period</span><div class="font-medium">{{ formatDate(booking.start_date) }} → {{ formatDate(booking.end_date) }}</div></div>
+                      </div>
+                      <div v-if="booking.vehicle_return" class="space-y-2 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                        <div class="flex items-center justify-between">
+                          <span class="text-sm font-medium">Return Status:</span>
+                          <Badge :variant="getReturnStatusVariant(booking.vehicle_return.status)" size="sm">{{ getReturnStatusLabel(booking.vehicle_return.status) }}</Badge>
+                        </div>
+                        <div v-if="booking.vehicle_return.status === 'customer_submitted'" class="text-xs text-muted-foreground">Customer submitted: {{ formatDate(booking.vehicle_return.customer_submitted_at) }}</div>
+                        <div v-if="booking.vehicle_return.deposit_status" class="flex items-center justify-between mt-2">
+                          <span class="text-sm font-medium">Deposit:</span>
+                          <div class="flex items-center gap-2">
+                            <Badge :variant="getDepositStatusVariant(booking.vehicle_return.deposit_status)" size="sm">{{ getDepositStatusLabel(booking.vehicle_return.deposit_status) }}</Badge>
+                            <span v-if="booking.vehicle_return.deposit_status === 'refunded'" class="text-sm text-green-600 font-medium">₱{{ booking.vehicle_return.deposit_refund_amount || 0 }}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex pt-1">
+                        <Button v-if="!booking.vehicle_return" :data-tour="idx===0 ? 'return-btn' : null" variant="default" size="sm" @click="goToReturnPage(booking)" class="w-full">
+                          <Clock class="w-4 h-4 mr-2" /> Process Return
+                        </Button>
+                        <Button v-else-if="booking.vehicle_return.status === 'customer_submitted'" variant="default" size="sm" @click="goToReturnPage(booking)" class="w-full bg-blue-600 hover:bg-blue-700">
+                          <Clock class="w-4 h-4 mr-2" /> Review Return
+                        </Button>
+                        <Badge v-else-if="booking.vehicle_return.status === 'completed'" variant="success" class="w-full justify-center py-2">Completed</Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <!-- Next Week -->
+            <TabsContent value="dueNextWeek">
+            <div class="space-y-4">
+              <div class="flex items-center gap-3 pb-2 border-b">
+                <div class="flex items-center gap-2">
+                  <Calendar class="w-5 h-5 text-blue-600" />
+                  <h2 class="text-xl font-semibold">Due Next Week</h2>
+                </div>
+                <Badge variant="outline" class="ml-auto">
+                  {{ groupedBookings.dueNextWeek.length }} {{ groupedBookings.dueNextWeek.length === 1 ? 'vehicle' : 'vehicles' }}
+                </Badge>
+              </div>
+              <div v-if="!groupedBookings.dueNextWeek.length" class="text-muted-foreground text-center py-6 text-sm">No vehicles due next week.</div>
+              <div v-else>
+                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  <Card v-for="(booking, idx) in groupedBookings.dueNextWeek" :key="booking.id" :data-tour="idx===0 ? 'return-card' : null" class="border border-border bg-card shadow-sm hover:shadow-md transition">
+                    <CardHeader class="pb-3">
+                      <div class="flex items-center justify-between gap-3">
+                        <div class="min-w-0 flex-1">
+                          <CardTitle class="text-base font-semibold truncate flex items-center gap-2">
+                            {{ booking.vehicle?.name || 'Vehicle' }}
+                            <Badge :variant="getStatusVariant(booking.status)" size="sm" class="capitalize">{{ booking.status.replace('_', ' ') }}</Badge>
+                          </CardTitle>
+                          <CardDescription class="truncate text-xs">{{ booking.vehicle?.brand }} {{ booking.vehicle?.model }} ({{ booking.vehicle?.year }})</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent class="space-y-4">
+                      <div v-if="booking.vehicle?.primary_image_url" class="relative overflow-hidden rounded-md">
+                        <img :src="booking.vehicle.primary_image_url" alt="Vehicle" class="w-full h-28 md:h-32 object-cover" />
+                      </div>
+                      <div class="grid grid-cols-2 gap-3 text-xs md:text-sm">
+                        <div><span class="font-medium text-muted-foreground">Customer</span><div class="font-medium truncate">{{ booking.user?.name || 'N/A' }}</div></div>
+                        <div><span class="font-medium text-muted-foreground">Total</span><div class="font-medium text-primary">₱{{ booking.total_price }}</div></div>
+                        <div class="col-span-2"><span class="font-medium text-muted-foreground">Rental Period</span><div class="font-medium">{{ formatDate(booking.start_date) }} → {{ formatDate(booking.end_date) }}</div></div>
+                      </div>
+                      <div v-if="booking.vehicle_return" class="space-y-2 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                        <div class="flex items-center justify-between">
+                          <span class="text-sm font-medium">Return Status:</span>
+                          <Badge :variant="getReturnStatusVariant(booking.vehicle_return.status)" size="sm">{{ getReturnStatusLabel(booking.vehicle_return.status) }}</Badge>
+                        </div>
+                        <div v-if="booking.vehicle_return.status === 'customer_submitted'" class="text-xs text-muted-foreground">Customer submitted: {{ formatDate(booking.vehicle_return.customer_submitted_at) }}</div>
+                        <div v-if="booking.vehicle_return.deposit_status" class="flex items-center justify-between mt-2">
+                          <span class="text-sm font-medium">Deposit:</span>
+                          <div class="flex items-center gap-2">
+                            <Badge :variant="getDepositStatusVariant(booking.vehicle_return.deposit_status)" size="sm">{{ getDepositStatusLabel(booking.vehicle_return.deposit_status) }}</Badge>
+                            <span v-if="booking.vehicle_return.deposit_status === 'refunded'" class="text-sm text-green-600 font-medium">₱{{ booking.vehicle_return.deposit_refund_amount || 0 }}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex pt-1">
+                        <Button v-if="!booking.vehicle_return" :data-tour="idx===0 ? 'return-btn' : null" variant="default" size="sm" @click="goToReturnPage(booking)" class="w-full bg-blue-600 hover:bg-blue-700">
+                          <Clock class="w-4 h-4 mr-2" /> Process Return
+                        </Button>
+                        <Button v-else-if="booking.vehicle_return.status === 'customer_submitted'" variant="default" size="sm" @click="goToReturnPage(booking)" class="w-full bg-blue-600 hover:bg-blue-700">
+                          <Clock class="w-4 h-4 mr-2" /> Review Return
+                        </Button>
+                        <Badge v-else-if="booking.vehicle_return.status === 'completed'" variant="success" class="w-full justify-center py-2">Completed</Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <!-- Later -->
+          <TabsContent value="later">
+            <div class="space-y-4">
+              <div class="flex items-center gap-3 pb-2 border-b">
+                <div class="flex items-center gap-2">
+                  <Timer class="w-5 h-5 text-gray-600" />
+                  <h2 class="text-xl font-semibold">Future Returns</h2>
+                </div>
+                <Badge variant="outline" class="ml-auto">
+                  {{ groupedBookings.later.length }} {{ groupedBookings.later.length === 1 ? 'vehicle' : 'vehicles' }}
+                </Badge>
+              </div>
+              <div v-if="!groupedBookings.later.length" class="text-muted-foreground text-center py-6 text-sm">No future returns scheduled.</div>
+              <div v-else>
+                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  <Card v-for="(booking, idx) in groupedBookings.later" :key="booking.id" :data-tour="idx===0 ? 'return-card' : null" class="border border-border bg-card shadow-sm hover:shadow-md transition">
+                    <CardHeader class="pb-3">
+                      <div class="flex items-center justify-between gap-3">
+                        <div class="min-w-0 flex-1">
+                          <CardTitle class="text-base font-semibold truncate flex items-center gap-2">
+                            {{ booking.vehicle?.name || 'Vehicle' }}
+                            <Badge :variant="getStatusVariant(booking.status)" size="sm" class="capitalize">{{ booking.status.replace('_', ' ') }}</Badge>
+                          </CardTitle>
+                          <CardDescription class="truncate text-xs">{{ booking.vehicle?.brand }} {{ booking.vehicle?.model }} ({{ booking.vehicle?.year }})</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent class="space-y-4">
+                      <div v-if="booking.vehicle?.primary_image_url" class="relative overflow-hidden rounded-md">
+                        <img :src="booking.vehicle.primary_image_url" alt="Vehicle" class="w-full h-28 md:h-32 object-cover" />
+                      </div>
+                      <div class="grid grid-cols-2 gap-3 text-xs md:text-sm">
+                        <div><span class="font-medium text-muted-foreground">Customer</span><div class="font-medium truncate">{{ booking.user?.name || 'N/A' }}</div></div>
+                        <div><span class="font-medium text-muted-foreground">Total</span><div class="font-medium text-primary">₱{{ booking.total_price }}</div></div>
+                        <div class="col-span-2"><span class="font-medium text-muted-foreground">Rental Period</span><div class="font-medium">{{ formatDate(booking.start_date) }} → {{ formatDate(booking.end_date) }}</div></div>
+                      </div>
+                      <div v-if="booking.vehicle_return" class="space-y-2 p-3 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+                        <div class="flex items-center justify-between">
+                          <span class="text-sm font-medium">Return Status:</span>
+                          <Badge :variant="getReturnStatusVariant(booking.vehicle_return.status)" size="sm">{{ getReturnStatusLabel(booking.vehicle_return.status) }}</Badge>
+                        </div>
+                        <div v-if="booking.vehicle_return.status === 'customer_submitted'" class="text-xs text-muted-foreground">Customer submitted: {{ formatDate(booking.vehicle_return.customer_submitted_at) }}</div>
+                        <div v-if="booking.vehicle_return.deposit_status" class="flex items-center justify-between mt-2">
+                          <span class="text-sm font-medium">Deposit:</span>
+                          <div class="flex items-center gap-2">
+                            <Badge :variant="getDepositStatusVariant(booking.vehicle_return.deposit_status)" size="sm">{{ getDepositStatusLabel(booking.vehicle_return.deposit_status) }}</Badge>
+                            <span v-if="booking.vehicle_return.deposit_status === 'refunded'" class="text-sm text-green-600 font-medium">₱{{ booking.vehicle_return.deposit_refund_amount || 0 }}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex pt-1">
+                        <Button v-if="!booking.vehicle_return" :data-tour="idx===0 ? 'return-btn' : null" variant="default" size="sm" @click="goToReturnPage(booking)" class="w-full">
+                          <Clock class="w-4 h-4 mr-2" /> Process Return
+                        </Button>
+                        <Button v-else-if="booking.vehicle_return.status === 'customer_submitted'" variant="default" size="sm" @click="goToReturnPage(booking)" class="w-full bg-blue-600 hover:bg-blue-700">
+                          <Clock class="w-4 h-4 mr-2" /> Review Return
+                        </Button>
+                        <Badge v-else-if="booking.vehicle_return.status === 'completed'" variant="success" class="w-full justify-center py-2">Completed</Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAdminVehicleReturns } from '@/services/admin/vehicle-return-service'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { AlertTriangle, Clock, CalendarDays, Calendar, Timer } from 'lucide-vue-next'
+import { driver as createDriver } from 'driver.js'
+import 'driver.js/dist/driver.css'
 import Loading from '@/components/features/Loading.vue'
 import { getStatusVariant, formatDateTimeUTC } from '@/lib/utils'
 
@@ -199,6 +429,7 @@ function formatDate(dateStr) {
 const { data, error, isLoading } = useAdminVehicleReturns()
 const bookings = computed(() => data.value || [])
 const router = useRouter()
+const activeGroup = ref('overdue')
 
 const groupedBookings = computed(() => {
   const groups = {
@@ -271,80 +502,105 @@ function getDepositStatusLabel(status) {
   }
 }
 
-function getGroupIcon(groupName) {
-  switch (groupName) {
-    case 'overdue':
-      return '🚨'
-    case 'dueToday':
-      return '⏰'
-    case 'dueThisWeek':
-      return '📅'
-    case 'dueNextWeek':
-      return '📆'
-    case 'later':
-      return '🕐'
-    default:
-      return '🔄'
+function startTour() {
+  const steps = buildTourSteps()
+  if (!steps.length) {
+    console.warn('[VehicleReturns Tour] No steps available.')
+    return
   }
+  const d = createDriver({
+    showProgress: true,
+    allowClose: true,
+    popoverClass: 'text-sm',
+    nextBtnText: 'Next',
+    prevBtnText: 'Previous',
+    doneBtnText: 'Finish',
+    closeBtnText: 'Skip',
+    steps
+  })
+  console.debug('[VehicleReturns Tour] Starting; total steps:', steps.length, steps)
+  d.drive()
+  localStorage.setItem('vehicleReturnsTourSeen', '1')
 }
 
-function getGroupLabel(groupName) {
-  switch (groupName) {
-    case 'overdue':
-      return 'Overdue Returns'
-    case 'dueToday':
-      return 'Due Today'
-    case 'dueThisWeek':
-      return 'Due This Week'
-    case 'dueNextWeek':
-      return 'Due Next Week'
-    case 'later':
-      return 'Future Returns'
-    default:
-      return groupName.replace(/([A-Z])/g, ' $1').trim()
+function buildTourSteps() {
+  const steps = []
+  const header = document.querySelector('#vehicle-returns-header')
+  if (header) {
+    steps.push({
+      element: header,
+      popover: {
+        title: 'Vehicle Returns',
+        description: 'Monitor and process upcoming vehicle returns.'
+      }
+    })
   }
+  const tabs = document.querySelector('[data-tour="returns-tabs-list"]')
+  if (tabs) {
+    steps.push({
+      element: tabs,
+      popover: {
+        title: 'Filter by Due Date',
+        description: 'Switch between Overdue, Today, This Week, Next Week, Later.'
+      }
+    })
+  }
+  const card = document.querySelector('[data-tour="return-card"]')
+  if (card) {
+    steps.push({
+      element: card,
+      popover: {
+        title: 'Return Card',
+        description: 'Shows vehicle, customer, price, rental period and status.'
+      }
+    })
+  } else if (header) {
+    steps.push({
+      element: header,
+      popover: {
+        title: 'No Return Cards',
+        description: 'No returns in this category yet. Cards will appear when returns are due.'
+      }
+    })
+  }
+  const buttons = Array.from(document.querySelectorAll('[data-tour="return-btn"]'))
+  const visibleBtn = buttons.find(el => el && el.offsetParent !== null)
+  if (visibleBtn) {
+    steps.push({
+      element: visibleBtn,
+      popover: {
+        title: 'Process / Review',
+        description: 'Open the workflow to process or review this return.'
+      }
+    })
+  }
+  return steps
 }
 
-function getGroupBadgeVariant(groupName) {
-  switch (groupName) {
-    case 'overdue':
-      return 'destructive'
-    case 'dueToday':
-      return 'warning'
-    case 'dueThisWeek':
-      return 'secondary'
-    case 'dueNextWeek':
-      return 'outline'
-    case 'later':
-      return 'outline'
-    default:
-      return 'secondary'
+onMounted(() => {
+  if (!localStorage.getItem('vehicleReturnsTourSeen')) {
+    setTimeout(() => startTour(), 600)
   }
-}
+})
+
+const totalCount = computed(() => Object.values(groupedBookings.value).reduce((s,a)=>s+a.length,0))
 
 function getReturnStatusVariant(status) {
   switch (status) {
-    case 'completed':
-      return 'success'
-    case 'customer_submitted':
-      return 'warning'
-    case 'admin_processing':
-      return 'secondary'
-    default:
-      return 'outline'
+    case 'completed': return 'success'
+    case 'customer_submitted': return 'warning'
+    case 'admin_processing': return 'secondary'
+    default: return 'outline'
+  }
+}
+function getReturnStatusLabel(status) {
+  switch (status) {
+    case 'completed': return 'Completed'
+    case 'customer_submitted': return 'Customer Submitted'
+    case 'admin_processing': return 'Admin Processing'
+    default: return status.replace('_',' ')
   }
 }
 
-function getReturnStatusLabel(status) {
-  switch (status) {
-    case 'completed':
-      return 'Completed'
-    case 'customer_submitted':
-      return 'Customer Submitted'
-    case 'admin_processing':
-      return 'Admin Processing'
-    default:
-      return status.replace('_', ' ')
-  }
-}
+// NOTE: Inline template-based components removed (runtime-only Vue build).
 </script>
