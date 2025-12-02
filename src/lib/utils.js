@@ -9,14 +9,12 @@ const DEFAULT_DATE_TIME_OPTIONS = {
   hour: 'numeric',
   minute: '2-digit',
   hour12: true,
-  timeZone: 'UTC',
 }
 
 const DEFAULT_DATE_OPTIONS = {
   month: 'short',
   day: 'numeric',
   year: 'numeric',
-  timeZone: 'UTC',
 }
 
 export function cn(...inputs) {
