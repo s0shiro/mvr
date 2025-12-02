@@ -72,7 +72,12 @@ import { useReleaseVehicle } from '@/services/admin/vehicle-release-service'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Calendar as CalendarIcon } from 'lucide-vue-next'
-import { DateFormatter, getLocalTimeZone } from '@internationalized/date'
+import {
+  DateFormatter,
+  getLocalTimeZone,
+  parseDateTime,
+  CalendarDate,
+} from '@internationalized/date'
 
 const props = defineProps({
   open: Boolean,
@@ -98,26 +103,53 @@ watch(
   () => props.open,
   (val) => {
     if (val) {
-      form.value = {
-        condition_notes: '',
-        fuel_level: '',
-        odometer: '',
-        released_at: '',
-      }
-      releasedDate.value = null
-      releasedTime.value = ''
       error.value = ''
+
+      // Pre-fill date and time from booking's start_date
+      if (props.booking?.start_date) {
+        const startDate = new Date(props.booking.start_date)
+        releasedDate.value = new CalendarDate(
+          startDate.getFullYear(),
+          startDate.getMonth() + 1,
+          startDate.getDate(),
+        )
+        const hours = startDate.getHours().toString().padStart(2, '0')
+        const minutes = startDate.getMinutes().toString().padStart(2, '0')
+        releasedTime.value = `${hours}:${minutes}`
+
+        // Set form.released_at immediately with correct format
+        const year = startDate.getFullYear()
+        const month = String(startDate.getMonth() + 1).padStart(2, '0')
+        const day = String(startDate.getDate()).padStart(2, '0')
+        form.value = {
+          condition_notes: '',
+          fuel_level: '',
+          odometer: '',
+          released_at: `${year}-${month}-${day} ${hours}:${minutes}:00`,
+        }
+      } else {
+        releasedDate.value = null
+        releasedTime.value = ''
+        form.value = {
+          condition_notes: '',
+          fuel_level: '',
+          odometer: '',
+          released_at: '',
+        }
+      }
     }
   },
+  { immediate: true },
 )
 
 watch([releasedDate, releasedTime], ([date, time]) => {
   if (date && time) {
-    const d = date.toDate(getLocalTimeZone())
+    // Format as YYYY-MM-DD HH:mm:ss to avoid timezone conversion issues
+    const year = date.year
+    const month = String(date.month).padStart(2, '0')
+    const day = String(date.day).padStart(2, '0')
     const [h, m] = time.split(':')
-    d.setHours(Number(h))
-    d.setMinutes(Number(m))
-    form.value.released_at = d.toISOString().slice(0, 16)
+    form.value.released_at = `${year}-${month}-${day} ${h}:${m}:00`
   }
 })
 
