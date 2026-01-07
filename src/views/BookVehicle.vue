@@ -48,14 +48,24 @@
           </Label>
           <Popover>
             <PopoverTrigger as-child>
-              <Button variant="outline" class="w-full justify-start text-left font-medium" :disabled="blockedDatesLoading">
+              <Button
+                variant="outline"
+                class="w-full justify-start text-left font-medium"
+                :disabled="blockedDatesLoading"
+              >
                 <CalendarIcon class="mr-2 h-5 w-5" />
                 {{ startDate ? df.format(startDate.toDate(getLocalTimeZone())) : 'Pick a date' }}
-                <span v-if="blockedDatesLoading" class="ml-2 text-sm text-muted-foreground">Loading...</span>
+                <span v-if="blockedDatesLoading" class="ml-2 text-sm text-muted-foreground"
+                  >Loading...</span
+                >
               </Button>
             </PopoverTrigger>
             <PopoverContent class="w-auto p-0">
-              <Calendar v-model="startDate" initial-focus :is-date-disabled="customIsDateDisabled" />
+              <Calendar
+                v-model="startDate"
+                initial-focus
+                :is-date-disabled="customIsDateDisabled"
+              />
             </PopoverContent>
           </Popover>
           <Input type="time" v-model="form.start_time" id="start_time" class="rounded-lg" />
@@ -69,10 +79,16 @@
           </Label>
           <Popover>
             <PopoverTrigger as-child>
-              <Button variant="outline" class="w-full justify-start text-left font-medium" :disabled="blockedDatesLoading">
+              <Button
+                variant="outline"
+                class="w-full justify-start text-left font-medium"
+                :disabled="blockedDatesLoading"
+              >
                 <CalendarIcon class="mr-2 h-5 w-5" />
                 {{ endDate ? df.format(endDate.toDate(getLocalTimeZone())) : 'Pick a date' }}
-                <span v-if="blockedDatesLoading" class="ml-2 text-sm text-muted-foreground">Loading...</span>
+                <span v-if="blockedDatesLoading" class="ml-2 text-sm text-muted-foreground"
+                  >Loading...</span
+                >
               </Button>
             </PopoverTrigger>
             <PopoverContent class="w-auto p-0">
@@ -143,7 +159,7 @@
           </div>
         </transition>
       </div>
-      <!-- Notes & Driver -->
+      <!-- Notes Section -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         <div class="flex flex-col gap-2">
           <Label for="notes" class="font-semibold">Notes</Label>
@@ -154,19 +170,6 @@
             class="rounded-lg"
           />
         </div>
-        <div
-          v-if="isDriverOptionAvailable"
-          class="flex items-center gap-3 mt-6 md:mt-0"
-        >
-          <Checkbox v-model="form.driver_requested" id="driver_requested" />
-          <Label for="driver_requested">Request a Driver</Label>
-        </div>
-        <div
-          v-else
-          class="flex items-center mt-6 md:mt-0 text-sm text-muted-foreground"
-        >
-          Driver service isn't available for motorcycles.
-        </div>
       </div>
       <!-- Price Summary -->
       <BookingSummaryReceipt
@@ -174,29 +177,45 @@
         :summary="summary"
         :form="form"
         :loading="loading"
+        :is-driver-option-available="isDriverOptionAvailable"
         v-model:minimized="minimizedSummary"
         @book-now="onSubmit"
+        @update:driver-requested="form.driver_requested = $event"
       />
 
       <!-- Contract Preview -->
-      <div v-if="summary" class="bg-gradient-to-br from-muted/40 to-muted/60 rounded-xl border border-border overflow-hidden">
+      <div
+        v-if="summary"
+        class="bg-gradient-to-br from-muted/40 to-muted/60 rounded-xl border border-border overflow-hidden"
+      >
         <div class="bg-primary/5 px-6 py-4 border-b border-border/50">
           <div class="flex items-center gap-3">
             <div class="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-5 w-5 text-primary"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
               </svg>
             </div>
             <div>
               <h2 class="text-xl font-bold text-foreground">Rental Contract Preview</h2>
-              <p class="text-sm text-muted-foreground">
-                Review the contract template below.
-              </p>
+              <p class="text-sm text-muted-foreground">Review the contract template below.</p>
             </div>
           </div>
         </div>
         <div class="p-6">
-          <div class="bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-border/50 overflow-hidden">
+          <div
+            class="bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-border/50 overflow-hidden"
+          >
             <div class="max-h-[600px] overflow-y-auto custom-scrollbar">
               <ContractPrint :booking="null" :showPrintButton="false" />
             </div>
@@ -262,7 +281,6 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   Select,
@@ -434,7 +452,7 @@ function removeIdImage(idx) {
 }
 
 function isBlocked(date) {
-  return (blockedDatesData.value || []).some(range => {
+  return (blockedDatesData.value || []).some((range) => {
     const start = parseDate(range.start_date.split('T')[0])
     const end = parseDate(range.end_date.split('T')[0])
     return date.compare(start) >= 0 && date.compare(end) <= 0
@@ -487,10 +505,11 @@ async function onSubmit() {
     const res = await createBooking.mutateAsync(payload)
     const newBookingId = res?.booking?.id
     toast.success('Booking reserved!', {
-      description: 'Please pay your security deposit to keep your reservation active. (Step 1 of 2)'
+      description:
+        'Please pay your security deposit to keep your reservation active. (Step 1 of 2)',
     })
     toast.info('Payment', {
-      description: 'Please pay your security deposit to keep your reservation active.'
+      description: 'Please pay your security deposit to keep your reservation active.',
     })
     if (newBookingId) {
       router.push({ name: 'booking-security-deposit', params: { id: newBookingId } })
