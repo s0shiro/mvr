@@ -10,7 +10,11 @@
           <Star
             v-for="n in 5"
             :key="n"
-            :class="n <= feedback.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'"
+            :class="
+              n <= feedback.rating
+                ? 'text-yellow-400 fill-yellow-400'
+                : 'text-gray-300 dark:text-gray-600'
+            "
             class="w-4 h-4"
           />
         </span>
@@ -26,7 +30,7 @@
       <div v-else class="rounded-lg border bg-card p-4 shadow-md max-w-md">
         <div class="flex items-center gap-2 mb-2">
           <span class="font-medium">Rate your experience:</span>
-          <div class="flex items-center">
+          <div class="flex items-center" @mouseleave="hoverRating = 0">
             <Button
               v-for="n in 5"
               :key="n"
@@ -36,9 +40,14 @@
               class="p-0"
               :aria-label="`Rate ${n}`"
               @click="form.rating = n"
+              @mouseenter="hoverRating = n"
             >
               <Star
-                :class="n <= form.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'"
+                :class="
+                  n <= (hoverRating || form.rating)
+                    ? 'text-yellow-400 fill-yellow-400'
+                    : 'text-gray-300 dark:text-gray-600'
+                "
                 class="w-7 h-7 transition-colors"
               />
             </Button>
@@ -81,6 +90,7 @@ import { Textarea } from '@/components/ui/textarea'
 const props = defineProps({ bookingId: { type: [String, Number], required: true } })
 const formOpen = ref(false)
 const form = ref({ rating: 0, comment: '' })
+const hoverRating = ref(0)
 const errorMsg = ref('')
 const successMsg = ref('')
 

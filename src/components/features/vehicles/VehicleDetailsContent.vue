@@ -60,7 +60,10 @@
                     ₱{{ formatCurrency(vehicle.rental_rate) }}/day
                   </dd>
                 </div>
-                <div v-if="canRequestDriver && vehicle.rental_rate_with_driver" class="flex flex-col gap-1">
+                <div
+                  v-if="canRequestDriver && vehicle.rental_rate_with_driver"
+                  class="flex flex-col gap-1"
+                >
                   <dt class="text-muted-foreground uppercase tracking-wide text-xs">
                     Daily Rate (w/ Driver)
                   </dt>
@@ -324,7 +327,9 @@
                   </div>
                 </div>
 
-                <div class="rounded-xl border border-dashed border-primary/40 bg-primary/5 px-4 py-4">
+                <div
+                  class="rounded-xl border border-dashed border-primary/40 bg-primary/5 px-4 py-4"
+                >
                   <p class="text-xs uppercase tracking-wide text-primary">Daily Rate</p>
                   <p class="text-2xl font-semibold text-foreground">
                     ₱{{ formatCurrency(vehicle.rental_rate) }}
@@ -334,10 +339,13 @@
                     v-if="canRequestDriver && vehicle.rental_rate_with_driver"
                     class="mt-2 text-sm text-muted-foreground"
                   >
-                    Add a professional driver for ₱{{ formatCurrency(vehicle.rental_rate_with_driver) }} per day.
+                    Add a professional driver for ₱{{
+                      formatCurrency(vehicle.rental_rate_with_driver)
+                    }}
+                    per day.
                   </p>
                   <div class="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-                    <Star class="h-4 w-4 text-primary" />
+                    <Star class="h-4 w-4 text-primary fill-primary" />
                     <span>
                       Rated {{ averageRating }} by {{ feedbackList.length }} happy renter{{
                         feedbackList.length === 1 ? '' : 's'
@@ -356,9 +364,16 @@
                     Book Now
                     <ArrowRight class="h-5 w-5" />
                   </button>
-                  <div v-else class="rounded-xl border border-dashed border-border bg-muted px-4 py-3 text-center">
-                    <p class="text-sm font-semibold text-muted-foreground">Currently under maintenance</p>
-                    <p class="text-xs text-muted-foreground/80">Check back soon for availability.</p>
+                  <div
+                    v-else
+                    class="rounded-xl border border-dashed border-border bg-muted px-4 py-3 text-center"
+                  >
+                    <p class="text-sm font-semibold text-muted-foreground">
+                      Currently under maintenance
+                    </p>
+                    <p class="text-xs text-muted-foreground/80">
+                      Check back soon for availability.
+                    </p>
                   </div>
                   <p class="text-center text-xs text-muted-foreground">
                     You won’t be charged until the reservation is confirmed.
@@ -440,7 +455,9 @@
               <CardTitle>Quick Specs</CardTitle>
             </CardHeader>
             <CardContent class="grid gap-3">
-              <div class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/40 px-4 py-3">
+              <div
+                class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/40 px-4 py-3"
+              >
                 <CarFront class="h-5 w-5 text-primary" />
                 <div>
                   <p class="text-xs uppercase tracking-wide text-muted-foreground">Brand & Model</p>
@@ -449,14 +466,20 @@
                   </p>
                 </div>
               </div>
-              <div class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/40 px-4 py-3">
+              <div
+                class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/40 px-4 py-3"
+              >
                 <Users class="h-5 w-5 text-primary" />
                 <div>
                   <p class="text-xs uppercase tracking-wide text-muted-foreground">Seats</p>
-                  <p class="text-sm font-semibold text-foreground">{{ vehicle.capacity }} passengers</p>
+                  <p class="text-sm font-semibold text-foreground">
+                    {{ vehicle.capacity }} passengers
+                  </p>
                 </div>
               </div>
-              <div class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/40 px-4 py-3">
+              <div
+                class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/40 px-4 py-3"
+              >
                 <Fuel class="h-5 w-5 text-primary" />
                 <div>
                   <p class="text-xs uppercase tracking-wide text-muted-foreground">Fuel Capacity</p>
@@ -465,11 +488,15 @@
                   </p>
                 </div>
               </div>
-              <div class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/40 px-4 py-3">
+              <div
+                class="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/40 px-4 py-3"
+              >
                 <Palette class="h-5 w-5 text-primary" />
                 <div>
                   <p class="text-xs uppercase tracking-wide text-muted-foreground">Color</p>
-                  <p class="text-sm font-semibold text-foreground">{{ vehicle.color || 'Not specified' }}</p>
+                  <p class="text-sm font-semibold text-foreground">
+                    {{ vehicle.color || 'Not specified' }}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -509,7 +536,7 @@
       <Card class="bg-card border border-border">
         <CardHeader>
           <CardTitle class="flex items-center gap-2 text-xl">
-            <Star class="text-yellow-400 w-6 h-6" />
+            <Star class="text-yellow-400 fill-yellow-400 w-6 h-6" />
             Customer Reviews
           </CardTitle>
         </CardHeader>
@@ -519,7 +546,11 @@
               <Star
                 v-for="n in 5"
                 :key="n"
-                :class="n <= roundedAverage ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'"
+                :class="
+                  n <= roundedAverage
+                    ? 'text-yellow-400 fill-yellow-400'
+                    : 'text-gray-300 dark:text-gray-600'
+                "
                 class="w-5 h-5"
               />
             </span>
@@ -543,7 +574,9 @@
             >
               <div class="flex flex-wrap items-start justify-between gap-4">
                 <div class="flex items-start gap-3">
-                  <div class="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center">
+                  <div
+                    class="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center"
+                  >
                     <UserCircle class="w-7 h-7" />
                   </div>
                   <div class="space-y-1">
@@ -564,19 +597,27 @@
                     </div>
                   </div>
                 </div>
-                <div class="flex items-center gap-1 bg-background/70 px-3 py-1.5 rounded-full border border-border/60">
+                <div
+                  class="flex items-center gap-1 bg-background/70 px-3 py-1.5 rounded-full border border-border/60"
+                >
                   <Star
                     v-for="n in 5"
                     :key="n"
-                    :class="n <= fb.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'"
+                    :class="
+                      n <= fb.rating
+                        ? 'text-yellow-400 fill-yellow-400'
+                        : 'text-gray-300 dark:text-gray-600'
+                    "
                     class="w-4 h-4"
                   />
-                  <span class="text-xs font-semibold text-muted-foreground ml-1"
-                    >{{ typeof fb.rating === 'number' ? fb.rating.toFixed(1) : fb.rating || '—' }}</span
-                  >
+                  <span class="text-xs font-semibold text-muted-foreground ml-1">{{
+                    typeof fb.rating === 'number' ? fb.rating.toFixed(1) : fb.rating || '—'
+                  }}</span>
                 </div>
               </div>
-              <div class="mt-3 text-sm sm:text-base text-foreground leading-relaxed border-t border-border/50 pt-3">
+              <div
+                class="mt-3 text-sm sm:text-base text-foreground leading-relaxed border-t border-border/50 pt-3"
+              >
                 <div class="flex items-start gap-2">
                   <MessageCircle class="w-5 h-5 mt-0.5 text-muted-foreground" />
                   <p class="flex-1">{{ fb.comment || 'No comment provided.' }}</p>

@@ -71,9 +71,17 @@
       </div>
       <div class="border-b border-dashed border-border my-3"></div>
       <div class="flex flex-col gap-2 text-sm mb-3">
-        <div class="flex justify-between">
+        <div v-if="isDriverOptionAvailable" class="flex justify-between items-center">
+          <Label for="driver-toggle" class="cursor-pointer">Request Driver</Label>
+          <Switch
+            id="driver-toggle"
+            :model-value="form.driver_requested"
+            @update:model-value="$emit('update:driver-requested', $event)"
+          />
+        </div>
+        <div v-else class="flex justify-between items-center text-muted-foreground">
           <span>Driver</span>
-          <span>{{ summary.with_driver ? 'With Driver' : 'No Driver' }}</span>
+          <span class="text-xs">Not available for motorcycles</span>
         </div>
         <div class="flex justify-between">
           <span>Pickup Type</span>
@@ -93,9 +101,11 @@
       >
         (No driver available for selected dates)
       </div>
-      <Button 
-        @click.stop="$emit('book-now')" 
-        :disabled="loading || (summary.with_driver && !summary.driver_available) /* || !summary.available */"
+      <Button
+        @click.stop="$emit('book-now')"
+        :disabled="
+          loading || (summary.with_driver && !summary.driver_available) /* || !summary.available */
+        "
         class="w-full mt-2"
         size="lg"
       >
@@ -124,14 +134,17 @@
 import { ref, watch, computed } from 'vue'
 import { DateTime } from 'luxon'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 
 const props = defineProps({
   summary: { type: Object, required: true },
   form: { type: Object, required: true },
   minimized: { type: Boolean, default: false },
   loading: { type: Boolean, default: false },
+  isDriverOptionAvailable: { type: Boolean, default: true },
 })
-const emit = defineEmits(['update:minimized', 'book-now'])
+const emit = defineEmits(['update:minimized', 'book-now', 'update:driver-requested'])
 const minimized = ref(props.minimized)
 
 const rentalDays = computed(() => {
