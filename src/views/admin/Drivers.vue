@@ -86,13 +86,10 @@
             <Input v-model="form.name" placeholder="Name" required />
             <Input v-model="form.phone" placeholder="Phone" />
             <Input v-model="form.email" placeholder="Email" type="email" />
-            <Select v-model="form.status">
-              <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Inactive</SelectItem>
-              </SelectContent>
-            </Select>
+            <div class="flex items-center gap-3">
+              <Switch :model-value="form.status === 'active'" @update:model-value="updateStatus" />
+              <Label>{{ form.status === 'active' ? 'Active' : 'Inactive' }}</Label>
+            </div>
           </div>
           <div class="flex justify-end gap-2 mt-6">
             <Button type="button" variant="outline" @click="closeDialog" :disabled="isPending"
@@ -119,13 +116,8 @@ import {
 } from '@/services/driver-service'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from '@/components/ui/select'
+import { Switch } from '@/components/ui/switch'
+import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
 import { Users } from 'lucide-vue-next'
 import Loading from '@/components/features/Loading.vue'
@@ -196,7 +188,12 @@ function openDialog(isAdd, driver = null) {
     form.value = { name: '', phone: '', email: '', status: 'active' }
   } else {
     editDriverData.value = driver
-    form.value = { ...driver }
+    form.value = {
+      name: driver.name || '',
+      phone: driver.phone || '',
+      email: driver.email || '',
+      status: driver.status || 'active',
+    }
   }
 }
 
@@ -208,19 +205,29 @@ function closeDialog() {
   updateDriver.reset()
 }
 
+function updateStatus(val) {
+  form.value.status = val ? 'active' : 'inactive'
+}
+
 function onDialogUpdate(val) {
   dialogOpen.value = val
   if (!val) closeDialog()
 }
 
 async function handleSubmit() {
+  const payload = {
+    name: form.value.name,
+    phone: form.value.phone,
+    email: form.value.email,
+    status: form.value.status,
+  }
   if (editDriverData.value) {
-    await updateDriver.mutateAsync({ id: editDriverData.value.id, ...form.value })
+    await updateDriver.mutateAsync({ id: editDriverData.value.id, ...payload })
     toast('Driver updated', {
       description: `${form.value.name} has been updated successfully.`,
     })
   } else {
-    await createDriver.mutateAsync(form.value)
+    await createDriver.mutateAsync(payload)
     toast('Driver created', {
       description: `${form.value.name} has been added successfully.`,
     })
