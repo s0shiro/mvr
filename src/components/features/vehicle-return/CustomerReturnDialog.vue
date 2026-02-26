@@ -65,7 +65,7 @@
             <div class="grid grid-cols-1 gap-4">
               <div class="flex flex-col gap-2">
                 <Label>Return Date *</Label>
-                <Popover @update:open="(open) => open && applyFutureDateStyling()">
+                <Popover>
                   <PopoverTrigger as-child>
                     <Button variant="outline" class="justify-start text-left font-medium">
                       <CalendarIcon class="mr-2 h-5 w-5" />
@@ -76,8 +76,8 @@
                       }}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent class="w-auto p-0 future-dates-gray">
-                    <Calendar v-model="returnedDate" initial-focus />
+                  <PopoverContent class="w-auto p-0">
+                    <Calendar v-model="returnedDate" initial-focus :is-date-disabled="isPastDate" />
                   </PopoverContent>
                 </Popover>
               </div>
@@ -271,41 +271,11 @@ const isDragging = ref(false)
 const imageError = ref('')
 const isSubmitting = ref(false)
 
-// Check if a date is in the future
-function isDateInFuture(date) {
+// Check if a date is in the past (before today) - these dates should be disabled
+function isPastDate(date) {
   const todayDate = today(getLocalTimeZone())
-  return date.compare(todayDate) > 0
+  return date.compare(todayDate) < 0
 }
-
-// Apply gray styling to future dates in calendar
-function applyFutureDateStyling() {
-  nextTick(() => {
-    const todayDate = today(getLocalTimeZone())
-    const calendarCells = document.querySelectorAll(
-      '.future-dates-gray [data-slot="calendar-cell-trigger"]',
-    )
-
-    calendarCells.forEach((cell) => {
-      // Get the date from the cell's data attributes or aria-label
-      const dateValue = cell.getAttribute('data-value')
-      if (dateValue) {
-        const [year, month, day] = dateValue.split('-').map(Number)
-        const cellDate = new CalendarDate(year, month, day)
-
-        if (cellDate.compare(todayDate) > 0) {
-          cell.classList.add('future-date')
-        } else {
-          cell.classList.remove('future-date')
-        }
-      }
-    })
-  })
-}
-
-// Watch for calendar changes to reapply styling
-watch(returnedDate, () => {
-  applyFutureDateStyling()
-})
 
 // Update returned_at when date or time changes
 watch([returnedDate, () => form.value.returned_time], ([date, time]) => {
@@ -491,16 +461,3 @@ function handleSubmit() {
   )
 }
 </script>
-
-<style scoped>
-/* Style for future dates - make them gray but still selectable */
-:deep(.future-date) {
-  color: #9ca3af !important;
-  opacity: 0.6;
-}
-
-:deep(.future-date:hover) {
-  color: #6b7280 !important;
-  opacity: 0.8;
-}
-</style>
